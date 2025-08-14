@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agency Check Result - SafeGuard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; }
+    body { background-color: #ffffff; color: #333; line-height: 1.6; }
+
+    /* Navbar */
+    nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 50px; background-color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
+    .logo { font-size: 22px; font-weight: bold; color: #333; }
+    .nav-links a { text-decoration: none; color: #333; margin: 0 15px; font-weight: 500; }
+    .nav-links a:hover { color: #e53935; }
+
+    /* Result Section */
+    .container { max-width: 800px; margin: 50px auto; padding: 20px; text-align: center; }
+    .result-box { background: #f9f9f9; padding: 30px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .result-box h2 { font-size: 28px; margin-bottom: 20px; color: #e53935; }
+    .found { color: green; font-weight: bold; margin-top: 10px; }
+    .not-found { color: red; font-weight: bold; margin-top: 10px; }
+
+    /* Footer */
+    footer { background: #fafafa; padding: 30px 20px; text-align: center; border-top: 1px solid #eee; color: #666; margin-top: 50px; }
+    footer a { text-decoration: none; color: #666; margin: 0 10px; }
+    footer a:hover { color: #e53935; }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav>
+    <div class="logo">SafeGuard</div>
+    <div class="nav-links">
+             <a href="{{ url_for('index') }}">Home</a>
+             <a href="{{ url_for('learnmore') }}">Learn More</a>
+       <a href="{{ url_for('contact') }}">Contact</a>
+    </div>
+  </nav>
+
+  <!-- Result Section -->
+  <div class="container">
+    <div class="result-box">
+             <h2>Agency Check Result</h2>
+       {% if agency_name %}
+         <p><strong>Agency/Store:</strong> {{ agency_name }}</p>
+         {% if record_found %}
+           <p class="found">✅ Record Found: This agency/store is flagged for fraud approved by law enforcement</p>
+           {% if agency_type %}
+             <p><strong>Type:</strong> {{ agency_type }}</p>
+           {% endif %}
+         {% else %}
+           <p class="not-found">❌ No records found for the entered agency/store.</p>
+         {% endif %}
+       {% else %}
+         <p class="not-found">❌ No agency name provided.</p>
+       {% endif %}
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div>
+             <a href="{{ url_for('privacy') }}">Privacy Policy</a> | 
+       <a href="{{ url_for('terms') }}">Terms of Service</a> | 
+       <a href="{{ url_for('support') }}">Support</a>
+    </div>
+    <p>© 2024 SafeGuard. All rights reserved.</p>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Law Enforcement Portal - SafeGuard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; }
+    body { background-color: #f9f9f9; color: #333; line-height: 1.6; }
+
+    nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 50px; background-color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
+    .logo { font-size: 22px; font-weight: bold; color: #333; }
+    .nav-links a { text-decoration: none; color: #333; margin: 0 15px; font-weight: 500; }
+    .nav-links a:hover { color: #e53935; }
+    .nav-buttons button { padding: 8px 16px; margin-left: 10px; border-radius: 5px; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
+    .logout-btn { background: #e53935; color: #fff; }
+    .logout-btn:hover { background: #c62828; }
+
+    .hero {
+      background: url('https://images.unsplash.com/photo-1508921912186-1d1a45ebb3c1') no-repeat center center/cover;
+      text-align: center;
+      padding: 100px 20px;
+      color: #fff;
+    }
+    .hero h1 { font-size: 42px; font-weight: bold; margin-bottom: 10px; }
+
+    .container { max-width: 1200px; margin: 50px auto; padding: 20px; }
+    .section { background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 30px; }
+    .section h2 { font-size: 26px; color: #e53935; margin-bottom: 20px; }
+
+    .alert-card { display: flex; align-items: center; margin-bottom: 20px; background: #fafafa; padding: 15px; border-radius: 8px; }
+    .alert-card img { width: 120px; height: 80px; border-radius: 5px; margin-right: 15px; object-fit: cover; }
+    .alert-info p { font-size: 16px; color: #555; margin: 5px 0; }
+
+    .live-feed { background: #000; border-radius: 10px; display: flex; justify-content: center; align-items: center; margin-bottom: 20px; }
+    .live-feed img { width: 100%; max-width: 640px; height: auto; border-radius: 10px; }
+
+    .detection-status { display: flex; justify-content: space-around; margin: 20px 0; }
+    .status-indicator { text-align: center; padding: 15px; border-radius: 8px; background: #f8f9fa; }
+    .status-indicator.alert { background: #ffe6e6; border: 2px solid #e53935; }
+    .status-indicator.safe { background: #e6ffe6; border: 2px solid #4caf50; }
+    .status-label { font-weight: bold; display: block; margin-bottom: 5px; }
+    .status-value { font-size: 18px; font-weight: bold; }
+    
+    /* Animation for violence detection */
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+
+    .upload-section { text-align: center; }
+    .upload-btn { background: #e53935; color: #fff; padding: 12px 30px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 10px; }
+    .upload-btn:hover { background: #c62828; }
+
+    footer { background: #fafafa; padding: 30px 20px; text-align: center; border-top: 1px solid #eee; color: #666; margin-top: 50px; }
+    footer a { text-decoration: none; color: #666; margin: 0 10px; }
+    footer a:hover { color: #e53935; }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="logo">SafeGuard</div>
+    <div class="nav-links">
+      <a href="{{ url_for('index') }}">Home</a>
+      <a href="{{ url_for('learnmore') }}">Learn More</a>
+      <a href="{{ url_for('contact') }}">Contact</a>
+    </div>
+    <div class="nav-buttons">
+      <button class="logout-btn" onclick="window.location.href='{{ url_for('index') }}'">Logout</button>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <h1>Law Enforcement Dashboard</h1>
+    <p>Monitor alerts and criminal records in real-time.</p>
+  </div>
+
+  <div class="container">
+    <!-- 🔴 Recent Alerts -->
+    <div class="section">
+      <h2>Recent Alerts</h2>
+      <div id="alert-list">
+        <p>Loading alerts...</p>
+      </div>
+    </div>
+
+    <!-- 🎥 Live AI Detection Feed -->
+    <div class="section">
+      <h2>Live AI Detection Feed</h2>
+      <div class="live-feed">
+        <img src="{{ url_for('live_detection_feed') }}" alt="AI Detection Feed">
+      </div>
+      
+      <!-- Detection Status Indicators -->
+      <div class="detection-status">
+        <div id="violence-status" class="status-indicator safe">
+          <span class="status-label">AI Cam Status</span>
+          <span class="status-value" id="violence-value">✅ Safe - No Violence</span>
+        </div>
+        <div id="person-status" class="status-indicator safe">
+          <span class="status-label">Person Detection</span>
+          <span class="status-value" id="person-value">✅ Active</span>
+        </div>
+        <div id="system-status" class="status-indicator safe">
+          <span class="status-label">System Status</span>
+          <span class="status-value" id="system-value">✅ Online</span>
+        </div>
+      </div>
+      
+      <!-- System Status -->
+      <div style="margin-top: 20px; text-align: center;">
+        <h3 style="color: #e53935; margin-bottom: 15px;">🔄 System Status</h3>
+                 <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+           <button onclick="toggleDebug()" style="background: #ff9800; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
+             🔍 Toggle Debug Mode
+           </button>
+           <button onclick="testViolence()" style="background: #e53935; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
+             👊 Test Violence Detection
+           </button>
+                       <button onclick="testMobileVideo()" style="background: #9c27b0; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
+              📱 Test Mobile Video Violence
+            </button>
+            <button onclick="viewSavedFaces()" style="background: #2196f3; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
+              📸 View Saved Faces
+            </button>
+            <button onclick="createTestAlert()" style="background: #4caf50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
+              🧪 Create Test Alert
+            </button>
+         </div>
+                 <p style="margin-top: 10px; color: #666; font-size: 14px;">
+           Advanced violence detection system - detects fighting, rapid motion, violence, and mobile video content with red bounding boxes.
+         </p>
+      </div>
+    </div>
+
+    <!-- 🚨 Live Criminal Records -->
+    <div class="section">
+      <h2>🚨 Live Criminal Records</h2>
+      <div style="margin-bottom: 20px;">
+        <p style="color: #666; font-size: 14px; margin-bottom: 15px;">
+          Real-time face detection from live camera feed. When known faces are detected, their age and criminal information will be displayed below.
+        </p>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button onclick="fetchLiveCriminalRecords()" style="background: #e53935; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
+            🔄 Refresh Records
+          </button>
+          <button onclick="clearCriminalRecords()" style="background: #ff9800; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
+            🗑️ Clear Records
+          </button>
+          <button onclick="debugFaceFiles()" style="background: #2196f3; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
+            🔍 Debug Face Files
+          </button>
+        </div>
+      </div>
+      
+      <div id="criminal-records-container">
+        <div style="text-align: center; padding: 40px; color: #666; background: #f9f9f9; border-radius: 10px; border: 2px dashed #ddd;">
+          <h3 style="margin-bottom: 10px;">📹 Live Face Detection</h3>
+          <p>Waiting for known faces to be detected in the live camera feed...</p>
+          <p style="font-size: 12px; margin-top: 10px;">Detected faces will appear here with age and criminal information</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 📤 Upload Suspect Image -->
+    <div class="section upload-section">
+      <h2>Upload Suspect Image</h2>
+      <button class="upload-btn" onclick="window.location.href='{{ url_for('suspect_upload') }}'">Upload Suspect Image</button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div>
+      <a href="{{ url_for('privacy') }}">Privacy Policy</a> | 
+      <a href="{{ url_for('terms') }}">Terms of Service</a> | 
+      <a href="{{ url_for('support') }}">Support</a>
+    </div>
+    <p>© 2024 SafeGuard. All rights reserved.</p>
+  </footer>
+
+  <script>
+    function fetchAlerts() {
+      fetch('/api/alerts')
+        .then(response => response.json())
+        .then(data => {
+          const container = document.getElementById('alert-list');
+          container.innerHTML = '';
+
+          if (data.alerts.length === 0) {
+            container.innerHTML = '<p>No alerts found.</p>';
+            return;
+          }
+
+          data.alerts.forEach(alert => {
+            const div = document.createElement('div');
+            div.classList.add('alert-card');
+            
+            // Determine alert color based on type
+            const alertColor = alert.alert_type === 'Live Camera' ? '#e53935' : '#ff9800';
+            const alertIcon = alert.alert_type === 'Live Camera' ? '🚨' : '⚠️';
+
+            // Create image HTML
+            let imgHTML = '';
+            if (alert.has_image && alert.image_base64) {
+              imgHTML = `<img src="data:image/jpeg;base64,${alert.image_base64}" alt="Alert Image" style="width: 120px; height: 80px; border-radius: 5px; margin-right: 15px; object-fit: cover;">`;
+            } else {
+              imgHTML = `<div style="width: 120px; height: 80px; border-radius: 5px; margin-right: 15px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #666;">No Image</div>`;
+            }
+
+            div.innerHTML = `
+              ${imgHTML}
+              <div class="alert-info" style="flex: 1;">
+                <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                  <span style="font-size: 20px; margin-right: 8px;">${alertIcon}</span>
+                  <span style="font-weight: bold; color: ${alertColor}; font-size: 16px;">${alert.name}</span>
+                </div>
+                <p style="margin: 5px 0; font-weight: bold; color: #333;">${alert.violence_type}</p>
+                <p style="margin: 5px 0; color: #555; font-size: 14px;"><strong>Details:</strong> ${alert.details}</p>
+                <p style="margin: 5px 0; color: #666; font-size: 12px;"><strong>Time:</strong> ${alert.timestamp}</p>
+                <p style="margin: 5px 0; color: #666; font-size: 12px;"><strong>Type:</strong> ${alert.alert_type}</p>
+              </div>
+            `;
+
+            // Add border color based on alert type
+            div.style.borderLeft = `4px solid ${alertColor}`;
+            div.style.backgroundColor = alert.alert_type === 'Live Camera' ? '#fff5f5' : '#fff8e1';
+
+            container.appendChild(div);
+          });
+        })
+        .catch(error => {
+          document.getElementById('alert-list').innerHTML = '<p>Error loading alerts.</p>';
+          console.error('Error fetching alerts:', error);
+        });
+    }
+
+    // Enhanced real-time status monitoring with better sync
+    function updateDetectionStatus() {
+        fetch('/api/violence_detection_status')
+            .then(response => response.json())
+            .then(data => {
+                // Update AI Cam status
+                const violenceStatus = document.getElementById('violence-status');
+                const violenceValue = document.getElementById('violence-value');
+                
+                // Update person detection status
+                const personStatus = document.getElementById('person-status');
+                const personValue = document.getElementById('person-value');
+                
+                // Update system status
+                const systemValue = document.getElementById('system-value');
+                
+                                 // Enhanced AI Cam status - Green for safe, Red for violence
+                 if (data.violence_detected) {
+                     violenceStatus.className = 'status-indicator alert';
+                     const violenceType = data.violence_type || 'Violence';
+                     const duration = data.violence_duration || 0;
+                     const isPersistent = data.violence_persistent || false;
+                     
+                     if (isPersistent) {
+                         violenceValue.textContent = `🚨🚨 PERSISTENT ${violenceType.toUpperCase()}! (${duration.toFixed(1)}s)`;
+                         violenceValue.style.color = '#ff0000';
+                         violenceValue.style.fontWeight = 'bold';
+                         violenceValue.style.fontSize = '16px';
+                         
+                         // Add urgent pulsing effect for persistent violence
+                         violenceStatus.style.animation = 'pulse 0.5s infinite';
+                         violenceStatus.style.backgroundColor = '#ffebee';
+                         violenceStatus.style.borderColor = '#ff0000';
+                     } else {
+                         violenceValue.textContent = `🚨 ${violenceType.toUpperCase()} DETECTED! (${duration.toFixed(1)}s)`;
+                         violenceValue.style.color = '#e53935';
+                         violenceValue.style.fontWeight = 'bold';
+                         violenceValue.style.fontSize = '14px';
+                         
+                         // Add pulsing effect for violence
+                         violenceStatus.style.animation = 'pulse 1s infinite';
+                         violenceStatus.style.backgroundColor = '#ffebee';
+                         violenceStatus.style.borderColor = '#e53935';
+                     }
+                 } else {
+                     violenceStatus.className = 'status-indicator safe';
+                     violenceValue.textContent = '✅ Safe - No Violence';
+                     violenceValue.style.color = '#4caf50';
+                     violenceValue.style.fontWeight = 'bold';
+                     violenceValue.style.fontSize = '14px';
+                     violenceStatus.style.animation = 'none';
+                     violenceStatus.style.backgroundColor = '#e8f5e8';
+                     violenceStatus.style.borderColor = '#4caf50';
+                 }
+                
+                // Enhanced person detection status with count
+                if (data.person_detected) {
+                    personStatus.className = 'status-indicator safe';
+                    const personCount = data.total_persons || 1;
+                    personValue.textContent = `👤 ${personCount} Person${personCount > 1 ? 's' : ''} Detected`;
+                    personValue.style.color = '#4caf50';
+                } else {
+                    personStatus.className = 'status-indicator safe';
+                    personValue.textContent = 'No Person';
+                    personValue.style.color = '#666';
+                }
+                
+                // Update system status
+                systemValue.textContent = '✅ Online';
+                systemValue.style.color = '#4caf50';
+                
+                // Enhanced logging for debugging
+                console.log('🔗 Detection Status Update:', {
+                    violence: data.violence_detected,
+                    type: data.violence_type,
+                    persons: data.total_persons,
+                    confidence: data.violence_confidence,
+                    timestamp: data.timestamp
+                });
+                
+                // Show notification for violence detection
+                if (data.violence_detected) {
+                    showViolenceNotification(data.violence_type);
+                }
+            })
+            .catch(error => {
+                console.error('❌ Error fetching detection status:', error);
+                // Keep current status on error
+            });
+    }
+    
+    // Show violence notification
+    function showViolenceNotification(violenceType) {
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #e53935;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            z-index: 1000;
+            font-weight: bold;
+            animation: slideIn 0.5s ease-out;
+        `;
+        notification.textContent = `🚨 ${violenceType} DETECTED!`;
+        
+        document.body.appendChild(notification);
+        
+        // Remove notification after 3 seconds
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.5s ease-in';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 500);
+        }, 3000);
+    }
+
+    // Fetch alerts every 5 seconds
+    setInterval(fetchAlerts, 5000);
+    fetchAlerts();
+
+    // Update detection status every 2 seconds
+    setInterval(updateDetectionStatus, 2000);
+    
+
+    
+    function toggleDebug() {
+        fetch('/api/toggle_debug')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const debugStatus = data.debug ? 'ON' : 'OFF';
+                    alert(`🔍 Debug mode: ${debugStatus}`);
+                } else {
+                    alert('❌ Error toggling debug mode');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('❌ Error toggling debug mode');
+            });
+    }
+    
+    function testViolence() {
+        fetch('/api/test_violence')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(`👊 ${data.message}`);
+                    // Force update the detection status
+                    updateDetectionStatus();
+                } else {
+                    alert('❌ Error testing violence detection');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('❌ Error testing violence detection');
+            });
+    }
+    
+    function testMobileVideo() {
+        fetch('/api/test_mobile_video')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(`📱 ${data.message}`);
+                    // Force update the detection status
+                    updateDetectionStatus();
+                } else {
+                    alert('❌ Error testing mobile video violence detection');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('❌ Error testing mobile video violence detection');
+            });
+    }
+    
+    function viewSavedFaces() {
+        fetch('/api/saved_faces')
+            .then(response => response.json())
+            .then(data => {
+                if (data.total_faces > 0) {
+                    let message = `📸 Found ${data.total_faces} saved face(s):\n\n`;
+                    data.faces.slice(0, 5).forEach((face, index) => {
+                        const created = new Date(face.created).toLocaleString();
+                        message += `${index + 1}. ${face.filename}\n   Created: ${created}\n\n`;
+                    });
+                    if (data.total_faces > 5) {
+                        message += `... and ${data.total_faces - 5} more faces`;
+                    }
+                    alert(message);
+                } else {
+                    alert('📸 No faces have been saved yet. Faces are automatically saved when detected.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('❌ Error fetching saved faces');
+            });
+    }
+    
+    function createTestAlert() {
+        const alertType = prompt('Enter alert type (e.g., Blood, Fighting, Video Violence):', 'Test Violence');
+        if (alertType) {
+            const details = prompt('Enter alert details:', `Test alert for ${alertType} detection`);
+            
+            fetch('/api/create_test_alert', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    type: alertType,
+                    details: details
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(`✅ ${data.message}`);
+                    // Refresh alerts
+                    fetchAlerts();
+                } else {
+                    alert('❌ Error creating test alert');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('❌ Error creating test alert');
+            });
+        }
+    }
+    
+    // Live Criminal Records Functions
+    function fetchLiveCriminalRecords() {
+        fetch('/api/live_criminal_records')
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('criminal-records-container');
+                
+                if (data.records && data.records.length > 0) {
+                    container.innerHTML = '';
+                    
+                    data.records.forEach(record => {
+                        const recordDiv = document.createElement('div');
+                        recordDiv.style.cssText = `
+                            background: #fff; 
+                            border: 2px solid #e53935; 
+                            border-radius: 10px; 
+                            padding: 20px; 
+                            margin-bottom: 15px; 
+                            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+                        `;
+                        
+                        const riskColor = record.risk_level === 'High' ? '#e53935' : 
+                                        record.risk_level === 'Medium' ? '#ff9800' : '#4caf50';
+                        
+                        recordDiv.innerHTML = `
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <div style="flex: 1;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                        <h3 style="color: #e53935; margin: 0; font-size: 20px;">${record.name}</h3>
+                                        <span style="background: ${riskColor}; color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold;">
+                                            ${record.risk_level} Risk
+                                        </span>
+                                    </div>
+                                    
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                                        <div>
+                                            <strong>Age:</strong> ${record.detected_age}<br>
+                                            <strong>Gender:</strong> ${record.detected_gender}<br>
+                                            <strong>Emotion:</strong> ${record.detected_emotion}
+                                        </div>
+                                        <div>
+                                            <strong>Crime:</strong> ${record.crime}<br>
+                                            <strong>Location:</strong> ${record.location}<br>
+                                            <strong>Year:</strong> ${record.year}
+                                        </div>
+                                        <div>
+                                            <strong>Detection Time:</strong> ${record.detection_time}<br>
+                                            <strong>Confidence:</strong> ${(record.face_confidence * 100).toFixed(1)}%<br>
+                                            <strong>Status:</strong> ${record.case_status}
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 10px;">
+                                        <div>
+                                            <strong>Bail Amount:</strong> ${record.bail_amount || 'N/A'}<br>
+                                            <strong>Warrant Status:</strong> ${record.warrant_status || 'None'}<br>
+                                            <strong>Last Known:</strong> ${record.last_known_location || 'Unknown'}
+                                        </div>
+                                        <div>
+                                            <strong>Criminal ID:</strong> #${record.criminal_id || 'Unknown'}<br>
+                                            <strong>Source File:</strong> ${record.source_file}<br>
+                                            <strong>Risk Level:</strong> ${record.risk_level}
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px; border-left: 4px solid ${riskColor};">
+                                        <strong>Criminal History:</strong> ${record.criminal_history}
+                                        ${record.special_notes ? `<br><strong>Special Notes:</strong> ${record.special_notes}` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        container.appendChild(recordDiv);
+                    });
+                } else {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 40px; color: #666; background: #f9f9f9; border-radius: 10px; border: 2px dashed #ddd;">
+                            <h3 style="margin-bottom: 10px;">📹 Live Face Detection</h3>
+                            <p>No known faces detected in the live camera feed yet.</p>
+                            <p style="font-size: 12px; margin-top: 10px;">Known faces will appear here with age and criminal information</p>
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching criminal records:', error);
+                document.getElementById('criminal-records-container').innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #e53935; background: #fff5f5; border-radius: 10px; border: 2px solid #e53935;">
+                        <h3 style="margin-bottom: 10px;">❌ Error</h3>
+                        <p>Failed to fetch criminal records. Please try again.</p>
+                    </div>
+                `;
+            });
+    }
+    
+    function clearCriminalRecords() {
+        if (confirm('Are you sure you want to clear all criminal records?')) {
+            fetch('/api/clear_criminal_records', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('✅ Criminal records cleared successfully');
+                    fetchLiveCriminalRecords();
+                } else {
+                    alert('❌ Error clearing criminal records');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('❌ Error clearing criminal records');
+            });
+        }
+    }
+    
+    function debugFaceFiles() {
+        fetch('/api/debug_face_files')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    let message = '🔍 Face Files Debug Information:\n\n';
+                    
+                    Object.entries(data.face_directories).forEach(([dir, info]) => {
+                        message += `📁 ${dir}:\n`;
+                        message += `   Exists: ${info.exists ? '✅ Yes' : '❌ No'}\n`;
+                        message += `   Files: ${info.count}\n`;
+                        
+                        if (info.files.length > 0) {
+                            message += `   Recent files:\n`;
+                            info.files.slice(0, 5).forEach(file => {
+                                message += `     - ${file}\n`;
+                            });
+                            if (info.files.length > 5) {
+                                message += `     ... and ${info.files.length - 5} more\n`;
+                            }
+                        }
+                        message += '\n';
+                    });
+                    
+                    alert(message);
+                } else {
+                    alert('❌ Error getting face files debug information');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('❌ Error getting face files debug information');
+            });
+    }
+    
+    // Auto-refresh criminal records every 5 seconds
+    setInterval(fetchLiveCriminalRecords, 5000);
+    
+    // Initial load
+    fetchLiveCriminalRecords();
+
+  </script>
+</body>
+</html>

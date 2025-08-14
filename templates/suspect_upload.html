@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload Suspect Image - SafeGuard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; }
+    body { background-color: #ffffff; color: #333; line-height: 1.6; }
+
+    /* Navbar */
+    nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 50px; background-color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
+    .logo { font-size: 22px; font-weight: bold; color: #333; }
+    .nav-links a { text-decoration: none; color: #333; margin: 0 15px; font-weight: 500; }
+    .nav-links a:hover { color: #e53935; }
+    .nav-buttons button { padding: 8px 16px; margin-left: 10px; border-radius: 5px; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
+    .back-btn { background: #e53935; color: #fff; }
+    .back-btn:hover { background: #c62828; }
+
+    /* Upload Section */
+    .container { max-width: 600px; margin: 80px auto; padding: 20px; text-align: center; }
+    h1 { font-size: 36px; color: #e53935; margin-bottom: 20px; }
+    .upload-box { background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .upload-box input[type="file"] { margin: 20px 0; }
+    .upload-btn {
+      padding: 12px 24px; background: #e53935; color: #fff;
+      border: none; border-radius: 5px; cursor: pointer;
+      font-weight: bold; font-size: 16px; transition: 0.3s;
+    }
+    .upload-btn:hover { background: #c62828; }
+
+    /* Footer */
+    footer { background: #fafafa; padding: 30px 20px; text-align: center; border-top: 1px solid #eee; color: #666; margin-top: 50px; }
+    footer a { text-decoration: none; color: #666; margin: 0 10px; }
+    footer a:hover { color: #e53935; }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav>
+    <div class="logo">SafeGuard</div>
+    <div class="nav-links">
+             <a href="{{ url_for('index') }}">Home</a>
+             <a href="{{ url_for('law_enforcement') }}">Law Enforcement</a>
+       <a href="{{ url_for('contact') }}">Contact</a>
+    </div>
+    <div class="nav-buttons">
+             <button class="back-btn" onclick="window.location.href='{{ url_for('law_enforcement') }}'">Back</button>
+    </div>
+  </nav>
+
+  <!-- Upload Section -->
+  <div class="container">
+    <h1>Upload Suspect Image</h1>
+    <div class="upload-box">
+      <form action="{{ url_for('suspect_result') }}" method="POST" enctype="multipart/form-data">
+        <input type="file" name="suspectImage" accept="image/*" required>
+        <br>
+        <button type="submit" class="upload-btn">Upload & Search</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div>
+             <a href="{{ url_for('privacy') }}">Privacy Policy</a> | 
+       <a href="{{ url_for('terms') }}">Terms of Service</a> | 
+       <a href="{{ url_for('support') }}">Support</a>
+    </div>
+    <p>© 2024 SafeGuard. All rights reserved.</p>
+  </footer>
+</body>
+</html>

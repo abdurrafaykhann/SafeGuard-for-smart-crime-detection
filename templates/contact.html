@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us - SafeGuard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; }
+    body { background-color: #ffffff; color: #333; line-height: 1.6; }
+
+    /* Navbar */
+    nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 50px; background-color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
+    .logo { font-size: 22px; font-weight: bold; color: #333; }
+    .nav-links a { text-decoration: none; color: #333; margin: 0 15px; font-weight: 500; }
+    .nav-links a:hover { color: #e53935; }
+    .nav-buttons button { padding: 8px 16px; margin-left: 10px; border-radius: 5px; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
+    .login-btn { background: #e53935; color: #fff; }
+    .login-btn:hover { background: #c62828; }
+    .signup-btn { background: #f2f2f2; color: #333; }
+    .signup-btn:hover { background: #ddd; }
+
+    /* Hero Section */
+    .hero {
+      background: url('https://images.unsplash.com/photo-1508921912186-1d1a45ebb3c1') no-repeat center center/cover;
+      text-align: center;
+      padding: 100px 20px;
+      color: #fff;
+    }
+    .hero h1 { font-size: 42px; font-weight: bold; margin-bottom: 10px; }
+    .hero p { font-size: 18px; max-width: 600px; margin: 0 auto; }
+
+    /* Contact Form Section */
+    .contact-section {
+      padding: 60px 20px;
+      text-align: center;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .contact-section h2 { font-size: 32px; margin-bottom: 20px; }
+    .contact-section p { color: #666; margin-bottom: 30px; }
+    form { display: flex; flex-direction: column; gap: 15px; }
+    input, textarea {
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+    textarea { resize: vertical; min-height: 120px; }
+    button.submit-btn {
+      padding: 12px;
+      background: #e53935;
+      border: none;
+      color: #fff;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button.submit-btn:hover { background: #c62828; }
+
+    /* Footer */
+    footer { background: #fafafa; padding: 30px 20px; text-align: center; border-top: 1px solid #eee; color: #666; margin-top: 50px; }
+    footer a { text-decoration: none; color: #666; margin: 0 10px; }
+    footer a:hover { color: #e53935; }
+  </style>
+</head>
+<body>
+  
+  <!-- Navbar -->
+<nav>
+  <div class="logo">SafeGuard</div>
+  <div class="nav-links">
+    <a href="{{ url_for('index') }}">Home</a>
+    <a href="{{ url_for('learnmore') }}">Learn More</a>
+    <a href="{{ url_for('contact') }}">Contact</a>
+  </div>
+  <div class="nav-buttons">
+    <a href="{{ url_for('index') }}#login"><button class="login-btn">Login</button></a>
+    <a href="{{ url_for('index') }}#signup"><button class="signup-btn">Sign Up</button></a>
+  </div>
+</nav>
+
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>Contact Us</h1>
+    <p>We’d love to hear from you. Reach out with any questions or feedback.</p>
+  </div>
+
+  <!-- Contact Form -->
+  <div class="contact-section">
+    <h2>Get in Touch</h2>
+    <p>Fill out the form below and we will get back to you shortly.</p>
+    <form action="#" method="POST">
+      <input type="text" name="name" placeholder="Your Name" required>
+      <input type="email" name="email" placeholder="Your Email" required>
+      <textarea name="message" placeholder="Your Message" required></textarea>
+      <button type="submit" class="submit-btn">Send Message</button>
+    </form>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div>
+      <a href="{{ url_for('privacy') }}">Privacy Policy</a> | 
+      <a href="{{ url_for('terms') }}">Terms of Service</a> | 
+      <a href="{{ url_for('support') }}">Support</a>
+    </div>
+    <p>© 2024 SafeGuard. All rights reserved.</p>
+  </footer>
+</body>
+</html>

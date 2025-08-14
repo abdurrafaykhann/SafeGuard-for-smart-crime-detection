@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learn More - SafeGuard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; }
+    body { background-color: #ffffff; color: #333; line-height: 1.6; }
+
+    /* Navbar */
+    nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 50px; background-color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
+    .logo { font-size: 22px; font-weight: bold; color: #333; }
+    .nav-links a { text-decoration: none; color: #333; margin: 0 15px; font-weight: 500; }
+    .nav-links a:hover { color: #e53935; }
+    .nav-buttons button { padding: 8px 16px; margin-left: 10px; border-radius: 5px; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
+    .login-btn { background: #e53935; color: #fff; }
+    .login-btn:hover { background: #c62828; }
+    .signup-btn { background: #f2f2f2; color: #333; }
+    .signup-btn:hover { background: #ddd; }
+
+    /* Hero Section */
+    .hero {
+      background: url('https://images.unsplash.com/photo-1508921912186-1d1a45ebb3c1') no-repeat center center/cover;
+      text-align: center;
+      padding: 100px 20px;
+      color: #fff;
+    }
+    .hero h1 { font-size: 42px; font-weight: bold; margin-bottom: 10px; }
+    .hero p { font-size: 18px; max-width: 600px; margin: 0 auto; }
+
+    /* Content Section */
+    .content {
+      padding: 60px 20px;
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: left;
+    }
+    .content h2 { font-size: 28px; margin-bottom: 20px; color: #e53935; }
+    .content p { font-size: 18px; color: #555; margin-bottom: 20px; }
+
+    /* Footer */
+    footer { background: #fafafa; padding: 30px 20px; text-align: center; border-top: 1px solid #eee; color: #666; margin-top: 50px; }
+    footer a { text-decoration: none; color: #666; margin: 0 10px; }
+    footer a:hover { color: #e53935; }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav>
+    <div class="logo">SafeGuard</div>
+    <div class="nav-links">
+      <a href="{{ url_for('index') }}">Home</a>
+      <a href="{{ url_for('learnmore') }}">Learn More</a>
+      <a href="{{ url_for('contact') }}">Contact</a>
+
+    </div>
+    <div class="nav-buttons">
+             <button class="login-btn" onclick="window.location.href='{{ url_for('index') }}#login'">Login</button>
+       <button class="signup-btn" onclick="window.location.href='{{ url_for('index') }}#signup'">Sign Up</button>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>Learn More</h1>
+    <p>Discover how SafeGuard ensures safety with cutting-edge AI technology.</p>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+    <h2>About SafeGuard</h2>
+    <p>SafeGuard is an AI-powered platform designed to detect violent incidents and identify criminals in real time using YOLOv8 and facial recognition embeddings.</p>
+
+    <h2>Key Benefits</h2>
+    <p>• Real-time monitoring and instant alerts.<br>
+       • Integrated criminal database.<br>
+       • Civilian and law enforcement portals.<br>
+       • Evidence management with timestamped logs.</p>
+
+    <h2>How It Works</h2>
+    <p>SafeGuard processes live video feeds, detects violence, and matches faces against a criminal database. Alerts and event logs are stored for further investigation and immediate action.</p>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div>
+      <a href="{{ url_for('privacy') }}">Privacy Policy</a> | 
+      <a href="{{ url_for('terms') }}">Terms of Service</a> | 
+      <a href="{{ url_for('support') }}">Support</a>
+    </div>
+    <p>© 2024 SafeGuard. All rights reserved.</p>
+  </footer>
+</body>
+</html>
