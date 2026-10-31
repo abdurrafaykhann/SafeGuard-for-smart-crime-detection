@@ -7,6 +7,11 @@ reported number honest:
   * model family, hyper-parameters and the alert threshold are chosen ONLY from 5-fold cross-validation
     on the training clips (out-of-fold predictions);
   * the validation clips are scored exactly once, at the very end, with those frozen choices.
+
+Optional site adaptation (see scripts/record_negatives.py):
+  --extra-negatives A.npz ...   your own recordings of normal behaviour, added to training as non-violent
+  --site-test B.npz             a SEPARATE recording, never trained on; reports how often the live
+                                streaming rule would false-alarm on it, before vs after retraining
 """
 from __future__ import annotations
 
@@ -28,6 +33,7 @@ from sklearn.pipeline import make_pipeline  # noqa: E402
 from sklearn.preprocessing import StandardScaler  # noqa: E402
 
 from safeguard.services.clip_features import CLIP_FEATURES, FRAME_FEATURES, clip_vector  # noqa: E402
+from safeguard.services.clip_model import ClipStream  # noqa: E402
 
 
 def load_split(feats_dir: Path, split: str) -> tuple[np.ndarray, np.ndarray, list[str]]:
@@ -39,6 +45,36 @@ def load_split(feats_dir: Path, split: str) -> tuple[np.ndarray, np.ndarray, lis
             X.append(clip_vector(d["frames"][off[i]:off[i + 1]]))
             y.append(int(d["labels"][i])); names.append(str(d["names"][i]))
     return np.stack(X), np.array(y), names
+
+
+def load_npz(path: Path) -> tuple[np.ndarray, np.ndarray]:
+    d = np.load(path)
+    off = np.concatenate([[0], np.cumsum(d["lengths"])])
+    X = [clip_vector(d["frames"][off[i]:off[i + 1]]) for i in range(len(d["lengths"]))]
+    return np.stack(X), d["labels"].astype(int)
+
+
+def site_false_alarm_rate(path: Path, model, threshold: float) -> tuple[int, int]:
+    """(clips that would have raised a live alert, clips) using the exact streaming rule from services/clip_model."""
+    class _M:
+        available = True
+
+        def __init__(self):
+            self.threshold = threshold
+
+        def prob(self, rows):
+            return float(model.predict_proba(clip_vector(rows)[None])[0, 1])
+
+    d = np.load(path)
+    off = np.concatenate([[0], np.cumsum(d["lengths"])])
+    fired = 0
+    for i in range(len(d["lengths"])):
+        s, ever = ClipStream(_M()), False
+        for row in d["frames"][off[i]:off[i + 1]]:
+            s.add_row(row)
+            ever = ever or s.violent
+        fired += int(ever)
+    return fired, len(d["lengths"])
 
 
 def candidates() -> dict:
@@ -71,9 +107,19 @@ def main() -> int:
     ap.add_argument("--out", type=Path, default=Path("models/violence_clip.joblib"))
     ap.add_argument("--report", type=Path, default=Path("docs/training_violence_clip.json"))
     ap.add_argument("--no-val", action="store_true", help="skip the final validation scoring")
+    ap.add_argument("--extra-negatives", type=Path, nargs="*", default=[], help="npz files of your own normal behaviour")
+    ap.add_argument("--site-test", type=Path, help="held-out npz of normal behaviour, never trained on")
     a = ap.parse_args()
 
     Xtr, ytr, _ = load_split(a.feats_dir, "train")
+    old_bundle = None
+    if a.site_test and a.out.exists():
+        old_bundle = joblib.load(a.out)  # our own earlier artefact, kept for the before/after comparison
+    for extra in a.extra_negatives:
+        Xe, ye = load_npz(extra)
+        assert (ye == 0).all(), "extra files must contain only non-violent clips"
+        Xtr, ytr = np.vstack([Xtr, Xe]), np.concatenate([ytr, ye])
+        print(f"added {len(ye)} of your own non-violent clips from {extra.name}")
     print(f"train clips: {len(ytr)} ({int(ytr.sum())} fight / {int((1 - ytr).sum())} non-fight) | {Xtr.shape[1]} features")
     cv = StratifiedKFold(5, shuffle=True, random_state=0)
 
@@ -101,6 +147,18 @@ def main() -> int:
         print(f"\nVALIDATION ({len(yva)} unseen clips, scored once): acc {val['accuracy']:.3f} | precision {val['precision']:.3f} | "
               f"recall {val['recall']:.3f} | F1 {val['f1']:.3f} | AUC {val['auc']:.3f}")
         print(f"  confusion: TP {val['tp']}  FP {val['fp']}  TN {val['tn']}  FN {val['fn']}")
+
+    if a.site_test:
+        new_fa = site_false_alarm_rate(a.site_test, model, thr)
+        report["site_test"] = {"file": a.site_test.name, "new_false_alarms": new_fa[0], "clips": new_fa[1]}
+        print(f"\nSITE TEST ({a.site_test.name}, held out, all normal behaviour): "
+              f"new model would false-alarm on {new_fa[0]}/{new_fa[1]} clips", end="")
+        if old_bundle is not None:
+            old_fa = site_false_alarm_rate(a.site_test, old_bundle["model"], float(old_bundle["threshold"]))
+            report["site_test"]["old_false_alarms"] = old_fa[0]
+            print(f" | previous model: {old_fa[0]}/{old_fa[1]}")
+        else:
+            print()
 
     a.out.parent.mkdir(parents=True, exist_ok=True); a.report.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump({"model": model, "threshold": thr, "features": CLIP_FEATURES, "frame_features": FRAME_FEATURES,

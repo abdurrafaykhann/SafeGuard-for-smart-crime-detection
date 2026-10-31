@@ -259,4 +259,6 @@ class ViolenceDetector:
                          else ("Elevated activity" if p >= thr * 0.7 else "Clear"))
                 return ViolenceResult(score, p, self.clip.violent, label, persons, rounded, weapons,
                                       weapon_alert, "clip", p)
+        if self.clip is not None:  # trained model configured but still collecting its first ~2 s: stay quiet, don't fall back to motion
+            return ViolenceResult(score, self._ema, False, "Calibrating", persons, rounded, weapons, weapon_alert, "warmup")
         return ViolenceResult(score, self._ema, violent, label, persons, rounded, weapons, weapon_alert)

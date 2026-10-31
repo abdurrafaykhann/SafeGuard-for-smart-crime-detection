@@ -127,7 +127,7 @@ def test_detector_uses_clip_model_once_active_and_falls_back_before_that():
     results = []
     for i in range(120):                                   # noisy frames -> high flow; 8 fps video time
         results.append(det.analyze(rng.integers(0, 255, (120, 160, 3), dtype=np.uint8), i * 0.125))
-    assert results[0].source == "fusion"                   # before 9 rows exist
+    assert results[0].source == "warmup" and not results[0].violent   # before 9 rows exist: quiet, no motion-only alerts
     assert results[-1].source == "clip" and results[-1].clip_prob is not None
     assert any(r.violent and r.source == "clip" and r.label == "Violence (trained classifier)" for r in results)
     assert det.active_threshold == 0.5 and "clip" in results[-1].cues
