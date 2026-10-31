@@ -87,6 +87,19 @@ Copy `.env.example` to `.env`. Notable options: `SAFEGUARD_VIOLENCE_THRESHOLD`,
 
 CLI: `flask --app run create-user NAME --role operator` · `flask --app run purge`
 
+## Evaluating the detector
+
+`scripts/evaluate_violence.py` scores every video in a labelled dataset (`Fight/` and `NonFight/`
+folders, e.g. RWF-2000 or Hockey Fights) and reports accuracy, precision, recall, F1, the confusion
+matrix, ROC-AUC and a threshold sweep, both at the production alert threshold and across thresholds:
+
+```bash
+python scripts/evaluate_violence.py path/to/dataset --limit 100 --out results.json
+```
+
+**Results: not measured yet.** The script is tested on synthetic clips only. Add real numbers here
+after running it on a public dataset, and quote the dataset and its licence.
+
 ## Tests
 
 ```bash
