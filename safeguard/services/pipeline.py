@@ -25,7 +25,7 @@ RED, GREEN, CYAN, AMBER = (60, 60, 255), (120, 230, 130), (255, 220, 90), (60, 1
 
 
 class CameraPipeline:
-    def __init__(self, app, camera, yolo: YoloBackend, faces: FaceEngine, weapons: WeaponBackend | None = None, cnn=None) -> None:
+    def __init__(self, app, camera, yolo: YoloBackend, faces: FaceEngine, weapons: WeaponBackend | None = None, cnn=None, clip=None) -> None:
         self.app, self.faces, self.cnn = app, faces, cnn
         # plain snapshot: ORM rows are bound to the request's session and expire in a worker thread
         self.camera = SimpleNamespace(id=camera.id, name=camera.name, source=camera.source,
@@ -33,7 +33,7 @@ class CameraPipeline:
         camera = self.camera
         cfg = app.config
         self.stream = CameraStream(camera.source, cfg["FRAME_WIDTH"])
-        self.detector = ViolenceDetector(cfg["VIOLENCE_THRESHOLD"], cfg["VIOLENCE_MIN_FRAMES"], yolo, weapons) if camera.detect_violence else None
+        self.detector = ViolenceDetector(cfg["VIOLENCE_THRESHOLD"], cfg["VIOLENCE_MIN_FRAMES"], yolo, weapons, clip) if camera.detect_violence else None
         self._stop = threading.Event()
         self._thread: threading.Thread | None = None
         self._jpeg: bytes | None = None
@@ -100,14 +100,15 @@ class CameraPipeline:
                 if self._cooldown_ok("violence"):
                     create_alert(self.app, kind="violence", severity="high", title=res.label,
                                  confidence=res.smoothed, camera=self.camera, frame=frame,
-                                 meta={"cues": res.cues, "persons": len(res.persons), "mode": self.detector.mode})
+                                 meta={"cues": res.cues, "persons": len(res.persons), "mode": self.detector.mode,
+                                       "decided_by": res.source})
             elif not self._episode_escalated and now - self._episode_start >= self.app.config["PERSISTENT_SECONDS"]:
                 self._episode_escalated = True
                 create_alert(self.app, kind="persistent", severity="critical",
                              title=f"Sustained incident ({int(now - self._episode_start)}s): {res.label}",
                              confidence=res.smoothed, camera=self.camera, frame=frame,
                              meta={"cues": res.cues, "duration_s": round(now - self._episode_start, 1)})
-        elif self._episode_start is not None and res.smoothed < self.detector.threshold * 0.6:
+        elif self._episode_start is not None and res.smoothed < self.detector.active_threshold * 0.6:
             self._episode_start = None
 
     def _draw_face_marks(self, overlay) -> None:
@@ -206,8 +207,8 @@ class CameraPipeline:
 
 
 class CameraManager:
-    def __init__(self, app, yolo: YoloBackend, faces: FaceEngine, weapons: WeaponBackend | None = None, cnn=None) -> None:
-        self.app, self.yolo, self.faces, self.weapons, self.cnn = app, yolo, faces, weapons, cnn
+    def __init__(self, app, yolo: YoloBackend, faces: FaceEngine, weapons: WeaponBackend | None = None, cnn=None, clip=None) -> None:
+        self.app, self.yolo, self.faces, self.weapons, self.cnn, self.clip = app, yolo, faces, weapons, cnn, clip
         self._pipelines: dict[int, CameraPipeline] = {}
         self._lock = threading.Lock()
 
@@ -215,7 +216,7 @@ class CameraManager:
         with self._lock:
             if camera.id in self._pipelines:
                 return self._pipelines[camera.id]
-            pipe = CameraPipeline(self.app, camera, self.yolo, self.faces, self.weapons, self.cnn)
+            pipe = CameraPipeline(self.app, camera, self.yolo, self.faces, self.weapons, self.cnn, self.clip)
             pipe.start()
             self._pipelines[camera.id] = pipe
             return pipe

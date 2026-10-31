@@ -27,6 +27,7 @@ def create_app(config: type = Config) -> Flask:
     limiter.init_app(app)
 
     from .models import Camera, User  # noqa: F401  (register tables)
+    from .services.clip_model import ClipModel
     from .services.cnn_classifier import ClosedSetCNN
     from .services.faces import FaceEngine
     from .services.pipeline import CameraManager
@@ -37,8 +38,9 @@ def create_app(config: type = Config) -> Flask:
     weapons = WeaponBackend(app.config["MODELS_DIR"] / app.config["WEAPON_WEIGHTS"] if app.config["WEAPON_ENABLED"] else None, app.config["TORCH_THREADS"])
     faces = FaceEngine(app.config["MODELS_DIR"], app.config["FACE_MATCH_THRESHOLD"])
     cnn = ClosedSetCNN(app.config["CNN_MODEL_DIR"], app.config["CNN_MIN_CONF"], app.config["CNN_ENABLED"])
-    manager = CameraManager(app, yolo, faces, weapons, cnn)
-    app.extensions["safeguard"] = SimpleNamespace(yolo=yolo, weapons=weapons, faces=faces, cnn=cnn, manager=manager,
+    clip = ClipModel(app.config["MODELS_DIR"] / app.config["CLIP_MODEL"], app.config["CLIP_ENABLED"])
+    manager = CameraManager(app, yolo, faces, weapons, cnn, clip)
+    app.extensions["safeguard"] = SimpleNamespace(yolo=yolo, weapons=weapons, faces=faces, cnn=cnn, clip=clip, manager=manager,
                                                   started=time.time())
 
     from .blueprints.api import bp as api_bp
@@ -118,7 +120,7 @@ def _register_hooks(app: Flask) -> None:
     def _globals():
         sg = app.extensions["safeguard"]
         return {"sys_mode": "model+heuristics" if sg.yolo.available else "heuristics-only",
-                "sys_weapons": sg.weapons.available, "sys_cnn": sg.cnn.state,
+                "sys_weapons": sg.weapons.available, "sys_cnn": sg.cnn.state, "sys_clip": sg.clip.available,
                 "sys_recognition": sg.faces.can_recognize}
 
 

@@ -27,12 +27,14 @@ class FrameFeaturizer:
         self._prev_small: np.ndarray | None = None
         self._prev_gray: np.ndarray | None = None
 
-    def __call__(self, frame: np.ndarray) -> np.ndarray:
+    def __call__(self, frame: np.ndarray, yolo_out: tuple[float, list] | None = None) -> np.ndarray:
         from .violence import ViolenceDetector  # local import: avoids a cycle at module load
 
         out = np.zeros(N_FRAME, dtype=np.float32)
-        if self.yolo is not None:
-            conf, persons = self.yolo.infer(frame)
+        if yolo_out is None and self.yolo is not None:
+            yolo_out = self.yolo.infer(frame)
+        if yolo_out is not None:  # supplied by the live detector so the model never runs twice per frame
+            conf, persons = yolo_out
             out[0], out[1], out[2] = conf, len(persons), ViolenceDetector._contact_cue(persons)
 
         gray = cv2.GaussianBlur(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), (7, 7), 0)

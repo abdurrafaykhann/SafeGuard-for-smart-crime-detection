@@ -72,3 +72,74 @@ def test_trainer_runs_on_synthetic_features(tmp_path):
     import json
     rep = json.loads((tmp_path / "r.json").read_text())
     assert rep["validation_once"]["auc"] > 0.9 and (tmp_path / "m.joblib").exists()
+
+
+# ---------------------------------------------------------------- streaming clip scorer
+from safeguard.services import clip_model as cm  # noqa: E402
+from safeguard.services.violence import ViolenceDetector  # noqa: E402
+
+
+class StubClip:
+    """Stands in for the trained model: calls a clip violent when its mean optical flow is high."""
+    available, threshold, error = True, 0.5, None
+
+    def prob(self, rows):
+        return 0.9 if rows[1:, FRAME_FEATURES.index("flow_mean")].mean() > 1.0 else 0.1
+
+
+def _row(flow):
+    r = np.zeros(len(FRAME_FEATURES), np.float32)
+    r[FRAME_FEATURES.index("flow_mean")] = flow
+    return r
+
+
+def test_stream_waits_for_enough_rows_then_requires_two_consecutive_high_scores():
+    s = cm.ClipStream(StubClip())
+    for i in range(cm.MIN_ROWS - 1):
+        s.add_row(_row(3.0))
+    assert not s.active and not s.violent                  # not enough history yet
+    s.add_row(_row(3.0))                                   # 9th row: first evaluation
+    assert s.active and s.prob == 0.9 and s.streak == 1 and not s.violent   # one high score is not enough
+    for _ in range(cm.EVAL_EVERY):
+        s.add_row(_row(3.0))                               # next evaluation, one second later
+    assert s.streak == 2 and s.violent
+    for _ in range(cm.WINDOW):                             # calm returns: the window refills with calm rows
+        s.add_row(_row(0.0))
+    assert not s.violent and s.streak == 0
+
+
+def test_stream_samples_at_the_trained_rate_regardless_of_frame_rate():
+    s = cm.ClipStream(StubClip())
+    frame = np.full((120, 160, 3), 90, np.uint8)
+    for i in range(80):                                    # an 8 fps source for 10 s of video time
+        s.push(frame, i * 0.125, (0.0, []))
+    assert len(s.rows) == cm.WINDOW                        # 8 fps source: every 2nd frame = 4 samples/s
+    s2 = cm.ClipStream(StubClip())
+    for i in range(30):                                    # a 30 fps source for 1 s
+        s2.push(frame, i / 30, (0.0, []))
+    assert 4 <= len(s2.rows) <= 5                          # still ~4 samples per second (min spacing 0.23 s)
+
+
+def test_detector_uses_clip_model_once_active_and_falls_back_before_that():
+    det = ViolenceDetector(threshold=0.2, min_frames=3, clip=StubClip())
+    assert det.mode.endswith("+clip") and det.active_threshold == 0.2        # fusion decides at first
+    rng = np.random.default_rng(0)
+    results = []
+    for i in range(120):                                   # noisy frames -> high flow; 8 fps video time
+        results.append(det.analyze(rng.integers(0, 255, (120, 160, 3), dtype=np.uint8), i * 0.125))
+    assert results[0].source == "fusion"                   # before 9 rows exist
+    assert results[-1].source == "clip" and results[-1].clip_prob is not None
+    assert any(r.violent and r.source == "clip" and r.label == "Violence (trained classifier)" for r in results)
+    assert det.active_threshold == 0.5 and "clip" in results[-1].cues
+
+
+def test_detector_without_clip_model_is_unchanged():
+    det = ViolenceDetector(threshold=0.2)
+    r = det.analyze(np.full((120, 160, 3), 90, np.uint8))
+    assert r.source == "fusion" and "clip" not in r.cues and det.clip is None
+
+
+def test_clip_model_reports_missing_or_incompatible_files(tmp_path):
+    assert not cm.ClipModel(tmp_path / "nope.joblib").available
+    assert "no trained clip model" in cm.ClipModel(tmp_path / "nope.joblib").error
+    assert "disabled" in cm.ClipModel(None, enabled=False).error

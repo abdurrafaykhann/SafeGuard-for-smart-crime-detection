@@ -88,6 +88,8 @@ def system():
         violence_mode="model+heuristics" if s.yolo.available else "heuristics-only",
         yolo_error=None if s.yolo.available else s.yolo.error,
         cnn={"state": s.cnn.state, "identities": len(s.cnn.classes), "error": s.cnn.error if s.cnn.enabled and not s.cnn.available and s.cnn.state != "loading" else None},
+        clip_model={"available": s.clip.available, "threshold": s.clip.threshold if s.clip.available else None,
+                    "error": None if s.clip.available else s.clip.error},
         weapon_detector=s.weapons.available, weapon_error=None if s.weapons.available else s.weapons.error,
         faces=s.faces.status(), running_cameras=s.manager.running_ids(),
         viewers=bus.subscriber_count, retention_days=current_app.config["RETENTION_DAYS"],
@@ -400,7 +402,7 @@ def analysis_create():
     db.session.add(job)
     db.session.commit()
     audit(current_user.username, "video_upload", job.filename, client_ip())
-    video_analysis.start_job(current_app._get_current_object(), job.id, path, sg().yolo, sg().faces, sg().weapons)
+    video_analysis.start_job(current_app._get_current_object(), job.id, path, sg().yolo, sg().faces, sg().weapons, sg().clip)
     return jsonify(job.to_dict()), 202
 
 

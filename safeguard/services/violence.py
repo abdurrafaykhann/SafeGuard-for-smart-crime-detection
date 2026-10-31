@@ -12,6 +12,7 @@ Rewritten from the original ensemble. Differences that matter:
 from __future__ import annotations
 
 import logging
+import time
 from collections import deque
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -36,6 +37,8 @@ class ViolenceResult:
     cues: dict[str, float] = field(default_factory=dict)
     weapons: list[tuple[str, float, tuple[int, int, int, int]]] = field(default_factory=list)
     weapon_alert: bool = False  # sustained weapon sighting; independent of the violence score
+    source: str = "fusion"     # which logic produced `violent`: 'clip' (trained classifier) or 'fusion'
+    clip_prob: float | None = None
 
 
 def _cap_threads(n: int | None) -> None:
@@ -143,7 +146,9 @@ class WeaponBackend:
 
 class ViolenceDetector:
     def __init__(self, threshold: float = 0.62, min_frames: int = 3, backend: YoloBackend | None = None,
-                 weapons: WeaponBackend | None = None) -> None:
+                 weapons: WeaponBackend | None = None, clip=None) -> None:
+        from .clip_model import ClipStream  # local import: clip_model -> clip_features -> this module
+        self.clip = ClipStream(clip) if clip is not None and clip.available else None
         self.threshold = threshold
         self.min_frames = min_frames
         self.backend = backend
@@ -156,7 +161,13 @@ class ViolenceDetector:
 
     @property
     def mode(self) -> str:
-        return "model+heuristics" if self.backend and self.backend.available else "heuristics-only"
+        base = "model+heuristics" if self.backend and self.backend.available else "heuristics-only"
+        return base + "+clip" if self.clip is not None else base
+
+    @property
+    def active_threshold(self) -> float:
+        """Score level that counts as violent right now for whichever logic is currently deciding."""
+        return self.clip.model.threshold if self.clip is not None and self.clip.active else self.threshold
 
     # ---- individual cues -------------------------------------------------
     def _motion_cue(self, frame: np.ndarray) -> float:
@@ -195,7 +206,8 @@ class ViolenceDetector:
         return best
 
     # ---- main entry ------------------------------------------------------
-    def analyze(self, frame: np.ndarray) -> ViolenceResult:
+    def analyze(self, frame: np.ndarray, t: float | None = None) -> ViolenceResult:
+        t = time.monotonic() if t is None else t  # callers replaying a video pass video time
         persons: list[tuple[int, int, int, int]] = []
         model_cue = 0.0
         if self.backend and self.backend.available:
@@ -237,5 +249,14 @@ class ViolenceDetector:
                      "weapon": "Weapon in view"}[dominant]
             if not violent:
                 label = "Elevated activity"
-        return ViolenceResult(score, self._ema, violent, label, persons,
-                              {k: round(float(v), 3) for k, v in cues.items()}, weapons, weapon_alert)
+        rounded = {k: round(float(v), 3) for k, v in cues.items()}
+        if self.clip is not None:
+            self.clip.push(frame, t, (model_cue, persons))
+            if self.clip.active:  # the trained classifier decides; cue fusion stays as explanation / fallback
+                rounded["clip"] = round(self.clip.prob, 3)
+                thr, p = self.clip.model.threshold, self.clip.prob
+                label = ("Violence (trained classifier)" if self.clip.violent
+                         else ("Elevated activity" if p >= thr * 0.7 else "Clear"))
+                return ViolenceResult(score, p, self.clip.violent, label, persons, rounded, weapons,
+                                      weapon_alert, "clip", p)
+        return ViolenceResult(score, self._ema, violent, label, persons, rounded, weapons, weapon_alert)

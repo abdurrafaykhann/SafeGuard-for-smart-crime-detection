@@ -150,6 +150,14 @@ Honest reading: with 400 test clips the 95% interval on accuracy is about +/-4 p
 (76.0 vs 77.2) is within noise**. What is clearly better is ranking quality (AUC 0.835 -> 0.871) and recall (71.5% ->
 86.5%), at the cost of more false alarms (precision 78.6% -> 73.0%). Cross-validated accuracy on the training clips
 (78.0%) agrees with the validation figure (77.2%), so the number is not an artefact of tuning on the test set.
+**Live behaviour (the production streaming rule).** In the app the model runs as a rolling 5-second window sampled at
+4 measurements/s, re-scored once a second; an alert needs **two consecutive** scores above the trained threshold (0.38).
+Those streaming parameters were fixed before evaluating. Replaying each validation clip through that exact class
+(`scripts/evaluate_clip_streaming.py`, a disclosed second look at `val`) gives **76.8% accuracy, 73.4% precision,
+84.0% recall (F1 0.78)**; TP 168 / FP 61 / TN 139 / FN 32. Live vs offline clip scores agreed to within 0.037 on
+average over 10 real clips. When `models/violence_clip.joblib` exists the app uses it automatically (status chip
+"trained model: on"); otherwise it falls back to the hand-weighted fusion. Disable with `SAFEGUARD_CLIP_ENABLED=false`.
+
 Details: [`docs/training_violence_clip.json`](docs/training_violence_clip.json). The 17 MB model file is not committed;
 regenerate it with the two commands above.
 

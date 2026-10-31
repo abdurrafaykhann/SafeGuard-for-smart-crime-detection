@@ -20,12 +20,12 @@ from .violence import ViolenceDetector, YoloBackend
 log = logging.getLogger(__name__)
 
 ALLOWED_EXTENSIONS = {".mp4", ".avi", ".mov", ".mkv", ".webm"}
-SAMPLE_FPS = 5.0
+SAMPLE_FPS = 8.0  # so the clip model gets its 4 measurements/s
 MAX_EVIDENCE = 6
 
 
-def start_job(app, job_id: int, path: Path, yolo: YoloBackend, faces: FaceEngine, weapons=None) -> None:
-    threading.Thread(target=_run, args=(app, job_id, path, yolo, faces, weapons), name=f"video-{job_id}", daemon=True).start()
+def start_job(app, job_id: int, path: Path, yolo: YoloBackend, faces: FaceEngine, weapons=None, clip=None) -> None:
+    threading.Thread(target=_run, args=(app, job_id, path, yolo, faces, weapons, clip), name=f"video-{job_id}", daemon=True).start()
 
 
 def _update(app, job_id: int, **fields) -> None:
@@ -37,7 +37,7 @@ def _update(app, job_id: int, **fields) -> None:
             db.session.commit()
 
 
-def _run(app, job_id: int, path: Path, yolo: YoloBackend, faces: FaceEngine, weapons=None) -> None:
+def _run(app, job_id: int, path: Path, yolo: YoloBackend, faces: FaceEngine, weapons=None, clip=None) -> None:
     cap = cv2.VideoCapture(str(path))
     try:
         if not cap.isOpened():
@@ -46,7 +46,7 @@ def _run(app, job_id: int, path: Path, yolo: YoloBackend, faces: FaceEngine, wea
         total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) or 0
         step = max(int(round(fps / SAMPLE_FPS)), 1)
         cfg = app.config
-        detector = ViolenceDetector(cfg["VIOLENCE_THRESHOLD"], cfg["VIOLENCE_MIN_FRAMES"], yolo, weapons)
+        detector = ViolenceDetector(cfg["VIOLENCE_THRESHOLD"], cfg["VIOLENCE_MIN_FRAMES"], yolo, weapons, clip)
         _update(app, job_id, status="running")
 
         timeline, episodes, evidence, face_hits, weapon_hits = [], [], [], {}, []
@@ -64,7 +64,7 @@ def _run(app, job_id: int, path: Path, yolo: YoloBackend, faces: FaceEngine, wea
                 if w > cfg["FRAME_WIDTH"]:
                     frame = cv2.resize(frame, (cfg["FRAME_WIDTH"], int(h * cfg["FRAME_WIDTH"] / w)))
                 t = idx / fps
-                res = detector.analyze(frame)
+                res = detector.analyze(frame, t)
                 timeline.append([round(t, 2), round(res.smoothed, 3)])
                 if res.weapon_alert and len(weapon_hits) < 12 and (not weapon_hits or t - weapon_hits[-1]["t"] > 2):
                     top = max(res.weapons, key=lambda w: w[1])

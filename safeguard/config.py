@@ -75,10 +75,12 @@ class Config:
     VIOLENCE_MIN_FRAMES = _env_int("VIOLENCE_MIN_FRAMES", 3)
     PERSISTENT_SECONDS = _env_float("PERSISTENT_SECONDS", 12.0)
     ALERT_COOLDOWN_SECONDS = _env_float("ALERT_COOLDOWN", 20.0)
-    ANALYSIS_FPS = _env_float("ANALYSIS_FPS", 6.0)
+    ANALYSIS_FPS = _env_float("ANALYSIS_FPS", 8.0)  # 8: the clip model takes its 4 samples/s from every 2nd frame
     FACE_INTERVAL_SECONDS = _env_float("FACE_INTERVAL", 1.0)
     FRAME_WIDTH = _env_int("FRAME_WIDTH", 640)
     FACE_MATCH_THRESHOLD = _env_float("FACE_MATCH_THRESHOLD", 0.40)
+    CLIP_ENABLED = _env_bool("CLIP_ENABLED", True)  # use the trained clip classifier whenever its file exists
+    CLIP_MODEL = _env("CLIP_MODEL", "violence_clip.joblib")
     YOLO_WEIGHTS = _env("YOLO_WEIGHTS", "Yolo_nano_weights.pt")
     YOLO_IMGSZ = _env_int("YOLO_IMGSZ", 640)  # input size for the violence model
     CNN_ENABLED = _env_bool("CNN_ENABLED", False)  # original FYP closed-set classifier (needs TensorFlow)
