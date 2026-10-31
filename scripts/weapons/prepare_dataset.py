@@ -170,7 +170,9 @@ def main() -> int:
             (a.out / "labels" / split / f"neg_{p.stem}.txt").write_text("")  # empty = no objects
             neg_counts[split] += 1
 
-    (a.out / "data.yaml").write_text("path: .\ntrain: images/train\nval: images/val\ntest: images/test\nnames:\n  0: gun\n  1: knife\n")
+    # absolute path on purpose: ultralytics resolves a relative `path: .` against the working directory
+    (a.out / "data.yaml").write_text(f"path: {a.out.resolve().as_posix()}\ntrain: images/train\nval: images/val\n"
+                                     "test: images/test\nnames:\n  0: gun\n  1: knife\n")
     manifest = {"source": a.ndjson.name, "classes": ["gun", "knife"], "downloaded": dict(ok), "failed": len(failures),
                 "negatives": dict(neg_counts), "filtering": dict(stats)}
     (a.out / "manifest.json").write_text(json.dumps(manifest, indent=2))

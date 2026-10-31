@@ -69,6 +69,38 @@ confidence, and with **no knife** in the same scene it reported "knife" on 60 de
 Both models are therefore disabled by default (`SAFEGUARD_WEAPON_ENABLED=false`). A usable detector would need
 training on images that look like your own cameras.
 
+### Training our own weapon detector (gun / knife)
+
+**Why community models were not enough.** Scored on held-out frames from the author's own webcam
+(67 frames clearly showing a kitchen knife held close to the lens; 176 frames with no weapon: a 100-frame
+look-alike-objects session plus the no-knife frames of the knife session; the knife frames were labelled by visual
+inspection, so treat differences of a few points as noise; `scripts/weapons/eval_webcam.py`):
+
+| Model | Knife recall @ conf 0.25 | @ 0.40 | False alarms on no-weapon frames @ 0.25 | @ 0.40 |
+|---|---|---|---|---|
+| Subh775/Threat-Detection-YOLOv8n | 9% | 6% | 3% | 1% |
+| weapon-detection-yolov11n (ONNX) | 9% | 6% | 18% | 1% |
+
+Both essentially never find the knife. Their training images are mostly distant CCTV / web photos, not a knife a
+few centimetres from a webcam.
+
+**Pipeline (all in `scripts/weapons/`, notebook in `notebooks/`):**
+1. `prepare_dataset.py` turns an Ultralytics NDJSON export (here: 35,944 images, classes person / gun / knife /
+   stick-rod / weapon) into a clean two-class YOLO dataset: ambiguous `weapon` and `stick-rod` images are dropped, and the
+   data is **re-split by source photo**. The export's own split put 1,814 source photos (410 of 1,984 test images, 21%)
+   on both sides of train/test via augmented copies, which would inflate any score. It also adds your own webcam
+   frames of normal scenes as images with *no* boxes (the export has no negatives at all).
+2. `capture_webcam.py` records those frames (`negatives`) and two sets that are **never trained on**:
+   `negatives-test` and `knife-test`.
+3. `notebooks/train_weapon_detector.ipynb` trains YOLO11n on a free Colab GPU and exports ONNX. ONNX is preferred over
+   `.pt` because a pickle can execute code when loaded.
+4. `eval_webcam.py` scores any model on the held-out webcam frames; enable a model in the app only if knife recall is high
+   and its false-alarm rate is near zero (`SAFEGUARD_WEAPON_ENABLED=true`, `SAFEGUARD_WEAPON_WEIGHTS=...`).
+
+**Data licence.** The NDJSON export states no licence and no source credit; check before publishing weights trained on
+it. **Status:** training results will be added here once the model has been trained and scored; until then weapon
+detection stays off by default.
+
 ### Performance
 
 Measured on a 12-core CPU, 640x480 frames: the violence model first used ~7 cores because PyTorch spawned a thread per
