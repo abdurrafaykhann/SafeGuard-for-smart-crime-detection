@@ -38,7 +38,7 @@ def create_app(config: type = Config) -> Flask:
     weapons = WeaponBackend(app.config["MODELS_DIR"] / app.config["WEAPON_WEIGHTS"] if app.config["WEAPON_ENABLED"] else None, app.config["TORCH_THREADS"])
     faces = FaceEngine(app.config["MODELS_DIR"], app.config["FACE_MATCH_THRESHOLD"])
     cnn = ClosedSetCNN(app.config["CNN_MODEL_DIR"], app.config["CNN_MIN_CONF"], app.config["CNN_ENABLED"])
-    clip = ClipModel(app.config["MODELS_DIR"] / app.config["CLIP_MODEL"], app.config["CLIP_ENABLED"])
+    clip = ClipModel(app.config["MODELS_DIR"] / app.config["CLIP_MODEL"], app.config["CLIP_ENABLED"], app.config["CLIP_THRESHOLD"])
     manager = CameraManager(app, yolo, faces, weapons, cnn, clip)
     app.extensions["safeguard"] = SimpleNamespace(yolo=yolo, weapons=weapons, faces=faces, cnn=cnn, clip=clip, manager=manager,
                                                   started=time.time())

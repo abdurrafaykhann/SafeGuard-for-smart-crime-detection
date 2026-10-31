@@ -143,3 +143,15 @@ def test_clip_model_reports_missing_or_incompatible_files(tmp_path):
     assert not cm.ClipModel(tmp_path / "nope.joblib").available
     assert "no trained clip model" in cm.ClipModel(tmp_path / "nope.joblib").error
     assert "disabled" in cm.ClipModel(None, enabled=False).error
+
+
+def test_clip_threshold_override_changes_the_decision_point(tmp_path):
+    import joblib
+    from safeguard.services.clip_features import CLIP_FEATURES
+    from sklearn.dummy import DummyClassifier
+    clf = DummyClassifier(strategy="prior").fit(np.zeros((4, 3)), [0, 1, 0, 1])
+    path = tmp_path / "m.joblib"
+    joblib.dump({"model": clf, "threshold": 0.38, "features": CLIP_FEATURES}, path)
+    assert cm.ClipModel(path).threshold == 0.38
+    over = cm.ClipModel(path, threshold_override=0.55)
+    assert over.threshold == 0.55 and over.trained_threshold == 0.38

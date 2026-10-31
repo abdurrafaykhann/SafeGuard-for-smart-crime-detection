@@ -158,6 +158,12 @@ Those streaming parameters were fixed before evaluating. Replaying each validati
 average over 10 real clips. When `models/violence_clip.joblib` exists the app uses it automatically (status chip
 "trained model: on"); otherwise it falls back to the hand-weighted fusion. Disable with `SAFEGUARD_CLIP_ENABLED=false`.
 
+**Known limitation (observed live).** The model was trained on surveillance-style clips (streets, crowds). On a close-up
+desk webcam, vigorous movement near the camera can score near the threshold (two alerts at 0.382 vs 0.38 while moving
+about), and the older cue-fusion fallback fired "Aggressive movement" on motion alone. RWF-2000 numbers do not
+transfer automatically to your cameras: calibrate per site with `SAFEGUARD_CLIP_THRESHOLD` (e.g. 0.50) and review
+alerts before trusting it.
+
 Details: [`docs/training_violence_clip.json`](docs/training_violence_clip.json). The 17 MB model file is not committed;
 regenerate it with the two commands above.
 

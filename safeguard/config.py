@@ -81,6 +81,7 @@ class Config:
     FACE_MATCH_THRESHOLD = _env_float("FACE_MATCH_THRESHOLD", 0.40)
     CLIP_ENABLED = _env_bool("CLIP_ENABLED", True)  # use the trained clip classifier whenever its file exists
     CLIP_MODEL = _env("CLIP_MODEL", "violence_clip.joblib")
+    CLIP_THRESHOLD = _env_float("CLIP_THRESHOLD", 0.0)  # 0 = use the threshold learned in training; raise it to cut false alarms on your cameras
     YOLO_WEIGHTS = _env("YOLO_WEIGHTS", "Yolo_nano_weights.pt")
     YOLO_IMGSZ = _env_int("YOLO_IMGSZ", 640)  # input size for the violence model
     CNN_ENABLED = _env_bool("CNN_ENABLED", False)  # original FYP closed-set classifier (needs TensorFlow)

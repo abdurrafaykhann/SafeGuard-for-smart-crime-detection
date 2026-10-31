@@ -27,7 +27,7 @@ class ClipModel:
     """Loads the joblib bundle written by the training script. The file is our own artefact in
     models/; joblib uses pickle, so never point this at a file you did not train yourself."""
 
-    def __init__(self, path: Path | None, enabled: bool = True) -> None:
+    def __init__(self, path: Path | None, enabled: bool = True, threshold_override: float = 0.0) -> None:
         self.model = None
         self.threshold = 0.5
         self.error: str | None = None
@@ -41,6 +41,9 @@ class ClipModel:
             import joblib
             bundle = joblib.load(path)
             self.model, self.threshold = bundle["model"], float(bundle["threshold"])
+            self.trained_threshold = self.threshold
+            if threshold_override > 0:  # per-site calibration; the trained value stays recorded for reference
+                self.threshold = float(threshold_override)
             try:  # one-row predictions gain nothing from a thread pool, and spawning one every second per camera wastes CPU
                 self.model.set_params(n_jobs=1)
             except Exception:
