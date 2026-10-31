@@ -30,7 +30,7 @@ def verify(name: str, path: Path) -> bool:
             cv2.FaceRecognizerSF.create(str(path), "")
         return True
     except cv2.error as exc:
-        print(f"  ! {name} did not load: {exc}")
+        print(f"  [error] {name} did not load: {exc}")
         return False
 
 
@@ -40,17 +40,17 @@ def main() -> int:
     for name, url in MODELS.items():
         path = DEST / name
         if path.exists() and verify(name, path):
-            print(f"✓ {name} already present")
+            print(f"[ok] {name} already present")
             continue
-        print(f"↓ {name}")
+        print(f"[download] {name}")
         try:
             urllib.request.urlretrieve(url, path)
         except Exception as exc:
-            print(f"  ! download failed: {exc}")
+            print(f"  [error] download failed: {exc}")
             failed = True
             continue
         if verify(name, path):
-            print(f"✓ {name} ({path.stat().st_size // 1024} KB)")
+            print(f"[ok] {name} ({path.stat().st_size // 1024} KB)")
         else:
             path.unlink(missing_ok=True)
             failed = True
