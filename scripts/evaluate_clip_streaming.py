@@ -30,7 +30,7 @@ def main() -> int:
     ap.add_argument("--out", type=Path)
     a = ap.parse_args()
 
-    model = ClipModel(Config.MODELS_DIR / Config.CLIP_MODEL)
+    model = ClipModel(Config.MODELS_DIR / Config.CLIP_MODEL, True, Config.CLIP_THRESHOLD)
     if not model.available:
         raise SystemExit(model.error)
     y, fired, final = [], [], []

@@ -151,17 +151,32 @@ Honest reading: with 400 test clips the 95% interval on accuracy is about +/-4 p
 86.5%), at the cost of more false alarms (precision 78.6% -> 73.0%). Cross-validated accuracy on the training clips
 (78.0%) agrees with the validation figure (77.2%), so the number is not an artefact of tuning on the test set.
 **Live behaviour (the production streaming rule).** In the app the model runs as a rolling 5-second window sampled at
-4 measurements/s, re-scored once a second; an alert needs **two consecutive** scores above the trained threshold (0.38).
-Those streaming parameters were fixed before evaluating. Replaying each validation clip through that exact class
-(`scripts/evaluate_clip_streaming.py`, a disclosed second look at `val`) gives **76.8% accuracy, 73.4% precision,
-84.0% recall (F1 0.78)**; TP 168 / FP 61 / TN 139 / FN 32. Live vs offline clip scores agreed to within 0.037 on
-average over 10 real clips. When `models/violence_clip.joblib` exists the app uses it automatically (status chip
-"trained model: on"); otherwise it falls back to the hand-weighted fusion. Disable with `SAFEGUARD_CLIP_ENABLED=false`.
+4 measurements/s, re-scored once a second; an alert needs **two consecutive** scores above the threshold. The trained
+whole-clip threshold (0.38) turned out to be too eager for that rule: sweeping the threshold with 5-fold out-of-fold
+predictions on the **training** clips showed streaming accuracy peaking at **0.50** (80.1%; false-alarm rate on
+non-fights 34% at 0.38 vs 17% at 0.50), so 0.50 is the live default (`SAFEGUARD_CLIP_THRESHOLD`; 0 = 0.38).
+Replaying each validation clip through that exact class (`scripts/evaluate_clip_streaming.py`):
+
+| Streaming rule on RWF-2000 `val` (400 clips) | Accuracy | Precision | Recall | F1 | TP / FP / TN / FN |
+|---|---|---|---|---|---|
+| threshold 0.38 (whole-clip value) | 76.8% | 73.4% | 84.0% | 0.78 | 168 / 61 / 139 / 32 |
+| **threshold 0.50 (live default)** | **80.2%** | **82.4%** | **77.0%** | **0.80** | 154 / 33 / 167 / 46 |
+| hand-weighted fusion (earlier) | 76.0% | 78.6% | 71.5% | 0.75 | 143 / 39 / 161 / 57 |
+
+Transparency: `val` has now been scored several times (whole-clip, streaming at 0.38, streaming at 0.50). The 0.50 value
+was **chosen on train only**, but treat the 80.2% as slightly optimistic and note the +/-4 point interval of a 400-clip
+test. Live vs offline clip scores agreed to within 0.037 on average over 10 real clips. When `models/violence_clip.joblib`
+exists the app uses it automatically (status chip "trained model: on"); otherwise it falls back to the hand-weighted
+fusion, and during the first ~2 s of a stream it stays quiet instead. Disable with `SAFEGUARD_CLIP_ENABLED=false`.
+
+A "two or more people in view" gate was also tested (train, out-of-fold) and **rejected**: the YOLO model finds 2+ people
+in only ~44% of clips, fights and non-fights alike, so the gate cut recall from 89% to 25% for no precision gain.
 
 **Known limitation (observed live).** The model was trained on surveillance-style clips (streets, crowds). On a close-up
 desk webcam, vigorous movement near the camera can score near the threshold (two alerts at 0.382 vs 0.38 while moving
 about), and the older cue-fusion fallback fired "Aggressive movement" on motion alone. RWF-2000 numbers do not
-transfer automatically to your cameras: calibrate per site with `SAFEGUARD_CLIP_THRESHOLD` (e.g. 0.50) and review
+transfer automatically to your cameras: calibrate per site with `SAFEGUARD_CLIP_THRESHOLD` and, better, record your own normal activity with
+`scripts/record_negatives.py` and retrain with `--extra-negatives` / `--site-test`, and review
 alerts before trusting it.
 
 Details: [`docs/training_violence_clip.json`](docs/training_violence_clip.json). The 17 MB model file is not committed;
