@@ -1,0 +1,4 @@
+# Optional: the original FYP closed-set CNN (models/legacy). Heavy (TensorFlow).
+# Enable with SAFEGUARD_CNN_ENABLED=true. Verified with TensorFlow 2.19 / Keras 3.11.
+-r requirements.txt
+tensorflow>=2.16

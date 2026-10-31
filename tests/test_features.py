@@ -1,3 +1,4 @@
+import pytest
 import io
 
 import cv2
@@ -153,3 +154,37 @@ def test_watchlist_requires_consent_fields(admin, app):
     assert resp.status_code == 400 and "legal" in resp.get_json()["message"].lower()
     resp = admin.post("/api/watchlist", data={"label": "X", "consent_basis": "staff"}, content_type="multipart/form-data")
     assert resp.status_code == 400 and "confirm" in resp.get_json()["message"].lower()
+
+
+# ---------------------------------------------------------------- optional closed-set CNN
+def test_cnn_backend_is_off_by_default_and_never_invents_predictions(tmp_path):
+    from safeguard.services.cnn_classifier import ClosedSetCNN
+    off = ClosedSetCNN(tmp_path, enabled=False)
+    assert off.state == "off" and not off.available
+    assert off.classify(np.zeros((50, 50, 3), np.uint8)) == (None, 0.0)  # no fallback simulation
+    missing = ClosedSetCNN(tmp_path, enabled=True)   # enabled, but no model files
+    missing.wait_ready(10)
+    assert missing.state == "unavailable" and missing.error  # reports why, instead of faking results
+
+
+def test_cnn_confidence_floor_turns_low_confidence_into_unknown():
+    from safeguard.services.cnn_classifier import ClosedSetCNN
+
+    class FakeKeras:
+        output_shape = (None, 3)
+
+        def predict(self, x, verbose=0):
+            assert x.shape == (1, 160, 160, 3) and x.max() <= 1.0  # same preprocessing as training
+            return np.array([[0.05, 0.85, 0.10]])
+
+    cnn = ClosedSetCNN("unused", min_conf=0.90, enabled=False)
+    cnn.model, cnn.classes = FakeKeras(), ["a", "b", "c"]
+    face = np.full((80, 60, 3), 120, np.uint8)
+    assert cnn.topk(face, 2)[0][0] == "b"
+    assert cnn.classify(face) == (None, pytest.approx(0.85))     # 0.85 < 0.90 floor -> unknown
+    cnn.min_conf = 0.80
+    assert cnn.classify(face)[0] == "b"                           # above the floor -> label
+
+
+def test_system_endpoint_reports_cnn_state(admin):
+    assert admin.get("/api/system").get_json()["cnn"]["state"] == "off"

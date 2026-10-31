@@ -25,8 +25,8 @@ RED, GREEN, CYAN, AMBER = (60, 60, 255), (120, 230, 130), (255, 220, 90), (60, 1
 
 
 class CameraPipeline:
-    def __init__(self, app, camera, yolo: YoloBackend, faces: FaceEngine, weapons: WeaponBackend | None = None) -> None:
-        self.app, self.faces = app, faces
+    def __init__(self, app, camera, yolo: YoloBackend, faces: FaceEngine, weapons: WeaponBackend | None = None, cnn=None) -> None:
+        self.app, self.faces, self.cnn = app, faces, cnn
         # plain snapshot: ORM rows are bound to the request's session and expire in a worker thread
         self.camera = SimpleNamespace(id=camera.id, name=camera.name, source=camera.source,
                                       detect_violence=camera.detect_violence, detect_faces=camera.detect_faces)
@@ -125,8 +125,20 @@ class CameraPipeline:
             match = None
             if self.faces.can_recognize and len(self.faces._gallery_meta):
                 match = self.faces.match(self.faces.embed(frame, face))
-            marks.append((face.box, RED if match else CYAN,
-                          f"{match.label} {match.similarity:.0%}" if match else ""))
+            text, colour = (f"{match.label} {match.similarity:.0%}", RED) if match else ("", CYAN)
+            if not match and self.cnn is not None and self.cnn.available:
+                crop = self.cnn.crop(frame, face.box)
+                label, conf = self.cnn.classify(crop) if crop is not None else (None, 0.0)
+                if label:
+                    text, colour = f"CNN: {label} {conf:.0%}", AMBER
+                    matches.append({"label": label, "similarity": round(conf, 3), "risk": "unverified", "source": "cnn"})
+                    if self._cooldown_ok(f"cnn-{label}"):
+                        create_alert(self.app, kind="watchlist", severity="medium",
+                                     title=f"Closed-set CNN suggests: {label}", confidence=conf,
+                                     camera=self.camera, frame=frame,
+                                     meta={"source": "closed-set CNN", "confidence": round(conf, 3),
+                                           "note": "classifier over a fixed identity list, verify manually"})
+            marks.append((face.box, colour, text))
             if match:
                 matches.append({"label": match.label, "similarity": round(match.similarity, 3), "risk": match.risk})
                 if self._cooldown_ok(f"face-{match.entry_id}"):
@@ -194,8 +206,8 @@ class CameraPipeline:
 
 
 class CameraManager:
-    def __init__(self, app, yolo: YoloBackend, faces: FaceEngine, weapons: WeaponBackend | None = None) -> None:
-        self.app, self.yolo, self.faces, self.weapons = app, yolo, faces, weapons
+    def __init__(self, app, yolo: YoloBackend, faces: FaceEngine, weapons: WeaponBackend | None = None, cnn=None) -> None:
+        self.app, self.yolo, self.faces, self.weapons, self.cnn = app, yolo, faces, weapons, cnn
         self._pipelines: dict[int, CameraPipeline] = {}
         self._lock = threading.Lock()
 
@@ -203,7 +215,7 @@ class CameraManager:
         with self._lock:
             if camera.id in self._pipelines:
                 return self._pipelines[camera.id]
-            pipe = CameraPipeline(self.app, camera, self.yolo, self.faces, self.weapons)
+            pipe = CameraPipeline(self.app, camera, self.yolo, self.faces, self.weapons, self.cnn)
             pipe.start()
             self._pipelines[camera.id] = pipe
             return pipe

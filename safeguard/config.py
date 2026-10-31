@@ -79,6 +79,10 @@ class Config:
     FRAME_WIDTH = _env_int("FRAME_WIDTH", 640)
     FACE_MATCH_THRESHOLD = _env_float("FACE_MATCH_THRESHOLD", 0.40)
     YOLO_WEIGHTS = _env("YOLO_WEIGHTS", "Yolo_nano_weights.pt")
+    YOLO_IMGSZ = _env_int("YOLO_IMGSZ", 640)  # input size for the violence model
+    CNN_ENABLED = _env_bool("CNN_ENABLED", False)  # original FYP closed-set classifier (needs TensorFlow)
+    CNN_MIN_CONF = _env_float("CNN_MIN_CONF", 0.90)
+    CNN_MODEL_DIR = Path(_env("CNN_MODEL_DIR", str(BASE_DIR / "models" / "legacy")))
     WEAPON_WEIGHTS = _env("WEAPON_WEIGHTS", "Weapon_threat_yolov8n.pt")  # optional; see README
 
     # --- privacy

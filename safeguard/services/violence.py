@@ -41,7 +41,8 @@ class ViolenceResult:
 class YoloBackend:
     """Optional. Loads lazily so the app still boots (heuristic mode) without torch."""
 
-    def __init__(self, weights_dir: Path, weights_name: str) -> None:
+    def __init__(self, weights_dir: Path, weights_name: str, imgsz: int = 640) -> None:
+        self.imgsz = imgsz
         self.model = None
         self.violence_ids: set[int] = set()
         self.person_ids: set[int] = set()
@@ -75,7 +76,7 @@ class YoloBackend:
         return self.model is not None
 
     def infer(self, frame: np.ndarray) -> tuple[float, list[tuple[int, int, int, int]]]:
-        res = self.model(frame, verbose=False, imgsz=416)[0]
+        res = self.model(frame, verbose=False, imgsz=self.imgsz)[0]
         persons, best = [], 0.0
         for cls, conf, box in zip(res.boxes.cls.tolist(), res.boxes.conf.tolist(), res.boxes.xyxy.tolist()):
             if int(cls) in self.violence_ids:

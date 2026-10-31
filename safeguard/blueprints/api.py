@@ -87,6 +87,7 @@ def system():
         uptime_s=int(time.time() - s.started),
         violence_mode="model+heuristics" if s.yolo.available else "heuristics-only",
         yolo_error=None if s.yolo.available else s.yolo.error,
+        cnn={"state": s.cnn.state, "identities": len(s.cnn.classes), "error": s.cnn.error if s.cnn.enabled and not s.cnn.available and s.cnn.state != "loading" else None},
         weapon_detector=s.weapons.available, weapon_error=None if s.weapons.available else s.weapons.error,
         faces=s.faces.status(), running_cameras=s.manager.running_ids(),
         viewers=bus.subscriber_count, retention_days=current_app.config["RETENTION_DAYS"],
@@ -369,7 +370,13 @@ def search_face():
     matches = s.faces.top_matches(s.faces.embed(img, face), 5)
     threshold = current_app.config["FACE_MATCH_THRESHOLD"]
     audit(current_user.username, "face_search", f"{len(matches)} candidates", client_ip())
-    return jsonify(threshold=threshold, matches=[
+    closed_set = None
+    if s.cnn.available:  # original FYP CNN: a guess over a fixed identity list, shown separately and labelled as such
+        crop = s.cnn.crop(img, face.box)
+        closed_set = {"min_conf": s.cnn.min_conf, "predictions": [
+            {"label": lab, "confidence": round(conf, 3), "above_floor": conf >= s.cnn.min_conf}
+            for lab, conf in (s.cnn.topk(crop, 3) if crop is not None else [])]}
+    return jsonify(threshold=threshold, closed_set=closed_set, matches=[
         {"id": m.entry_id, "label": m.label, "risk": m.risk, "similarity": round(m.similarity, 3),
          "is_match": m.similarity >= threshold} for m in matches])
 

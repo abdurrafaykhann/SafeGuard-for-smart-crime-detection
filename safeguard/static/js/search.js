@@ -15,8 +15,12 @@
     try {
       const data = await api('/api/search', { method: 'POST', form });
       document.getElementById('threshold').textContent = `match threshold ${data.threshold}`;
-      if (!data.matches.length) { results.replaceChildren(empty('users', 'Watchlist is empty', 'Enrol people first.')); return; }
-      results.replaceChildren(...data.matches.map((m) => el('div', { class: 'match-row' },
+      const closed = data.closed_set ? el('div', { class: 'panel-pad', style: 'border-top:1px solid var(--line)' },
+        el('div', { class: 'label', text: 'Closed-set CNN (original FYP model, fixed identity list)', style: 'margin-bottom:8px' }),
+        ...data.closed_set.predictions.map((p) => el('div', { class: 'td-sub', text: `${p.label} · ${Math.round(p.confidence * 100)}% ${p.above_floor ? '(above' : '(below'} ${Math.round(data.closed_set.min_conf * 100)}% floor)` })),
+        el('div', { class: 'hint', text: 'A guess among known identities only; it cannot say "none of these". Verify manually.', style: 'margin-top:6px' })) : null;
+      if (!data.matches.length) { results.replaceChildren(...[closed].filter(Boolean), empty('users', 'Watchlist is empty', 'Enrol people to match against.')); return; }
+      results.replaceChildren(...[closed].filter(Boolean), ...data.matches.map((m) => el('div', { class: 'match-row' },
         el('img', { src: `/api/watchlist/${m.id}/photo`, alt: '' }),
         el('div', {}, el('b', { text: m.label }), el('div', { class: `td-sub risk-${m.risk}`, text: `${m.risk} risk` })),
         el('div', { style: 'text-align:right' },

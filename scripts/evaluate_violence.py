@@ -87,7 +87,7 @@ def roc_auc(y: list[int], s: list[float]) -> float | None:
 
 
 def evaluate(dataset: Path, limit: int | None, use_model: bool) -> dict:
-    backend = YoloBackend(Config.MODELS_DIR, Config.YOLO_WEIGHTS) if use_model else None
+    backend = YoloBackend(Config.MODELS_DIR, Config.YOLO_WEIGHTS, Config.YOLO_IMGSZ) if use_model else None
     items: list[tuple[Path, int]] = []
     for sub in sorted(p for p in dataset.rglob("*") if p.is_dir()):
         lab = label_of(sub.name)
