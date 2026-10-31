@@ -61,6 +61,10 @@
         ? el('div', { class: 'table-wrap' }, el('table', {}, el('thead', {}, el('tr', {}, ...['From', 'To', 'Peak', 'Assessment'].map((h) => el('th', { text: h })))),
           el('tbody', {}, ...r.episodes.map((e) => el('tr', {}, el('td', { class: 'mono', text: fmt(e.start) }), el('td', { class: 'mono', text: fmt(e.end) }), el('td', { class: 'mono', text: pct(e.peak) }), el('td', { text: e.label }))))))
         : el('div', { class: 'empty' }, icon('clear'), el('b', { text: 'No incidents detected' }), el('span', { text: 'No frame crossed the violence threshold.' })),
+      r.weapon_hits?.length
+        ? el('div', { class: 'panel-pad' }, el('div', { class: 'label', text: 'Weapon sightings', style: 'margin-bottom:10px' }),
+          ...r.weapon_hits.map((w) => el('div', { class: 'td-sub kind-weapon', text: `${w.class} at ${fmt(w.t)} · ${Math.round(w.confidence * 100)}% confidence` })))
+        : null,
       Object.keys(r.watchlist_hits).length
         ? el('div', { class: 'panel-pad' }, el('div', { class: 'label', text: 'Watchlist hits', style: 'margin-bottom:10px' }),
           ...Object.entries(r.watchlist_hits).map(([name, h]) => el('div', { class: 'td-sub', text: `${name} at ${fmt(h.t)} · ${Math.round(h.similarity * 100)}% similar · ${h.risk} risk` })))

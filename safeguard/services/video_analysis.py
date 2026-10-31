@@ -24,8 +24,8 @@ SAMPLE_FPS = 5.0
 MAX_EVIDENCE = 6
 
 
-def start_job(app, job_id: int, path: Path, yolo: YoloBackend, faces: FaceEngine) -> None:
-    threading.Thread(target=_run, args=(app, job_id, path, yolo, faces), name=f"video-{job_id}", daemon=True).start()
+def start_job(app, job_id: int, path: Path, yolo: YoloBackend, faces: FaceEngine, weapons=None) -> None:
+    threading.Thread(target=_run, args=(app, job_id, path, yolo, faces, weapons), name=f"video-{job_id}", daemon=True).start()
 
 
 def _update(app, job_id: int, **fields) -> None:
@@ -37,7 +37,7 @@ def _update(app, job_id: int, **fields) -> None:
             db.session.commit()
 
 
-def _run(app, job_id: int, path: Path, yolo: YoloBackend, faces: FaceEngine) -> None:
+def _run(app, job_id: int, path: Path, yolo: YoloBackend, faces: FaceEngine, weapons=None) -> None:
     cap = cv2.VideoCapture(str(path))
     try:
         if not cap.isOpened():
@@ -46,10 +46,10 @@ def _run(app, job_id: int, path: Path, yolo: YoloBackend, faces: FaceEngine) -> 
         total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) or 0
         step = max(int(round(fps / SAMPLE_FPS)), 1)
         cfg = app.config
-        detector = ViolenceDetector(cfg["VIOLENCE_THRESHOLD"], cfg["VIOLENCE_MIN_FRAMES"], yolo)
+        detector = ViolenceDetector(cfg["VIOLENCE_THRESHOLD"], cfg["VIOLENCE_MIN_FRAMES"], yolo, weapons)
         _update(app, job_id, status="running")
 
-        timeline, episodes, evidence, face_hits = [], [], [], {}
+        timeline, episodes, evidence, face_hits, weapon_hits = [], [], [], {}, []
         current: dict | None = None
         idx = 0
         while True:
@@ -66,6 +66,10 @@ def _run(app, job_id: int, path: Path, yolo: YoloBackend, faces: FaceEngine) -> 
                 t = idx / fps
                 res = detector.analyze(frame)
                 timeline.append([round(t, 2), round(res.smoothed, 3)])
+                if res.weapon_alert and len(weapon_hits) < 12 and (not weapon_hits or t - weapon_hits[-1]["t"] > 2):
+                    top = max(res.weapons, key=lambda w: w[1])
+                    weapon_hits.append({"t": round(t, 2), "class": top[0], "confidence": round(top[1], 3),
+                                        "file": save_snapshot(app, frame, f"video{job_id}")})
                 if res.violent:
                     if current is None:
                         current = {"start": round(t, 2), "end": round(t, 2), "peak": res.smoothed, "label": res.label}
@@ -89,7 +93,8 @@ def _run(app, job_id: int, path: Path, yolo: YoloBackend, faces: FaceEngine) -> 
         result = {
             "duration_s": round(idx / fps, 1), "frames_analysed": len(timeline), "mode": detector.mode,
             "peak_score": round(peak, 3), "episodes": [{**e, "peak": round(e["peak"], 3)} for e in episodes],
-            "evidence": evidence, "watchlist_hits": face_hits,
+            "evidence": evidence, "watchlist_hits": face_hits, "weapon_hits": weapon_hits,
+            "weapon_detector": bool(weapons and weapons.available),
             "timeline": timeline[:: max(len(timeline) // 400, 1)],
         }
         _update(app, job_id, status="done", progress=1.0, result=json.dumps(result))

@@ -87,6 +87,7 @@ def system():
         uptime_s=int(time.time() - s.started),
         violence_mode="model+heuristics" if s.yolo.available else "heuristics-only",
         yolo_error=None if s.yolo.available else s.yolo.error,
+        weapon_detector=s.weapons.available, weapon_error=None if s.weapons.available else s.weapons.error,
         faces=s.faces.status(), running_cameras=s.manager.running_ids(),
         viewers=bus.subscriber_count, retention_days=current_app.config["RETENTION_DAYS"],
         user={"name": current_user.username, "role": current_user.role},
@@ -182,7 +183,7 @@ def cameras_feed(cid: int):
 def _alert_query():
     q = Alert.query
     a = request.args
-    if a.get("kind") in {"violence", "persistent", "watchlist"}:
+    if a.get("kind") in {"violence", "persistent", "watchlist", "weapon"}:
         q = q.filter(Alert.kind == a["kind"])
     if a.get("severity") in {"medium", "high", "critical"}:
         q = q.filter(Alert.severity == a["severity"])
@@ -275,7 +276,7 @@ def analytics_summary():
     series = []
     for i in range(days):
         d = (since + timedelta(days=i)).strftime("%Y-%m-%d")
-        series.append({"date": d, **{k: per_day[d][k] for k in ("violence", "persistent", "watchlist")}})
+        series.append({"date": d, **{k: per_day[d][k] for k in ("violence", "persistent", "weapon", "watchlist")}})
     return jsonify(
         days=days, total=len(rows), open=open_count, series=series, by_hour=by_hour,
         by_kind=dict(by_kind), by_camera=by_camera.most_common(6), top_watchlist=by_person.most_common(5),
@@ -392,7 +393,7 @@ def analysis_create():
     db.session.add(job)
     db.session.commit()
     audit(current_user.username, "video_upload", job.filename, client_ip())
-    video_analysis.start_job(current_app._get_current_object(), job.id, path, sg().yolo, sg().faces)
+    video_analysis.start_job(current_app._get_current_object(), job.id, path, sg().yolo, sg().faces, sg().weapons)
     return jsonify(job.to_dict()), 202
 
 

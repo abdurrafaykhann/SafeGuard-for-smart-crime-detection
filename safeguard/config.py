@@ -79,6 +79,7 @@ class Config:
     FRAME_WIDTH = _env_int("FRAME_WIDTH", 640)
     FACE_MATCH_THRESHOLD = _env_float("FACE_MATCH_THRESHOLD", 0.40)
     YOLO_WEIGHTS = _env("YOLO_WEIGHTS", "Yolo_nano_weights.pt")
+    WEAPON_WEIGHTS = _env("WEAPON_WEIGHTS", "Weapon_threat_yolov8n.pt")  # optional; see README
 
     # --- privacy
     RETENTION_DAYS = _env_int("RETENTION_DAYS", 30)

@@ -13,7 +13,7 @@
 
   function stackedBars(host, series) {
     const W = 720, H = 260, P = { l: 30, r: 8, t: 12, b: 28 };
-    const keys = [['violence', css('--orange')], ['persistent', css('--crit')], ['watchlist', css('--accent-2')]];
+    const keys = [['violence', css('--orange')], ['persistent', css('--crit')], ['weapon', '#ffd84d'], ['watchlist', css('--accent-2')]];
     const max = Math.max(1, ...series.map((d) => keys.reduce((s, [k]) => s + d[k], 0)));
     const step = (W - P.l - P.r) / series.length, bw = Math.max(Math.min(step * 0.62, 34), 4);
     const root = svg('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Alerts per day, stacked by type' });
@@ -45,7 +45,7 @@
     const entries = Object.entries(data);
     const total = entries.reduce((s, [, v]) => s + v, 0);
     if (!total) { host.replaceChildren(empty('chart', 'No data', 'Nothing in this period.')); return; }
-    const colours = { violence: css('--orange'), persistent: css('--crit'), watchlist: css('--accent-2') };
+    const colours = { violence: css('--orange'), persistent: css('--crit'), weapon: '#ffd84d', watchlist: css('--accent-2') };
     const R = 70, C = 2 * Math.PI * R;
     const root = svg('svg', { viewBox: '0 0 200 200', width: 190, height: 190, role: 'img', 'aria-label': 'Alerts by type' });
     let offset = 0;

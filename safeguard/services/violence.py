@@ -22,7 +22,8 @@ import numpy as np
 log = logging.getLogger(__name__)
 
 # weight of each cue inside the noisy-OR
-WEIGHTS = {"model": 0.85, "interaction": 0.60, "blood": 0.45, "motion": 0.22}
+WEIGHTS = {"model": 0.85, "interaction": 0.60, "blood": 0.45, "motion": 0.22, "weapon": 0.50}
+WEAPON_MIN_CONF = 0.55  # a weapon alert needs this confidence on several consecutive frames
 
 
 @dataclass
@@ -33,6 +34,8 @@ class ViolenceResult:
     label: str = "Clear"
     persons: list[tuple[int, int, int, int]] = field(default_factory=list)
     cues: dict[str, float] = field(default_factory=dict)
+    weapons: list[tuple[str, float, tuple[int, int, int, int]]] = field(default_factory=list)
+    weapon_alert: bool = False  # sustained weapon sighting; independent of the violence score
 
 
 class YoloBackend:
@@ -82,11 +85,52 @@ class YoloBackend:
         return best, persons
 
 
+class WeaponBackend:
+    """Optional second detector (guns / knives). Lazy and failure-tolerant like YoloBackend.
+
+    Only classes whose name contains one of WEAPON_WORDS count. 'explosive' is deliberately
+    excluded: the community model's published precision for it is under 50%."""
+
+    WEAPON_WORDS = ("gun", "pistol", "rifle", "firearm", "knife", "handgun", "grenade")
+
+    def __init__(self, weights_path: Path | None) -> None:
+        self.model = None
+        self.error: str | None = None
+        self.ids: dict[int, str] = {}
+        if weights_path is None or not Path(weights_path).exists():
+            self.error = "no weapon weights installed"
+            return
+        try:
+            from ultralytics import YOLO
+            self.model = YOLO(str(weights_path))
+        except Exception as exc:
+            self.error = f"could not load weapon model: {exc}"
+            return
+        for idx, name in self.model.names.items():
+            if any(w in str(name).lower() for w in self.WEAPON_WORDS):
+                self.ids[int(idx)] = str(name).lower()
+
+    @property
+    def available(self) -> bool:
+        return self.model is not None and bool(self.ids)
+
+    def infer(self, frame: np.ndarray, min_conf: float = 0.45) -> list[tuple[str, float, tuple[int, int, int, int]]]:
+        res = self.model(frame, verbose=False, imgsz=640, conf=min_conf)[0]
+        out = []
+        for cls, conf, box in zip(res.boxes.cls.tolist(), res.boxes.conf.tolist(), res.boxes.xyxy.tolist()):
+            if int(cls) in self.ids:
+                out.append((self.ids[int(cls)], float(conf), tuple(int(v) for v in box)))
+        return out
+
+
 class ViolenceDetector:
-    def __init__(self, threshold: float = 0.62, min_frames: int = 3, backend: YoloBackend | None = None) -> None:
+    def __init__(self, threshold: float = 0.62, min_frames: int = 3, backend: YoloBackend | None = None,
+                 weapons: WeaponBackend | None = None) -> None:
         self.threshold = threshold
         self.min_frames = min_frames
         self.backend = backend
+        self.weapons = weapons
+        self._weapon_streak = 0
         self._prev_gray: np.ndarray | None = None
         self._ema = 0.0
         self._streak = 0
@@ -146,7 +190,17 @@ class ViolenceDetector:
         contact = self._contact_cue(persons)
         interaction = float(np.clip(contact * motion * 1.6, 0.0, 1.0)) if len(persons) >= 2 else 0.0
 
-        cues = {"model": model_cue, "interaction": interaction, "blood": blood, "motion": motion}
+        weapons: list = []
+        if self.weapons and self.weapons.available:
+            try:
+                weapons = self.weapons.infer(frame)
+            except Exception as exc:
+                log.warning("weapon inference failed: %s", exc)
+        weapon_cue = max((c for _, c, _ in weapons), default=0.0)
+        self._weapon_streak = self._weapon_streak + 1 if weapon_cue >= WEAPON_MIN_CONF else 0
+        weapon_alert = self._weapon_streak >= self.min_frames
+
+        cues = {"model": model_cue, "interaction": interaction, "blood": blood, "motion": motion, "weapon": weapon_cue}
         # blood-coloured pixels alone are weak evidence (red walls, clothing): require motion too
         cues["blood"] = blood * (0.4 + 0.6 * motion)
         miss = 1.0
@@ -161,8 +215,9 @@ class ViolenceDetector:
         if violent or self._ema > self.threshold * 0.7:
             dominant = max(cues, key=lambda k: WEIGHTS[k] * cues[k])
             label = {"model": "Violence detected by model", "interaction": "Physical altercation",
-                     "blood": "Possible injury", "motion": "Aggressive movement"}[dominant]
+                     "blood": "Possible injury", "motion": "Aggressive movement",
+                     "weapon": "Weapon in view"}[dominant]
             if not violent:
                 label = "Elevated activity"
         return ViolenceResult(score, self._ema, violent, label, persons,
-                              {k: round(float(v), 3) for k, v in cues.items()})
+                              {k: round(float(v), 3) for k, v in cues.items()}, weapons, weapon_alert)

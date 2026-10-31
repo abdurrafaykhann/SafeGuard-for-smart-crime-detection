@@ -29,12 +29,14 @@ def create_app(config: type = Config) -> Flask:
     from .models import Camera, User  # noqa: F401  (register tables)
     from .services.faces import FaceEngine
     from .services.pipeline import CameraManager
-    from .services.violence import YoloBackend
+    from .services.violence import WeaponBackend, YoloBackend
 
     yolo = YoloBackend(app.config["MODELS_DIR"], app.config["YOLO_WEIGHTS"])
+    weapons = WeaponBackend(app.config["MODELS_DIR"] / app.config["WEAPON_WEIGHTS"])
     faces = FaceEngine(app.config["MODELS_DIR"], app.config["FACE_MATCH_THRESHOLD"])
-    manager = CameraManager(app, yolo, faces)
-    app.extensions["safeguard"] = SimpleNamespace(yolo=yolo, faces=faces, manager=manager, started=time.time())
+    manager = CameraManager(app, yolo, faces, weapons)
+    app.extensions["safeguard"] = SimpleNamespace(yolo=yolo, weapons=weapons, faces=faces, manager=manager,
+                                                  started=time.time())
 
     from .blueprints.api import bp as api_bp
     from .blueprints.auth import bp as auth_bp
@@ -102,6 +104,7 @@ def _register_hooks(app: Flask) -> None:
     def _globals():
         sg = app.extensions["safeguard"]
         return {"sys_mode": "model+heuristics" if sg.yolo.available else "heuristics-only",
+                "sys_weapons": sg.weapons.available,
                 "sys_recognition": sg.faces.can_recognize}
 
 

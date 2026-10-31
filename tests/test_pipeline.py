@@ -73,3 +73,43 @@ def test_pipeline_raises_one_alert_streams_it_and_serves_mjpeg(app, monkeypatch)
 def _cam(app, cam_id):
     with app.app_context():
         return db.session.get(Camera, cam_id)
+
+
+class QuietModel:
+    available = True
+
+    def infer(self, frame):
+        return 0.0, []
+
+
+class KnifeStub:
+    available = True
+
+    def infer(self, frame):
+        return [("knife", 0.9, (30, 30, 120, 160))]
+
+
+def test_pipeline_raises_weapon_alert_even_without_violence(app, monkeypatch):
+    monkeypatch.setattr(pipeline_mod, "CameraStream", FakeStream)
+    app.config.update(ANALYSIS_FPS=40.0, ALERT_COOLDOWN_SECONDS=60.0)
+    with app.app_context():
+        cam = Camera(name="Gate", source="0", detect_faces=False)
+        db.session.add(cam)
+        db.session.commit()
+        cam_id = cam.id
+    pipe = pipeline_mod.CameraPipeline(app, _cam(app, cam_id), QuietModel(), app.extensions["safeguard"].faces, KnifeStub())
+    pipe.start()
+    try:
+        deadline = time.time() + 6
+        while time.time() < deadline:
+            with app.app_context():
+                if Alert.query.filter_by(kind="weapon").count():
+                    break
+            time.sleep(0.1)
+        time.sleep(0.3)
+    finally:
+        pipe.stop()
+    with app.app_context():
+        alerts = Alert.query.all()
+        assert [a.kind for a in alerts] == ["weapon"], "one weapon alert, no violence alert"
+        assert alerts[0].severity == "high" and "knife" in alerts[0].title and alerts[0].snapshot_path

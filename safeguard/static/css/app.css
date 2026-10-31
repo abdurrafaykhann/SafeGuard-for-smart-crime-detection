@@ -110,7 +110,7 @@ input[type=file]::file-selector-button { margin-right: 12px; border: 1px solid v
 .sev-medium { color: var(--warn); background: rgba(255, 180, 74, .12); }
 .sev-high { color: #ff8a5c; background: rgba(255, 138, 92, .13); }
 .sev-critical { color: #fff; background: var(--crit); box-shadow: 0 0 18px rgba(255, 46, 99, .5); }
-.kind-violence { color: var(--orange); } .kind-persistent { color: var(--crit); } .kind-watchlist { color: var(--accent-2); }
+.kind-violence { color: var(--orange); } .kind-persistent { color: var(--crit); } .kind-weapon { color: #ff5a3c; } .kind-watchlist { color: var(--accent-2); }
 
 /* ---------- tables ---------- */
 .table-wrap { overflow-x: auto; }

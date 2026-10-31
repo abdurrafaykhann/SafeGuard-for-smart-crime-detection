@@ -45,8 +45,33 @@ def test_detector_flags_sustained_model_signal_and_explains_it():
     hits = [det.analyze(_frame(i)) for i in range(10)]
     assert not hits[0].violent  # EMA + streak: never on the very first frame
     assert any(r.violent for r in hits)
-    assert set(hits[-1].cues) == {"model", "interaction", "blood", "motion"}
+    assert set(hits[-1].cues) == {"model", "interaction", "blood", "motion", "weapon"}
     assert det.mode == "model+heuristics"
+
+
+class _StubWeapons:
+    available = True
+
+    def __init__(self, conf):
+        self.conf = conf
+
+    def infer(self, frame):
+        return [("knife", self.conf, (40, 40, 120, 160))]
+
+
+def test_weapon_alert_needs_confident_sustained_sightings():
+    calm = np.full((240, 320, 3), 90, np.uint8)
+    strong = ViolenceDetector(min_frames=3, weapons=_StubWeapons(0.8))
+    seen = [strong.analyze(calm).weapon_alert for _ in range(5)]
+    assert seen[:2] == [False, False] and seen[-1] is True  # not on the first frames
+    weak = ViolenceDetector(min_frames=3, weapons=_StubWeapons(0.30))
+    assert not any(weak.analyze(calm).weapon_alert for _ in range(10))  # low confidence never alerts
+
+
+def test_weapon_backend_degrades_gracefully_without_weights(tmp_path):
+    from safeguard.services.violence import WeaponBackend
+    wb = WeaponBackend(tmp_path / "missing.pt")
+    assert not wb.available and "no weapon weights" in wb.error
 
 
 def test_pure_motion_alone_never_triggers_a_violence_alert():

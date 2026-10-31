@@ -11,7 +11,7 @@
     return p;
   };
 
-  const KIND = { violence: 'Violence', persistent: 'Sustained', watchlist: 'Watchlist' };
+  const KIND = { violence: 'Violence', persistent: 'Sustained', weapon: 'Weapon', watchlist: 'Watchlist' };
 
   function row(a) {
     const thumb = a.has_snapshot

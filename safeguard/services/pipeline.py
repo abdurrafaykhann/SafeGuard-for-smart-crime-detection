@@ -17,7 +17,7 @@ from .alerts import create_alert
 from .camera import CameraStream
 from .events import bus
 from .faces import FaceEngine
-from .violence import ViolenceDetector, YoloBackend
+from .violence import ViolenceDetector, WeaponBackend, YoloBackend
 
 log = logging.getLogger(__name__)
 
@@ -25,7 +25,7 @@ RED, GREEN, CYAN, AMBER = (60, 60, 255), (120, 230, 130), (255, 220, 90), (60, 1
 
 
 class CameraPipeline:
-    def __init__(self, app, camera, yolo: YoloBackend, faces: FaceEngine) -> None:
+    def __init__(self, app, camera, yolo: YoloBackend, faces: FaceEngine, weapons: WeaponBackend | None = None) -> None:
         self.app, self.faces = app, faces
         # plain snapshot: ORM rows are bound to the request's session and expire in a worker thread
         self.camera = SimpleNamespace(id=camera.id, name=camera.name, source=camera.source,
@@ -33,7 +33,7 @@ class CameraPipeline:
         camera = self.camera
         cfg = app.config
         self.stream = CameraStream(camera.source, cfg["FRAME_WIDTH"])
-        self.detector = ViolenceDetector(cfg["VIOLENCE_THRESHOLD"], cfg["VIOLENCE_MIN_FRAMES"], yolo) if camera.detect_violence else None
+        self.detector = ViolenceDetector(cfg["VIOLENCE_THRESHOLD"], cfg["VIOLENCE_MIN_FRAMES"], yolo, weapons) if camera.detect_violence else None
         self._stop = threading.Event()
         self._thread: threading.Thread | None = None
         self._jpeg: bytes | None = None
@@ -81,6 +81,16 @@ class CameraPipeline:
             self._last_alert[key] = now
             return True
         return False
+
+    def _handle_weapons(self, res, frame) -> None:
+        if res.weapon_alert and self._cooldown_ok("weapon"):
+            kinds = sorted({k for k, _, _ in res.weapons})
+            best = max(c for _, c, _ in res.weapons)
+            create_alert(self.app, kind="weapon", severity="critical" if res.violent else "high",
+                         title=f"Weapon detected: {', '.join(kinds)}", confidence=best,
+                         camera=self.camera, frame=frame,
+                         meta={"weapons": [{"class": k, "confidence": round(c, 3)} for k, c, _ in res.weapons],
+                               "with_violence": res.violent})
 
     def _handle_violence(self, res, frame) -> None:
         now = time.monotonic()
@@ -158,6 +168,11 @@ class CameraPipeline:
                     res = self.detector.analyze(frame)
                     for (x1, y1, x2, y2) in res.persons:
                         cv2.rectangle(overlay, (x1, y1), (x2, y2), AMBER if res.violent else GREEN, 1)
+                    for name, conf, (x1, y1, x2, y2) in res.weapons:
+                        cv2.rectangle(overlay, (x1, y1), (x2, y2), RED, 2)
+                        cv2.putText(overlay, f"{name.upper()} {conf:.0%}", (x1, max(y1 - 6, 14)),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, RED, 1, cv2.LINE_AA)
+                    self._handle_weapons(res, frame)
                     self.state.update(violent=res.violent, score=round(res.smoothed, 3), label=res.label,
                                       persons=len(res.persons), cues=res.cues)
                     self._handle_violence(res, frame)
@@ -179,8 +194,8 @@ class CameraPipeline:
 
 
 class CameraManager:
-    def __init__(self, app, yolo: YoloBackend, faces: FaceEngine) -> None:
-        self.app, self.yolo, self.faces = app, yolo, faces
+    def __init__(self, app, yolo: YoloBackend, faces: FaceEngine, weapons: WeaponBackend | None = None) -> None:
+        self.app, self.yolo, self.faces, self.weapons = app, yolo, faces, weapons
         self._pipelines: dict[int, CameraPipeline] = {}
         self._lock = threading.Lock()
 
@@ -188,7 +203,7 @@ class CameraManager:
         with self._lock:
             if camera.id in self._pipelines:
                 return self._pipelines[camera.id]
-            pipe = CameraPipeline(self.app, camera, self.yolo, self.faces)
+            pipe = CameraPipeline(self.app, camera, self.yolo, self.faces, self.weapons)
             pipe.start()
             self._pipelines[camera.id] = pipe
             return pipe
