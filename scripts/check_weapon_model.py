@@ -20,6 +20,10 @@ from safeguard.config import Config  # noqa: E402
 from safeguard.services.violence import ViolenceDetector, WeaponBackend, YoloBackend  # noqa: E402
 
 
+COUNTDOWN_S = 10  # time to get an object into frame
+CAPTURE_S = 15
+
+
 def main() -> int:
     wb = WeaponBackend(Config.MODELS_DIR / Config.WEAPON_WEIGHTS)
     print("available:", wb.available, "| error:", wb.error)
@@ -35,16 +39,30 @@ def main() -> int:
     ok, frame = cap.read()
     if ok:  # the first inference pays a one-off warm-up cost; keep it out of the timing
         det.analyze(frame)
-    frames, hits, start = 0, [], time.time()
-    while time.time() - start < 5:
+
+    print(f"Get your object ready: capture starts in {COUNTDOWN_S}s and runs for {CAPTURE_S}s.", flush=True)
+    end = time.time() + COUNTDOWN_S
+    while time.time() < end:  # keep reading so the camera buffer stays fresh
+        cap.read()
+    print("CAPTURE NOW", flush=True)
+
+    frames, hits, alerts, start = 0, [], 0, time.time()
+    best: dict[str, float] = {}
+    while time.time() - start < CAPTURE_S:
         ok, frame = cap.read()
         if not ok:
             break
-        hits += det.analyze(frame).weapons
+        res = det.analyze(frame)
         frames += 1
+        alerts += res.weapon_alert
+        for name, conf, _ in res.weapons:
+            hits.append((name, conf))
+            best[name] = max(best.get(name, 0.0), conf)
     cap.release()
-    print(f"webcam: {frames} frames in 5s ({frames / 5:.1f} fps with both models)")
-    print(f"weapon detections: {len(hits)}", hits[:3])
+    print(f"webcam: {frames} frames in {CAPTURE_S}s ({frames / CAPTURE_S:.1f} fps with both models)")
+    print(f"weapon detections: {len(hits)} across {frames} frames")
+    print("best confidence per class:", {k: round(v, 2) for k, v in best.items()} or "none")
+    print(f"frames where SafeGuard would raise a weapon alert (sustained, conf>=0.55): {alerts}")
     return 0
 
 
