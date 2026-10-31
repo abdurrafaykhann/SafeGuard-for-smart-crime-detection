@@ -8,3 +8,4 @@ instance/
 *.db
 # Downloaded, not committed (see scripts/download_models.py)
 models/*.onnx
+
