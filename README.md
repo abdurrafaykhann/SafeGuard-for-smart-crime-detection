@@ -6,6 +6,13 @@ with authentication, auditing and automatic data retention built in.
 
 > Final-year project · Python · Flask · OpenCV · YOLO
 
+**Author:** Abdul Rafay Khan · BSc (Hons) Computer Science (Online), University of Hertfordshire
+**Supervisor:** Justin Mifsud · Module 6WCM0029-0509-2024, Computer Science Project
+
+*Original project report: "SafeGuard: A Real-Time YOLOv8 and CNN-Based System for Weapon, Violence, and Criminal
+Detection with Dual Portals for Law Enforcement and Civilian Safety Verification". This repository is the
+v2 rebuild; where its measured results differ from the report, the README says so.*
+
 ## Features
 
 | | |
