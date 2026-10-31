@@ -133,6 +133,26 @@ Raw outputs: [`docs/evaluation_rwf2000_val.json`](docs/evaluation_rwf2000_val.js
 [`docs/calibration_rwf2000_train_subset.json`](docs/calibration_rwf2000_train_subset.json).
 Reproduce with the command above (`SAFEGUARD_VIOLENCE_THRESHOLD=0.20`).
 
+### Trained clip classifier (own model, RWF-2000)
+
+Instead of the hand-weighted cue fusion, a small classifier is trained on per-frame measurements of each clip
+(the YOLO model's violence confidence and person count, optical-flow motion statistics, an injury-colour fraction;
+see `safeguard/services/clip_features.py`). Pipeline: `scripts/extract_clip_features.py` ->
+`scripts/train_clip_classifier.py`. Model family and alert threshold were chosen **only** by 5-fold cross-validation
+on the 700 `train` clips; the 400 `val` clips were scored exactly once afterwards.
+
+| RWF-2000 `val`, 400 clips | Accuracy | Precision | Recall | F1 | ROC-AUC |
+|---|---|---|---|---|---|
+| Hand-weighted fusion (above) | 76.0% | 78.6% | 71.5% | 0.75 | 0.835 |
+| **Trained clip classifier** (ExtraTrees, threshold 0.38) | **77.2%** | 73.0% | 86.5% | 0.79 | **0.871** |
+
+Honest reading: with 400 test clips the 95% interval on accuracy is about +/-4 points, so **the accuracy difference
+(76.0 vs 77.2) is within noise**. What is clearly better is ranking quality (AUC 0.835 -> 0.871) and recall (71.5% ->
+86.5%), at the cost of more false alarms (precision 78.6% -> 73.0%). Cross-validated accuracy on the training clips
+(78.0%) agrees with the validation figure (77.2%), so the number is not an artefact of tuning on the test set.
+Details: [`docs/training_violence_clip.json`](docs/training_violence_clip.json). The 17 MB model file is not committed;
+regenerate it with the two commands above.
+
 **Findings along the way**
 - The first threshold (0.62) was miscalibrated for this model's scores: it caught 8% of fights (16/200).
   Re-choosing it on the training split, not the test set, lifted recall to 71.5%.

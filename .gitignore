@@ -12,3 +12,5 @@ models/*.onnx
 # Optional third-party weapon weights: not redistributed (see README)
 models/Weapon_*.pt
 models/Weapon_*.onnx
+# Trained clip classifier (17 MB, regenerate with scripts/train_clip_classifier.py)
+models/violence_clip.joblib
