@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block body %}
+<header class="topbar">
+  <div class="container">
+    <a class="brand" href="{{ url_for('web.index') }}"><span class="brand-mark"><svg class="icon"><use href="#i-shield"/></svg></span>SafeGuard</a>
+    <nav class="nav" id="nav" aria-label="Primary">
+      <a href="{{ url_for('web.index') }}#features">Capabilities</a>
+      <a href="{{ url_for('web.index') }}#pipeline">How it works</a>
+      <a href="{{ url_for('web.check') }}">Fraud check</a>
+      <a href="{{ url_for('web.ethics') }}">Responsible AI</a>
+    </nav>
+    <div style="display:flex;gap:10px;align-items:center">
+      {% if current_user.is_authenticated %}
+        <a class="btn btn-primary btn-sm" href="{{ url_for('console.index') }}">Open console</a>
+      {% else %}
+        <a class="btn btn-sm" href="{{ url_for('auth.login') }}"><svg class="icon"><use href="#i-lock"/></svg>Operator sign-in</a>
+      {% endif %}
+      <button class="btn btn-ghost btn-sm nav-toggle" id="nav-toggle" aria-label="Menu" aria-controls="nav"><svg class="icon"><use href="#i-menu"/></svg></button>
+    </div>
+  </div>
+</header>
+{% block content %}{% endblock %}
+<footer class="footer">
+  <div class="container">
+    <span>© SafeGuard · Final-year project · Built with Flask, OpenCV &amp; YOLO</span>
+    <span><a href="{{ url_for('web.privacy') }}">Privacy</a><a href="{{ url_for('web.terms') }}">Terms</a><a href="{{ url_for('web.ethics') }}">Responsible AI</a></span>
+  </div>
+</footer>
+{% endblock %}

@@ -1,0 +1,75 @@
+"""End-to-end pipeline test with a fake camera, so no hardware is needed."""
+import threading
+import time
+
+import numpy as np
+
+from safeguard.extensions import db
+from safeguard.models import Alert, Camera
+from safeguard.services import pipeline as pipeline_mod
+from safeguard.services.events import bus
+
+
+class FakeStream:
+    """Same surface as CameraStream; produces a new random frame every 20 ms."""
+    connected, fps, last_error = True, 50.0, None
+
+    def __init__(self, source, width=640):
+        self._id, self._rng, self._stop = 0, np.random.default_rng(3), threading.Event()
+
+    def start(self):
+        return self
+
+    def stop(self):
+        self._stop.set()
+
+    def wait_for_frame(self, last_id, timeout=2.0):
+        time.sleep(0.02)
+        self._id += 1
+        return self._rng.integers(0, 255, (240, 320, 3), dtype=np.uint8), self._id
+
+
+class StubModel:
+    available = True
+
+    def infer(self, frame):
+        return 0.95, [(10, 10, 120, 220), (70, 12, 170, 225)]
+
+
+def test_pipeline_raises_one_alert_streams_it_and_serves_mjpeg(app, monkeypatch):
+    monkeypatch.setattr(pipeline_mod, "CameraStream", FakeStream)
+    app.config.update(ANALYSIS_FPS=40.0, ALERT_COOLDOWN_SECONDS=60.0, PERSISTENT_SECONDS=999)
+    with app.app_context():
+        cam = Camera(name="Fake", source="0", detect_faces=False)
+        db.session.add(cam)
+        db.session.commit()
+        cam_id = cam.id
+
+    inbox = bus.subscribe()
+    pipe = pipeline_mod.CameraPipeline(app, _cam(app, cam_id), StubModel(), app.extensions["safeguard"].faces)
+    pipe.start()
+    try:
+        deadline = time.time() + 6
+        while time.time() < deadline and not pipe.state["violent"]:
+            time.sleep(0.05)
+        time.sleep(0.4)  # let any (suppressed) duplicates try to fire
+        assert pipe.state["violent"] and pipe.state["persons"] == 2
+        jpeg, _ = pipe.wait_jpeg(-1, timeout=2)
+        assert jpeg and jpeg[:2] == b"\xff\xd8"  # a real JPEG for the MJPEG stream
+    finally:
+        pipe.stop()
+
+    with app.app_context():
+        alerts = Alert.query.all()
+        assert len(alerts) == 1, "cooldown must collapse repeated detections into a single alert"
+        assert alerts[0].kind == "violence" and alerts[0].camera_name == "Fake" and alerts[0].snapshot_path
+    events = []
+    while not inbox.empty():
+        events.append(inbox.get_nowait()[0])
+    assert "alert" in events and "camera" in events
+    bus.unsubscribe(inbox)
+
+
+def _cam(app, cam_id):
+    with app.app_context():
+        return db.session.get(Camera, cam_id)

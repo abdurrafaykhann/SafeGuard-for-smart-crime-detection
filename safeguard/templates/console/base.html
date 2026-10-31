@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% macro nav(key, endpoint, icon, label) %}
+  <a href="{{ url_for(endpoint) }}" class="{{ 'active' if active == key }}" {% if active == key %}aria-current="page"{% endif %}>
+    <svg class="icon"><use href="#i-{{ icon }}"/></svg><span>{{ label }}</span>{% if key == 'alerts' %}<span class="count" id="open-count" hidden>0</span>{% endif %}
+  </a>
+{% endmacro %}
+{% block body %}
+<div class="shell" data-role="{{ current_user.role }}">
+  <aside class="rail">
+    <a class="brand" href="{{ url_for('web.index') }}"><span class="brand-mark"><svg class="icon"><use href="#i-shield"/></svg></span>SafeGuard</a>
+    <nav class="rail-nav" aria-label="Console">
+      <div class="rail-label">Monitor</div>
+      {{ nav('live', 'console.index', 'live', 'Live wall') }}
+      {{ nav('alerts', 'console.alerts', 'alert', 'Alerts') }}
+      {{ nav('analytics', 'console.analytics', 'chart', 'Analytics') }}
+      <div class="rail-label">Investigate</div>
+      {{ nav('search', 'console.search', 'search', 'Face search') }}
+      {{ nav('analysis', 'console.analysis', 'film', 'Video analysis') }}
+      {{ nav('watchlist', 'console.watchlist', 'users', 'Watchlist') }}
+      {% if current_user.is_admin %}
+      <div class="rail-label">Admin</div>
+      {{ nav('cameras', 'console.cameras', 'camera', 'Cameras') }}
+      {% endif %}
+    </nav>
+    <div class="rail-foot">
+      <div class="who"><span class="avatar">{{ current_user.username[:1]|upper }}</span><div>{{ current_user.username }}<small>{{ current_user.role }}</small></div></div>
+      <form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm" style="width:100%" type="submit"><svg class="icon"><use href="#i-logout"/></svg>Sign out</button></form>
+    </div>
+  </aside>
+  <main class="main">
+    <div class="page-head">
+      <div><span class="eyebrow">{% block eyebrow %}{% endblock %}</span><h1>{% block heading %}{% endblock %}</h1>{% block sub %}{% endblock %}</div>
+      <div class="status-row">
+        <span class="chip" id="chip-link" title="Real-time connection"><span class="dot"></span><span>connecting</span></span>
+        <span class="chip {{ 'ok' if sys_mode == 'model+heuristics' else 'warn' }}" title="Violence analysis mode"><span class="dot"></span>{{ sys_mode }}</span>
+        <span class="chip {{ 'ok' if sys_recognition else 'warn' }}" title="Face recognition models"><span class="dot"></span>faces: {{ 'ready' if sys_recognition else 'detect only' }}</span>
+      </div>
+    </div>
+    {% block content %}{% endblock %}
+  </main>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/console.js') }}"></script>
+{% block page_scripts %}{% endblock %}
+{% endblock %}

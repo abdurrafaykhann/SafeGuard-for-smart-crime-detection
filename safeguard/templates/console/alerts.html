@@ -1,0 +1,26 @@
+{% extends 'console/base.html' %}
+{% block title %}Alerts{% endblock %}
+{% block eyebrow %}Incident log{% endblock %}
+{% block heading %}Alerts{% endblock %}
+{% block sub %}<p>Review evidence, acknowledge and export. Every acknowledgement is recorded against your name.</p>{% endblock %}
+{% block content %}
+<div class="panel">
+  <div class="panel-head">
+    <div class="toolbar" id="filters">
+      <input type="search" id="f-q" placeholder="Search title…" aria-label="Search alerts" style="width:200px">
+      <select id="f-kind" aria-label="Type"><option value="">All types</option><option value="violence">Violence</option><option value="persistent">Sustained</option><option value="watchlist">Watchlist</option></select>
+      <select id="f-sev" aria-label="Severity"><option value="">Any severity</option><option value="critical">Critical</option><option value="high">High</option><option value="medium">Medium</option></select>
+      <select id="f-status" aria-label="Status"><option value="">Any status</option><option value="open">Open</option><option value="acknowledged">Acknowledged</option></select>
+    </div>
+    <a class="btn btn-sm" id="export" href="#"><svg class="icon"><use href="#i-download"/></svg>Export CSV</a>
+  </div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Evidence</th><th>Incident</th><th>Severity</th><th>Camera</th><th>Confidence</th><th>When</th><th></th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table></div>
+  <div class="empty" id="empty" hidden><svg class="icon"><use href="#i-clear"/></svg><b>No alerts match</b><span>Try clearing a filter.</span></div>
+  <div class="pager"><span id="count"></span><span><button class="btn btn-sm" id="prev">Previous</button> <button class="btn btn-sm" id="next">Next</button></span></div>
+</div>
+<dialog id="viewer"><div class="dialog-body"><img id="viewer-img" alt="Alert snapshot" style="border-radius:12px;width:100%;background:#000;margin-bottom:16px"><div id="viewer-meta"></div></div><div class="dialog-actions"><button class="btn" id="viewer-close">Close</button></div></dialog>
+{% endblock %}
+{% block page_scripts %}<script src="{{ url_for('static', filename='js/alerts.js') }}"></script>{% endblock %}

@@ -1,0 +1,10 @@
+{% extends '_public.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<main class="center-card"><section class="panel auth-card" style="text-align:center">
+  <span class="eyebrow">Error {{ code }}</span>
+  <h1 style="font-size:2.2rem">{{ title }}</h1>
+  <p>{{ message }}</p>
+  <a class="btn btn-primary" href="{{ url_for('web.index') }}">Back to home</a>
+</section></main>
+{% endblock %}

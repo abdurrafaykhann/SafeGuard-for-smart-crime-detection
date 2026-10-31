@@ -1,0 +1,37 @@
+{% extends '_public.html' %}
+{% set titles = {'privacy': 'Privacy notice', 'terms': 'Terms of use', 'ethics': 'Responsible AI'} %}
+{% block title %}{{ titles[page] }}{% endblock %}
+{% block content %}
+<main class="container"><article class="prose">
+  <span class="eyebrow">{{ titles[page] }}</span>
+  {% if page == 'privacy' %}
+    <h1>Privacy notice</h1>
+    <p>SafeGuard is a research and demonstration system. This page describes exactly what it keeps.</p>
+    <h2>What is stored</h2>
+    <ul><li><strong>Alert snapshots</strong>: a single frame captured when an alert fires.</li>
+      <li><strong>Watchlist entries</strong>: a name or label, the stated legal basis, a mathematical face signature and a tight crop of the face. Original photographs are never saved.</li>
+      <li><strong>Audit log</strong>: who signed in, enrolled, searched or exported, with the time and IP address.</li></ul>
+    <h2>What is not stored</h2>
+    <ul><li>Continuous video recordings.</li><li>Uploaded analysis videos, which are deleted when processing finishes.</li><li>Face signatures of anyone who is not on the watchlist.</li></ul>
+    <h2>Retention</h2><p>Alerts and their snapshots are deleted automatically after the configured retention period (30 days by default).</p>
+    <h2>Your rights</h2><p>Anyone enrolled can ask the administrator to remove their entry, which deletes the signature and the crop immediately.</p>
+  {% elif page == 'terms' %}
+    <h1>Terms of use</h1>
+    <ul><li>Access is limited to authorised operators. Do not share credentials.</li>
+      <li>Only enrol people for whom you hold consent or a lawful authority, and record the basis truthfully.</li>
+      <li>Do not use matches as the sole basis for any action against a person. Verify independently.</li>
+      <li>You are responsible for complying with surveillance, data-protection and signage laws in your jurisdiction.</li>
+      <li>The software is provided as is, without warranty, as an academic project.</li></ul>
+  {% else %}
+    <h1>Responsible AI &amp; limitations</h1>
+    <p>Automated surveillance can cause real harm when it is wrong. These are the limits you should know.</p>
+    <h2>Violence detection is probabilistic</h2>
+    <p>The score combines a trained detector with motion, contact and colour cues. Sports, dancing, crowded scenes, red clothing and poor lighting can all raise false alarms, and real incidents can be missed. The alert shows which cues contributed so an operator can judge quickly.</p>
+    <h2>Face similarity is not identity</h2>
+    <p>A match means two face signatures are numerically close. Accuracy varies with lighting, angle, image quality and across demographic groups. Treat every match as a lead to verify, never as proof.</p>
+    <h2>Safeguards built in</h2>
+    <ul><li>Enrolment requires a recorded legal basis and explicit confirmation.</li><li>No automatic action is taken on any detection.</li><li>Operators can only acknowledge alerts. Only administrators can enrol or delete people.</li><li>Every sensitive action is audit-logged, and data expires automatically.</li></ul>
+    <h2>Not evaluated</h2><p>This project has not been independently benchmarked for bias or accuracy. Do not deploy it for real enforcement decisions without that work.</p>
+  {% endif %}
+</article></main>
+{% endblock %}

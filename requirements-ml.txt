@@ -1,0 +1,4 @@
+# Optional: enables the trained YOLO violence model (models/Yolo_nano_weights.pt).
+# Heavy (PyTorch). Without it SafeGuard runs in "heuristics-only" mode and says so in the UI.
+-r requirements.txt
+ultralytics>=8.2

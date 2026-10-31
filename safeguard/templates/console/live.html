@@ -1,0 +1,28 @@
+{% extends 'console/base.html' %}
+{% block title %}Live wall{% endblock %}
+{% block eyebrow %}Operations{% endblock %}
+{% block heading %}Live wall{% endblock %}
+{% block sub %}<p>Every camera is analysed once on the server. Opening more tabs adds viewers, not load.</p>{% endblock %}
+{% block content %}
+<section class="kpis" id="kpis">
+  <div class="panel kpi"><span class="label">Cameras live</span><b id="k-live">–</b><small id="k-live-sub">&nbsp;</small></div>
+  <div class="panel kpi"><span class="label">Open alerts</span><b id="k-open">–</b><small>awaiting acknowledgement</small></div>
+  <div class="panel kpi"><span class="label">Alerts (24h)</span><b id="k-24h">–</b><small id="k-24h-sub">&nbsp;</small></div>
+  <div class="panel kpi"><span class="label">People in view</span><b id="k-people">0</b><small>across running cameras</small></div>
+</section>
+<div class="live-grid">
+  <section>
+    <div class="tiles" id="tiles" aria-live="off"></div>
+    <div class="panel empty" id="no-cameras" hidden>
+      <svg class="icon"><use href="#i-camera"/></svg><b>No cameras configured</b>
+      <span>{% if current_user.is_admin %}Add a webcam or RTSP stream to start monitoring.{% else %}Ask an administrator to add a camera.{% endif %}</span>
+      {% if current_user.is_admin %}<a class="btn btn-primary btn-sm" style="margin-top:12px" href="{{ url_for('console.cameras') }}">Add camera</a>{% endif %}
+    </div>
+  </section>
+  <aside class="panel">
+    <div class="panel-head"><h3>Incident feed</h3><a href="{{ url_for('console.alerts') }}" class="btn btn-ghost btn-sm">View all</a></div>
+    <div class="feed" id="feed"><div class="empty" id="feed-empty"><svg class="icon"><use href="#i-clear"/></svg><b>All clear</b><span>New alerts appear here instantly.</span></div></div>
+  </aside>
+</div>
+{% endblock %}
+{% block page_scripts %}<script src="{{ url_for('static', filename='js/live.js') }}"></script>{% endblock %}

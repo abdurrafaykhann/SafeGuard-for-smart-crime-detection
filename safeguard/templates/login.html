@@ -1,0 +1,20 @@
+{% extends '_public.html' %}
+{% block title %}Operator sign-in{% endblock %}
+{% block content %}
+<main class="center-card">
+  <section class="panel auth-card">
+    <span class="eyebrow">Restricted access</span>
+    <h1>Operator sign-in</h1>
+    <p>This console is for authorised personnel. Activity is logged.</p>
+    {% with messages = get_flashed_messages(with_categories=true) %}{% for cat, msg in messages %}<div class="alert-box info">{{ msg }}</div>{% endfor %}{% endwith %}
+    {% if error %}<div class="alert-box error" role="alert">{{ error }}</div>{% endif %}
+    <form method="post" autocomplete="on">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="field"><label for="username">Username</label><input id="username" name="username" type="text" required autofocus autocomplete="username" maxlength="64"></div>
+      <div class="field"><label for="password">Password</label><input id="password" name="password" type="password" required autocomplete="current-password"></div>
+      <button class="btn btn-primary btn-lg" style="width:100%" type="submit">Sign in</button>
+    </form>
+    <p class="hint" style="margin:18px 0 0">After 5 failed attempts the account is locked for 10 minutes.</p>
+  </section>
+</main>
+{% endblock %}

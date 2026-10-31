@@ -1,0 +1,10 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+instance/
+*.db
+# Downloaded, not committed (see scripts/download_models.py)
+models/*.onnx
