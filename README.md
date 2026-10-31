@@ -97,8 +97,33 @@ matrix, ROC-AUC and a threshold sweep, both at the production alert threshold an
 python scripts/evaluate_violence.py path/to/dataset --limit 100 --out results.json
 ```
 
-**Results: not measured yet.** The script is tested on synthetic clips only. Add real numbers here
-after running it on a public dataset, and quote the dataset and its licence.
+### Measured results (RWF-2000)
+
+| | Value |
+|---|---|
+| Data | RWF-2000 `val` split: 200 fight + 200 non-fight clips, never used to choose any setting |
+| Settings | YOLO input 640 px, alert threshold **0.20**, 3 consecutive frames, 5 sampled frames/s |
+| Threshold chosen on | 200 clips from the RWF-2000 `train` split (precision ~ recall on that set) |
+| **Accuracy** | **76.0%** (304 / 400) |
+| Precision / Recall / F1 | 78.6% / 71.5% / 0.75 |
+| Confusion matrix | TP 143 · FP 39 · TN 161 · FN 57 |
+| ROC-AUC | 0.835 |
+
+Raw outputs: [`docs/evaluation_rwf2000_val.json`](docs/evaluation_rwf2000_val.json) and
+[`docs/calibration_rwf2000_train_subset.json`](docs/calibration_rwf2000_train_subset.json).
+Reproduce with the command above (`SAFEGUARD_VIOLENCE_THRESHOLD=0.20`).
+
+**Findings along the way**
+- The first threshold (0.62) was miscalibrated for this model's scores: it caught 8% of fights (16/200).
+  Re-choosing it on the training split, not the test set, lifted recall to 71.5%.
+- The original FYP report quotes 88.6-89.8% for this component. I could **not** reproduce that: on
+  the held-out validation clips I measure 76.0%. The report's prose metrics (85.3% precision) also
+  disagree with its own confusion matrix (89.8%), whose counts (221 fights / 179 non-fights) do not
+  add up to RWF-2000's 200 / 200. Treat 76% as this repository's number.
+- At the 0.20 threshold, sustained extreme motion on its own can raise a violence alert (the motion cue alone
+  can reach about 0.22); the numbers above include that behaviour.
+- Clip-level, 5-fps sampling and a single-model-plus-heuristics pipeline; no claim is made about live
+  CCTV, other datasets, or weapon / blood detection (see above).
 
 ## Tests
 

@@ -70,7 +70,7 @@ class Config:
     RATELIMIT_HEADERS_ENABLED = True
 
     # --- detection tuning
-    VIOLENCE_THRESHOLD = _env_float("VIOLENCE_THRESHOLD", 0.62)
+    VIOLENCE_THRESHOLD = _env_float("VIOLENCE_THRESHOLD", 0.20)  # calibrated on RWF-2000 train, see docs/
     VIOLENCE_MIN_FRAMES = _env_int("VIOLENCE_MIN_FRAMES", 3)
     PERSISTENT_SECONDS = _env_float("PERSISTENT_SECONDS", 12.0)
     ALERT_COOLDOWN_SECONDS = _env_float("ALERT_COOLDOWN", 20.0)

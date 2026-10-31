@@ -75,6 +75,15 @@ def _cam(app, cam_id):
         return db.session.get(Camera, cam_id)
 
 
+class StaticStream(FakeStream):
+    """A calm scene: identical frames, so the motion cue stays at zero."""
+
+    def wait_for_frame(self, last_id, timeout=2.0):
+        time.sleep(0.02)
+        self._id += 1
+        return np.full((240, 320, 3), 90, np.uint8), self._id
+
+
 class QuietModel:
     available = True
 
@@ -90,7 +99,7 @@ class KnifeStub:
 
 
 def test_pipeline_raises_weapon_alert_even_without_violence(app, monkeypatch):
-    monkeypatch.setattr(pipeline_mod, "CameraStream", FakeStream)
+    monkeypatch.setattr(pipeline_mod, "CameraStream", StaticStream)
     app.config.update(ANALYSIS_FPS=40.0, ALERT_COOLDOWN_SECONDS=60.0)
     with app.app_context():
         cam = Camera(name="Gate", source="0", detect_faces=False)
