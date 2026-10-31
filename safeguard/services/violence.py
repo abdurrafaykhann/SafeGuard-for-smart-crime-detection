@@ -22,7 +22,7 @@ import numpy as np
 log = logging.getLogger(__name__)
 
 # weight of each cue inside the noisy-OR
-WEIGHTS = {"model": 0.85, "interaction": 0.60, "blood": 0.45, "motion": 0.22, "weapon": 0.50}
+WEIGHTS = {"model": 0.85, "interaction": 0.60, "blood": 0.45, "motion": 0.22, "weapon": 0.15}  # weapon has its own alert; alone it must stay below the violence threshold
 WEAPON_MIN_CONF = 0.55  # a weapon alert needs this confidence on several consecutive frames
 
 
