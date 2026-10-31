@@ -38,11 +38,25 @@ class ViolenceResult:
     weapon_alert: bool = False  # sustained weapon sighting; independent of the violence score
 
 
+def _cap_threads(n: int | None) -> None:
+    """ultralytics resets torch's thread count to 8 during its first prediction, undoing any cap set
+    earlier, so the cap is re-applied after every call (a cheap no-op when already correct)."""
+    if not n:
+        return
+    try:
+        import torch
+        if torch.get_num_threads() != n:
+            torch.set_num_threads(n)
+    except Exception:
+        pass
+
+
 class YoloBackend:
     """Optional. Loads lazily so the app still boots (heuristic mode) without torch."""
 
-    def __init__(self, weights_dir: Path, weights_name: str, imgsz: int = 640) -> None:
+    def __init__(self, weights_dir: Path, weights_name: str, imgsz: int = 640, threads: int | None = None) -> None:
         self.imgsz = imgsz
+        self.threads = threads
         self.model = None
         self.violence_ids: set[int] = set()
         self.person_ids: set[int] = set()
@@ -77,6 +91,7 @@ class YoloBackend:
 
     def infer(self, frame: np.ndarray) -> tuple[float, list[tuple[int, int, int, int]]]:
         res = self.model(frame, verbose=False, imgsz=self.imgsz)[0]
+        _cap_threads(self.threads)
         persons, best = [], 0.0
         for cls, conf, box in zip(res.boxes.cls.tolist(), res.boxes.conf.tolist(), res.boxes.xyxy.tolist()):
             if int(cls) in self.violence_ids:
@@ -94,7 +109,8 @@ class WeaponBackend:
 
     WEAPON_WORDS = ("gun", "pistol", "rifle", "firearm", "knife", "handgun", "grenade")
 
-    def __init__(self, weights_path: Path | None) -> None:
+    def __init__(self, weights_path: Path | None, threads: int | None = None) -> None:
+        self.threads = threads
         self.model = None
         self.error: str | None = None
         self.ids: dict[int, str] = {}
@@ -117,6 +133,7 @@ class WeaponBackend:
 
     def infer(self, frame: np.ndarray, min_conf: float = 0.45) -> list[tuple[str, float, tuple[int, int, int, int]]]:
         res = self.model(frame, verbose=False, imgsz=640, conf=min_conf)[0]
+        _cap_threads(self.threads)
         out = []
         for cls, conf, box in zip(res.boxes.cls.tolist(), res.boxes.conf.tolist(), res.boxes.xyxy.tolist()):
             if int(cls) in self.ids:

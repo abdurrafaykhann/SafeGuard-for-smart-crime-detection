@@ -33,8 +33,8 @@ def create_app(config: type = Config) -> Flask:
     from .services.violence import WeaponBackend, YoloBackend
 
     _limit_torch_threads(app.config["TORCH_THREADS"])
-    yolo = YoloBackend(app.config["MODELS_DIR"], app.config["YOLO_WEIGHTS"], app.config["YOLO_IMGSZ"])
-    weapons = WeaponBackend(app.config["MODELS_DIR"] / app.config["WEAPON_WEIGHTS"] if app.config["WEAPON_ENABLED"] else None)
+    yolo = YoloBackend(app.config["MODELS_DIR"], app.config["YOLO_WEIGHTS"], app.config["YOLO_IMGSZ"], app.config["TORCH_THREADS"])
+    weapons = WeaponBackend(app.config["MODELS_DIR"] / app.config["WEAPON_WEIGHTS"] if app.config["WEAPON_ENABLED"] else None, app.config["TORCH_THREADS"])
     faces = FaceEngine(app.config["MODELS_DIR"], app.config["FACE_MATCH_THRESHOLD"])
     cnn = ClosedSetCNN(app.config["CNN_MODEL_DIR"], app.config["CNN_MIN_CONF"], app.config["CNN_ENABLED"])
     manager = CameraManager(app, yolo, faces, weapons, cnn)

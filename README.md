@@ -63,6 +63,19 @@ No weapon weights ship with the repo. Drop a YOLO `.pt` as `models/Weapon_threat
 weapon detection as a pluggable slot that needs a better, validated model, not a working feature.
 `python scripts/check_weapon_model.py` reproduces this check on your own webcam.
 
+A second candidate ([weapon-detection-yolov11n](https://github.com/The-lucky-Survivor/weapon-detection-yolov11n),
+MIT, ONNX, classes knife / pistol / rifle) fared no better: with a real knife in view it never exceeded 39%
+confidence, and with **no knife** in the same scene it reported "knife" on 60 detections in 47 frames (up to 64%).
+Both models are therefore disabled by default (`SAFEGUARD_WEAPON_ENABLED=false`). A usable detector would need
+training on images that look like your own cameras.
+
+### Performance
+
+Measured on a 12-core CPU, 640x480 frames: the violence model first used ~7 cores because PyTorch spawned a thread per
+core and idle OpenMP workers spun. Capping PyTorch to 4 threads (re-applied after every call, because ultralytics
+resets it) and `OMP_WAIT_POLICY=PASSIVE` cut that to ~2.2 cores at 107 ms/frame, and the whole server with one camera and
+one viewer to ~1-2 cores while still delivering ~5.5 fps (the 6 fps analysis cap). Tune with `SAFEGUARD_TORCH_THREADS`.
+
 ## Architecture
 
 ```

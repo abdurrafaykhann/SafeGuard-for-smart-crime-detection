@@ -21,7 +21,7 @@ from safeguard.services.violence import ViolenceDetector, WeaponBackend, YoloBac
 
 
 DIAG_CONF = 0.10
-DIAG_SIZES = (640, 960)
+DIAG_SIZES = (640,) if str(Config.WEAPON_WEIGHTS).endswith(".onnx") else (640, 960)  # ONNX exports have a fixed input size
 COUNTDOWN_S = 10  # time to get an object into frame
 CAPTURE_S = 15
 

@@ -9,7 +9,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv(BASE_DIR / ".env")  # must run before the Config class body reads os.environ
+load_dotenv(BASE_DIR / ".env")
+os.environ.setdefault("OMP_WAIT_POLICY", "PASSIVE")  # idle OpenMP workers must sleep, not spin (cuts CPU by ~half)  # must run before the Config class body reads os.environ
 
 
 def _env(name: str, default: str | None = None) -> str | None:
