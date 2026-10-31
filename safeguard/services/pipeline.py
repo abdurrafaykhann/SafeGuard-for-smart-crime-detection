@@ -41,6 +41,7 @@ class CameraPipeline:
         self._cond = threading.Condition()
         self.state = {"violent": False, "score": 0.0, "label": "Clear", "persons": 0, "faces": 0,
                       "matches": [], "fps": 0.0, "connected": False, "cues": {}}
+        self._face_marks: list = []
         self._episode_start: float | None = None
         self._episode_escalated = False
         self._last_alert: dict[str, float] = {}
@@ -99,25 +100,31 @@ class CameraPipeline:
         elif self._episode_start is not None and res.smoothed < self.detector.threshold * 0.6:
             self._episode_start = None
 
-    def _handle_faces(self, frame, overlay) -> None:
+    def _draw_face_marks(self, overlay) -> None:
+        """Faces are only re-detected about once a second; redraw the last result on every
+        frame so the boxes stay steady instead of flickering."""
+        for (x, y, w, h), colour, text in self._face_marks:
+            cv2.rectangle(overlay, (x, y), (x + w, y + h), colour, 2)
+            if text:
+                cv2.putText(overlay, text, (x, max(y - 8, 14)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, colour, 1, cv2.LINE_AA)
+
+    def _handle_faces(self, frame) -> None:
         detected = self.faces.detect(frame)
-        matches = []
+        matches, marks = [], []
         for face in detected:
-            x, y, w, h = face.box
             match = None
             if self.faces.can_recognize and len(self.faces._gallery_meta):
                 match = self.faces.match(self.faces.embed(frame, face))
-            colour = RED if match else CYAN
-            cv2.rectangle(overlay, (x, y), (x + w, y + h), colour, 2)
+            marks.append((face.box, RED if match else CYAN,
+                          f"{match.label} {match.similarity:.0%}" if match else ""))
             if match:
                 matches.append({"label": match.label, "similarity": round(match.similarity, 3), "risk": match.risk})
-                cv2.putText(overlay, f"{match.label} {match.similarity:.0%}", (x, max(y - 8, 14)),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, RED, 1, cv2.LINE_AA)
                 if self._cooldown_ok(f"face-{match.entry_id}"):
                     create_alert(self.app, kind="watchlist", severity="high" if match.risk != "low" else "medium",
                                  title=f"Watchlist match: {match.label}", confidence=match.similarity,
                                  camera=self.camera, frame=frame, watchlist_id=match.entry_id,
                                  meta={"risk": match.risk, "similarity": round(match.similarity, 3)})
+        self._face_marks = marks
         self.state["faces"], self.state["matches"] = len(detected), matches
 
     @staticmethod
@@ -156,7 +163,8 @@ class CameraPipeline:
                     self._handle_violence(res, frame)
                 if self.camera.detect_faces and started - last_face >= face_every:
                     last_face = started
-                    self._handle_faces(frame, overlay)
+                    self._handle_faces(frame)
+                self._draw_face_marks(overlay)
             except Exception:
                 log.exception("pipeline error on camera %s", self.camera.id)
             if res is not None and res.violent:
