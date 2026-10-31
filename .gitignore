@@ -9,3 +9,5 @@ instance/
 # Downloaded, not committed (see scripts/download_models.py)
 models/*.onnx
 
+# Optional third-party weapon weights: not redistributed (see README)
+models/Weapon_*.pt

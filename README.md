@@ -43,6 +43,19 @@ pip install -r requirements-ml.txt   # pulls in PyTorch
 `models/Yolo_nano_weights.pt` is picked up automatically. Without it the system runs in
 **heuristics-only** mode, and the UI shows that badge, so results are never misrepresented.
 
+## Weapon detection (optional, experimental)
+
+SafeGuard can run a second YOLO model for guns and knives and raise a separate **Weapon** alert.
+No weapon weights ship with the repo. Drop a YOLO `.pt` as `models/Weapon_threat_yolov8n.pt`
+(or set `SAFEGUARD_WEAPON_WEIGHTS`); classes containing gun / pistol / rifle / knife / grenade count.
+
+**Measured result:** the community model I tried
+([Subh775/Threat-Detection-YOLOv8n](https://huggingface.co/Subh775/Threat-Detection-YOLOv8n), MIT) did
+**not** detect a real kitchen knife held to a webcam (never as `knife` at conf >= 0.10; one 59% hit in
+119 frames at the default cut-off) and repeatedly reported a `grenade` that was not there. Treat
+weapon detection as a pluggable slot that needs a better, validated model, not a working feature.
+`python scripts/check_weapon_model.py` reproduces this check on your own webcam.
+
 ## Architecture
 
 ```
