@@ -27,9 +27,12 @@
     t.btn.replaceChildren(icon(running ? 'stop' : 'play'), running ? 'Stop' : 'Start');
     t.meter.hidden = !running;
     if (running) {
-      t.img.src = `/api/cameras/${t.cam.id}/feed?t=${Date.now()}`;
+      const connect = () => { t.img.src = `/api/cameras/${t.cam.id}/feed?t=${Date.now()}`; };
+      connect();
       t.img.hidden = false;
       t.img.onload = () => { t.placeholder.hidden = true; };
+      // a dropped stream (network blip, tab suspended in the background) must reconnect on its own
+      t.img.onerror = () => { if (t.running) { t.placeholder.hidden = false; setTimeout(() => { if (t.running) connect(); }, 2000); } };
     } else {
       t.img.hidden = true; t.img.removeAttribute('src'); t.placeholder.hidden = false;
       t.placeholder.querySelector('div > div').textContent = 'Camera is stopped';

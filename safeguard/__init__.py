@@ -32,8 +32,9 @@ def create_app(config: type = Config) -> Flask:
     from .services.pipeline import CameraManager
     from .services.violence import WeaponBackend, YoloBackend
 
+    _limit_torch_threads(app.config["TORCH_THREADS"])
     yolo = YoloBackend(app.config["MODELS_DIR"], app.config["YOLO_WEIGHTS"], app.config["YOLO_IMGSZ"])
-    weapons = WeaponBackend(app.config["MODELS_DIR"] / app.config["WEAPON_WEIGHTS"])
+    weapons = WeaponBackend(app.config["MODELS_DIR"] / app.config["WEAPON_WEIGHTS"] if app.config["WEAPON_ENABLED"] else None)
     faces = FaceEngine(app.config["MODELS_DIR"], app.config["FACE_MATCH_THRESHOLD"])
     cnn = ClosedSetCNN(app.config["CNN_MODEL_DIR"], app.config["CNN_MIN_CONF"], app.config["CNN_ENABLED"])
     manager = CameraManager(app, yolo, faces, weapons, cnn)
@@ -60,6 +61,17 @@ def create_app(config: type = Config) -> Flask:
     if not app.config.get("TESTING"):
         _background_tasks(app)
     return app
+
+
+def _limit_torch_threads(n: int) -> None:
+    """Without this PyTorch spins up a thread per core and starves the capture/analysis threads."""
+    try:
+        import torch
+        torch.set_num_threads(n)
+        import cv2
+        cv2.setNumThreads(max(1, n))
+    except Exception:  # torch is an optional dependency
+        pass
 
 
 def _bootstrap_admin(app: Flask) -> None:

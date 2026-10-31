@@ -99,7 +99,7 @@ class WeaponBackend:
         self.error: str | None = None
         self.ids: dict[int, str] = {}
         if weights_path is None or not Path(weights_path).exists():
-            self.error = "no weapon weights installed"
+            self.error = "disabled or no weapon weights installed (set SAFEGUARD_WEAPON_ENABLED=true)"
             return
         try:
             from ultralytics import YOLO

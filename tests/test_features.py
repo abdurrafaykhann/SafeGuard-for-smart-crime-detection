@@ -72,7 +72,7 @@ def test_weapon_alert_needs_confident_sustained_sightings():
 def test_weapon_backend_degrades_gracefully_without_weights(tmp_path):
     from safeguard.services.violence import WeaponBackend
     wb = WeaponBackend(tmp_path / "missing.pt")
-    assert not wb.available and "no weapon weights" in wb.error
+    assert not wb.available and "weapon weights" in wb.error
 
 
 def test_pure_motion_alone_never_triggers_a_violence_alert():

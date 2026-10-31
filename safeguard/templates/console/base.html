@@ -33,7 +33,7 @@
       <div class="status-row">
         <span class="chip" id="chip-link" title="Real-time connection"><span class="dot"></span><span>connecting</span></span>
         <span class="chip {{ 'ok' if sys_mode == 'model+heuristics' else 'warn' }}" title="Violence analysis mode"><span class="dot"></span>{{ sys_mode }}</span>
-        <span class="chip {{ 'ok' if sys_weapons else 'warn' }}" title="Weapon detection model"><span class="dot"></span>weapons: {{ 'ready' if sys_weapons else 'not installed' }}</span>
+        <span class="chip {{ 'ok' if sys_weapons else 'warn' }}" title="Weapon detection model"><span class="dot"></span>weapons: {{ 'ready' if sys_weapons else 'off' }}</span>
         <span class="chip {{ 'ok' if sys_cnn == 'ready' else 'warn' }}" title="Original FYP closed-set CNN (optional)"><span class="dot"></span>cnn: {{ sys_cnn }}</span>
         <span class="chip {{ 'ok' if sys_recognition else 'warn' }}" title="Face recognition models"><span class="dot"></span>faces: {{ 'ready' if sys_recognition else 'detect only' }}</span>
       </div>

@@ -83,7 +83,9 @@ class Config:
     CNN_ENABLED = _env_bool("CNN_ENABLED", False)  # original FYP closed-set classifier (needs TensorFlow)
     CNN_MIN_CONF = _env_float("CNN_MIN_CONF", 0.90)
     CNN_MODEL_DIR = Path(_env("CNN_MODEL_DIR", str(BASE_DIR / "models" / "legacy")))
-    WEAPON_WEIGHTS = _env("WEAPON_WEIGHTS", "Weapon_threat_yolov8n.pt")  # optional; see README
+    WEAPON_ENABLED = _env_bool("WEAPON_ENABLED", False)  # off by default: the tested community model failed (see README)
+    WEAPON_WEIGHTS = _env("WEAPON_WEIGHTS", "Weapon_threat_yolov8n.pt")
+    TORCH_THREADS = _env_int("TORCH_THREADS", max(1, (os.cpu_count() or 4) // 3))  # PyTorch otherwise grabs every core
 
     # --- privacy
     RETENTION_DAYS = _env_int("RETENTION_DAYS", 30)
