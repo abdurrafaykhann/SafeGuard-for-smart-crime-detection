@@ -7,6 +7,7 @@ any number of consumers read from it."""
 from __future__ import annotations
 
 import logging
+import os
 import sys
 import threading
 import time
@@ -16,6 +17,10 @@ import cv2
 import numpy as np
 
 log = logging.getLogger(__name__)
+
+# RTSP over TCP avoids the smeared/green frames UDP packet loss causes, and a 5 s open
+# timeout makes a dead camera fail fast instead of hanging for 30 s.
+os.environ.setdefault("OPENCV_FFMPEG_CAPTURE_OPTIONS", "rtsp_transport;tcp|timeout;5000000")
 
 ALLOWED_SCHEMES = {"rtsp", "rtsps", "http", "https"}
 
