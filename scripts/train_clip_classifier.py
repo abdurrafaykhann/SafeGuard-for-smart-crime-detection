@@ -109,16 +109,20 @@ def main() -> int:
     ap.add_argument("--no-val", action="store_true", help="skip the final validation scoring")
     ap.add_argument("--extra-negatives", type=Path, nargs="*", default=[], help="npz files of your own normal behaviour")
     ap.add_argument("--site-test", type=Path, help="held-out npz of normal behaviour, never trained on")
+    ap.add_argument("--compare-with", type=Path, help="earlier model to compare against on --site-test (default: --out)")
+    ap.add_argument("--extra-repeat", type=int, default=3, help="repeat each of your clips this many times so a few dozen "
+                    "clips are not drowned out by 700 dataset clips")
     a = ap.parse_args()
 
     Xtr, ytr, _ = load_split(a.feats_dir, "train")
     old_bundle = None
-    if a.site_test and a.out.exists():
-        old_bundle = joblib.load(a.out)  # our own earlier artefact, kept for the before/after comparison
+    compare = a.compare_with or a.out
+    if a.site_test and compare.exists():
+        old_bundle = joblib.load(compare)  # our own earlier artefact, kept for the before/after comparison
     for extra in a.extra_negatives:
         Xe, ye = load_npz(extra)
         assert (ye == 0).all(), "extra files must contain only non-violent clips"
-        Xtr, ytr = np.vstack([Xtr, Xe]), np.concatenate([ytr, ye])
+        Xtr, ytr = np.vstack([Xtr] + [Xe] * a.extra_repeat), np.concatenate([ytr] + [ye] * a.extra_repeat)
         print(f"added {len(ye)} of your own non-violent clips from {extra.name}")
     print(f"train clips: {len(ytr)} ({int(ytr.sum())} fight / {int((1 - ytr).sum())} non-fight) | {Xtr.shape[1]} features")
     cv = StratifiedKFold(5, shuffle=True, random_state=0)

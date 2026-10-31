@@ -34,6 +34,17 @@ PROMPTS = ["sit and type naturally", "stretch your arms up", "wave at the camera
            "turn around", "rub your face / adjust your hair", "clap or fidget with your hands", "move your chair"]
 
 
+def _beep(n: int = 1) -> None:
+    """Audible cue so you do not have to watch the screen (Windows only; silent elsewhere)."""
+    try:
+        import winsound
+        for _ in range(n):
+            winsound.Beep(880, 140)
+            time.sleep(0.08)
+    except Exception:
+        pass
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", type=Path, required=True)
@@ -61,8 +72,11 @@ def main() -> int:
         cap.read()
 
     seqs, sample_dt = [], 0.25
+    _beep(3)  # three beeps = recording starts now
     for k in range(n_clips):
         print(f"clip {k + 1}/{n_clips}: {PROMPTS[k % len(PROMPTS)]}", flush=True)
+        if k:
+            _beep(1)  # one beep = next prompt (the 12 prompts repeat in the order listed in PROMPTS)
         feat, rows, last, t0 = FrameFeaturizer(yolo), [], -1.0, time.time()
         while time.time() - t0 < a.clip_seconds:
             ok, frame = cap.read()

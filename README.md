@@ -169,6 +169,31 @@ test. Live vs offline clip scores agreed to within 0.037 on average over 10 real
 exists the app uses it automatically (status chip "trained model: on"); otherwise it falls back to the hand-weighted
 fusion, and during the first ~2 s of a stream it stays quiet instead. Disable with `SAFEGUARD_CLIP_ENABLED=false`.
 
+### Adapting to your own cameras (site data)
+
+Public clips are street/crowd footage, so ordinary movement in front of a close-up webcam can look violent to the
+model. `scripts/record_negatives.py` records *your* normal behaviour as numbers only (no images or video are saved)
+and `scripts/train_clip_classifier.py --extra-negatives ...` adds it as non-violent training data (each clip repeated
+3x so ~50 clips are not drowned out by ~700). Two separate 2-minute sessions of normal activity (24 clips each) were
+recorded, one of them vigorous (stretching, standing up, walking past, waving).
+
+Held-out check (train with session B, test on session A, which was never trained on; live streaming rule):
+
+| Model | RWF-2000 val acc (streaming) | False alarms on held-out site session A |
+|---|---|---|
+| RWF-2000 only, threshold 0.50 | 80.2% | 5 / 24 clips |
+| + session B, own threshold 0.43 | 80.0% | **1 / 24 clips** |
+
+So site data cut false alarms on unseen normal movement by ~80% at no cost on RWF-2000. Caveats: 24 test clips from one
+person in one room; the model family also changed (random forest / boosting picked by cross-validation), so not all of
+the gain is attributable to the site data; and cross-validation scores are slightly flattering because repeated copies
+of a clip can fall on both sides of a fold. The shipped model is then trained on **both** sessions (so no held-out site
+data remains for it): random forest, whole-clip validation 80.2% accuracy / AUC 0.882, and under the live streaming rule
+at its stored threshold of **0.46: 80.0% accuracy, 80.6% precision, 79.0% recall (F1 0.80; TP 158 / FP 38 / TN 162 /
+FN 42)** on the 400 RWF-2000 `val` clips. `val` has been scored several times in this project; the thresholds were not
+tuned on it, but treat the figures as slightly optimistic (+/-4 points). Reports: `docs/training_violence_clip_site.json`.
+To adapt to your own site: record two sessions, retrain with `--extra-negatives A.npz --site-test B.npz`, and compare.
+
 A "two or more people in view" gate was also tested (train, out-of-fold) and **rejected**: the YOLO model finds 2+ people
 in only ~44% of clips, fights and non-fights alike, so the gate cut recall from 89% to 25% for no precision gain.
 
