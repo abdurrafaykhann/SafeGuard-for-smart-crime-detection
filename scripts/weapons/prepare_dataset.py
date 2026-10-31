@@ -81,6 +81,8 @@ def main() -> int:
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--negatives", type=Path, help="folder of your own webcam frames with no weapon in view")
     ap.add_argument("--max-train", type=int, default=12000, help="cap on training images (keeps Colab runs short)")
+    ap.add_argument("--max-val", type=int, default=0, help="cap on validation images (0 = no cap)")
+    ap.add_argument("--max-test", type=int, default=0, help="cap on test images (0 = no cap)")
     ap.add_argument("--limit-total", type=int, help="smoke test: stop after this many dataset images")
     ap.add_argument("--workers", type=int, default=16)
     ap.add_argument("--seed", type=int, default=0)
@@ -122,6 +124,19 @@ def main() -> int:
             kept += groups[k]; n += len(groups[k])
         stats["train images skipped by --max-train"] = len(by_split["train"]) - len(kept)
         by_split["train"] = kept
+    for split, cap in ("val", a.max_val), ("test", a.max_test):
+        if cap and len(by_split[split]) > cap:
+            groups = defaultdict(list)
+            for it in by_split[split]:
+                groups[source_key(it[0]["file"])].append(it)
+            keys = sorted(groups)
+            random.shuffle(keys)
+            kept = []
+            for k in keys:
+                if len(kept) >= cap:
+                    break
+                kept += groups[k]
+            by_split[split] = kept
     if a.limit_total:
         for s in list(by_split):
             by_split[s] = by_split[s][: max(1, a.limit_total // 3 if s == "train" else a.limit_total // 6)]
