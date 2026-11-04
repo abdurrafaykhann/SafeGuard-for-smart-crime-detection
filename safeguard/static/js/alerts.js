@@ -52,6 +52,7 @@
   function openViewer(a) {
     $('viewer-img').src = `/api/alerts/${a.id}/snapshot`;
     const clip = $('viewer-clip');
+    $('viewer-report').href = `/api/alerts/${a.id}/report.pdf`;
     clip.hidden = !a.has_clip;
     $('viewer-img').hidden = !!a.has_clip;
     if (a.has_clip) clip.src = `/api/alerts/${a.id}/clip`; else clip.removeAttribute('src');

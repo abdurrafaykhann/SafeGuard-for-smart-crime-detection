@@ -234,6 +234,23 @@ def alerts_snapshot(aid: int):
     return send_file(path, mimetype="image/jpeg", max_age=3600)
 
 
+@bp.get("/alerts/<int:aid>/report.pdf")
+@login_required
+@limiter.limit("60 per hour")
+def alerts_report(aid: int):
+    from ..services.report import build_alert_report
+    alert = db.get_or_404(Alert, aid)
+    path = snapshot_dir(current_app) / alert.snapshot_path if alert.snapshot_path else None
+    rows = (AuditLog.query.filter(((AuditLog.action == "alert_ack") & (AuditLog.detail == f"#{aid}"))
+                                  | ((AuditLog.action == "report_export") & (AuditLog.detail == f"alert #{aid}")))
+            .order_by(AuditLog.created_at).limit(40).all())
+    pdf = build_alert_report(alert, path, current_user.username, rows)
+    audit(current_user.username, "report_export", f"alert #{aid}", client_ip())
+    resp = current_app.response_class(pdf, mimetype="application/pdf")
+    resp.headers["Content-Disposition"] = f'attachment; filename="safeguard-alert-{aid}.pdf"'
+    return resp
+
+
 @bp.get("/alerts/<int:aid>/clip")
 @login_required
 def alerts_clip(aid: int):

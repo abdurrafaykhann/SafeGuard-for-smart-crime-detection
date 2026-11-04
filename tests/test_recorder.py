@@ -49,3 +49,26 @@ def test_disabled_recorder_does_nothing(app):
 def test_alert_without_clip_returns_404(admin, app):
     payload = create_alert(app, kind="violence", severity="high", title="t", frame=_frame(0))
     assert admin.get(f"/api/alerts/{payload['id']}/clip").status_code == 404
+
+
+def test_evidence_report_pdf_contains_the_alert_and_logs_the_export(admin, app):
+    payload = create_alert(app, kind="violence", severity="high", title="Fight near entrance", confidence=0.81,
+                           frame=_frame(3), meta={"cues": {"clip": 0.81, "motion": 0.4}})
+    assert admin.post(f"/api/alerts/{payload['id']}/ack").status_code == 200
+    resp = admin.get(f"/api/alerts/{payload['id']}/report.pdf")
+    assert resp.status_code == 200 and resp.mimetype == "application/pdf" and resp.data[:5] == b"%PDF-"
+    assert f"safeguard-alert-{payload['id']}.pdf" in resp.headers["Content-Disposition"]
+    from safeguard.extensions import db
+    from safeguard.models import AuditLog
+    with app.app_context():
+        assert AuditLog.query.filter_by(action="report_export", detail=f"alert #{payload['id']}").count() == 1
+    assert admin.get("/api/alerts/99999/report.pdf").status_code == 404
+
+
+def test_report_survives_non_latin_text_and_missing_snapshot(app):
+    from safeguard.models import Alert
+    from safeguard.services.report import build_alert_report
+    a = Alert(id=1, kind="watchlist", severity="high", title="Match: \u5f20\u4f1f \u2014 test", camera_name="Caf\u00e9", confidence=0.5,
+              meta="{}")
+    pdf = build_alert_report(a, None, "op", [])
+    assert pdf[:5] == b"%PDF-"

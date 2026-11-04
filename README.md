@@ -152,6 +152,13 @@ JPEGs (about 1 MB for 5 s), so cost is paid once per camera. The clip is encoded
 on a background thread, attached to the alert, shown in the alert viewer and deleted by the retention policy with the
 alert. Clips are recorded at the analysis rate (8 fps), not the camera's full frame rate.
 
+### Evidence report (PDF)
+
+The alert viewer has an **Evidence report (PDF)** button: event, type and severity, time, camera, model confidence, the
+"why it fired" cue bars, the snapshot with its SHA-256 (so a printed copy can be checked against the stored file), who
+acknowledged it and when, and the handling log. Every export is itself audit-logged. The report states that detections are
+automated and need human review.
+
 ### Public fraud check (home page, no sign-in)
 
 Anyone can type a business, website or agency name (or a web address) on the home page and see whether complaints

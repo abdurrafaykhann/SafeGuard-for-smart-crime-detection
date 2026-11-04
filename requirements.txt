@@ -8,4 +8,5 @@ flask-limiter>=3.5
 python-dotenv>=1.0
 numpy>=1.26
 opencv-python-headless>=4.9,<5      # OpenCV 5 removed the legacy cascade API
+fpdf2>=2.7                           # evidence-report PDFs
 waitress>=3.0                        # production WSGI server (cross-platform)
