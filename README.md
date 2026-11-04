@@ -144,6 +144,18 @@ distance; fails on a knife held centimetres from a blurry webcam).
 **Known limitation:** moving or shaking the camera itself, or large movements right in front of it, can raise
 violence alerts (the models never saw camera shake). Calibrate with `SAFEGUARD_CLIP_THRESHOLD` and keep the camera still.
 
+**Scene-wide-motion gate (added, benefit unproven).** Alerts are held while at least half of the last 5 s of samples
+have more than 30% of the picture changing at once (`SAFEGUARD_SCENE_MOTION_GATE`, on by default; the card shows
+"Camera/scene motion (held)"). The 30% / half-window values were chosen from the *training* clips only: in RWF-2000
+such samples are rare (1.6% of calm rows, 4.2% of fight rows), so the gate costs little there. Measured, production
+streaming rule on the 400 validation clips: without the gate 79.0% recall / 80.6% precision (TP 158, FP 38); with it
+78.0% / 80.4% (TP 156, FP 38), i.e. it removed 2 real fights and **none** of the 38 false alarms, because RWF has
+almost no camera shake to remove. On a synthetic test (real webcam frames shifted randomly each sample, 40 s) the
+classifier only fired for 10 px shifts (16 of 304 frames) and the gate did not hold those, since 10 px moves under 30%
+of the picture; 30 px and 60 px shifts produced no alerts either way (the gate held 268/304 frames at 60 px). So I could
+not reproduce the live false alarms synthetically, and the gate is a safeguard against *large* shakes, not a verified fix
+for the alerts seen on the desk webcam. Those still need a per-site threshold or your own recorded negatives.
+
 ## Architecture
 
 ```

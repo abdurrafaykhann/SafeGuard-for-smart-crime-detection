@@ -33,7 +33,7 @@ class CameraPipeline:
         camera = self.camera
         cfg = app.config
         self.stream = CameraStream(camera.source, cfg["FRAME_WIDTH"])
-        self.detector = ViolenceDetector(cfg["VIOLENCE_THRESHOLD"], cfg["VIOLENCE_MIN_FRAMES"], yolo, weapons, clip) if camera.detect_violence else None
+        self.detector = ViolenceDetector(cfg["VIOLENCE_THRESHOLD"], cfg["VIOLENCE_MIN_FRAMES"], yolo, weapons, clip, cfg["SCENE_MOTION_GATE"]) if camera.detect_violence else None
         self._stop = threading.Event()
         self._thread: threading.Thread | None = None
         self._jpeg: bytes | None = None

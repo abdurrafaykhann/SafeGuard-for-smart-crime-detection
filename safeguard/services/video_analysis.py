@@ -46,7 +46,7 @@ def _run(app, job_id: int, path: Path, yolo: YoloBackend, faces: FaceEngine, wea
         total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) or 0
         step = max(int(round(fps / SAMPLE_FPS)), 1)
         cfg = app.config
-        detector = ViolenceDetector(cfg["VIOLENCE_THRESHOLD"], cfg["VIOLENCE_MIN_FRAMES"], yolo, weapons, clip)
+        detector = ViolenceDetector(cfg["VIOLENCE_THRESHOLD"], cfg["VIOLENCE_MIN_FRAMES"], yolo, weapons, clip, cfg["SCENE_MOTION_GATE"])
         _update(app, job_id, status="running")
 
         timeline, episodes, evidence, face_hits, weapon_hits = [], [], [], {}, []

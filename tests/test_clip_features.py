@@ -155,3 +155,24 @@ def test_clip_threshold_override_changes_the_decision_point(tmp_path):
     assert cm.ClipModel(path).threshold == 0.38
     over = cm.ClipModel(path, threshold_override=0.55)
     assert over.threshold == 0.55 and over.trained_threshold == 0.38
+
+
+def _row_mf(flow, mf):
+    r = _row(flow)
+    r[FRAME_FEATURES.index("moving_fraction")] = mf
+    return r
+
+
+def test_scene_motion_gate_holds_alerts_while_whole_picture_moves_then_releases():
+    s = cm.ClipStream(StubClip())
+    for _ in range(cm.MIN_ROWS + cm.EVAL_EVERY):
+        s.add_row(_row_mf(3.0, 0.6))                       # classifier says violent, but the whole frame is moving
+    assert s.prob == 0.9 and s.held and not s.violent and s.streak == 0
+    for _ in range(cm.WINDOW):                             # the picture settles; localized motion remains
+        s.add_row(_row_mf(3.0, 0.05))
+    assert not s.held and s.violent                        # now the classifier is trusted again
+
+    off = cm.ClipStream(StubClip(), gate=False)            # the gate can be switched off
+    for _ in range(cm.MIN_ROWS + cm.EVAL_EVERY):
+        off.add_row(_row_mf(3.0, 0.6))
+    assert off.violent and not off.held

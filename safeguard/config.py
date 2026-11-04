@@ -81,6 +81,7 @@ class Config:
     FACE_MATCH_THRESHOLD = _env_float("FACE_MATCH_THRESHOLD", 0.40)
     CLIP_ENABLED = _env_bool("CLIP_ENABLED", True)  # use the trained clip classifier whenever its file exists
     CLIP_MODEL = _env("CLIP_MODEL", "violence_clip.joblib")
+    SCENE_MOTION_GATE = _env_bool("SCENE_MOTION_GATE", True)  # hold violence alerts while the whole picture is moving (camera shake)
     CLIP_THRESHOLD = _env_float("CLIP_THRESHOLD", 0.0)  # 0 = use the threshold stored in the model file; set e.g. 0.55 to cut false alarms on a camera
     YOLO_WEIGHTS = _env("YOLO_WEIGHTS", "Yolo_nano_weights.pt")
     YOLO_IMGSZ = _env_int("YOLO_IMGSZ", 640)  # input size for the violence model

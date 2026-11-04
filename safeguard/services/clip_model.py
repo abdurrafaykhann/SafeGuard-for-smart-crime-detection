@@ -12,7 +12,9 @@ from pathlib import Path
 
 import numpy as np
 
-from .clip_features import FrameFeaturizer, clip_vector
+from .clip_features import FRAME_FEATURES, FrameFeaturizer, clip_vector
+
+_MOVING = FRAME_FEATURES.index("moving_fraction")
 
 log = logging.getLogger(__name__)
 
@@ -21,6 +23,13 @@ WINDOW = 20          # rows kept: 5 s, as in training
 MIN_ROWS = 9         # first row has no motion reference, so 8 usable rows (~2 s) before scoring
 EVAL_EVERY = 4       # re-score every 4 new rows (~1 s)
 STREAK = 2           # consecutive scores >= threshold needed to call it violence
+
+# Scene-wide-motion gate. When the picture as a whole changes at once (a shaken or moved camera, or
+# someone filling the lens) the classifier is outside what it was trained on (RWF clips almost never
+# change over >30% of the frame: 1.6% of calm rows, 4.2% of fight rows). Alerts are held while at least
+# half of the last 5 s of samples are like that. Chosen from the *training* clips only.
+SCENE_MOTION = 0.30  # moving_fraction at/above which one sample counts as "whole picture moving"
+SCENE_SHARE = 0.5    # share of the window that must be like that before alerts are held
 
 
 class ClipModel:
@@ -66,8 +75,10 @@ class ClipModel:
 class ClipStream:
     """Rolling-window scorer. One instance per camera / per video."""
 
-    def __init__(self, model: ClipModel) -> None:
+    def __init__(self, model: ClipModel, gate: bool = True) -> None:
         self.model = model
+        self.gate = gate
+        self.held = False  # True while alerts are suppressed by the scene-wide-motion gate
         self.rows: deque[np.ndarray] = deque(maxlen=WINDOW)
         self._featurizer = FrameFeaturizer(None)  # YOLO output is supplied by the caller (no second inference)
         self._last_t: float | None = None
@@ -82,7 +93,7 @@ class ClipStream:
 
     @property
     def violent(self) -> bool:
-        return self.active and self.streak >= STREAK
+        return self.active and not self.held and self.streak >= STREAK
 
     def push(self, frame: np.ndarray, t: float, yolo_out: tuple[float, list]) -> None:
         if self._last_t is not None and t - self._last_t < SAMPLE_S - 0.02:
@@ -98,3 +109,10 @@ class ClipStream:
             self._since_eval = 0
             self.prob = self.model.prob(np.stack(self.rows))
             self.streak = self.streak + 1 if self.prob >= self.model.threshold else 0
+        if self.gate and len(self.rows) >= MIN_ROWS:
+            mf = np.array([r[_MOVING] for r in self.rows])
+            self.held = bool((mf >= SCENE_MOTION).mean() >= SCENE_SHARE)
+            if self.held:
+                self.streak = 0
+        else:
+            self.held = False

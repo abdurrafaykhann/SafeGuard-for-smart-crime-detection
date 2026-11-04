@@ -173,9 +173,9 @@ class WeaponBackend:
 
 class ViolenceDetector:
     def __init__(self, threshold: float = 0.62, min_frames: int = 3, backend: YoloBackend | None = None,
-                 weapons: WeaponBackend | None = None, clip=None) -> None:
+                 weapons: WeaponBackend | None = None, clip=None, scene_gate: bool = True) -> None:
         from .clip_model import ClipStream  # local import: clip_model -> clip_features -> this module
-        self.clip = ClipStream(clip) if clip is not None and clip.available else None
+        self.clip = ClipStream(clip, scene_gate) if clip is not None and clip.available else None
         self.threshold = threshold
         self.min_frames = min_frames
         self.backend = backend
@@ -284,7 +284,8 @@ class ViolenceDetector:
                 rounded["clip"] = round(self.clip.prob, 3)
                 thr, p = self.clip.model.threshold, self.clip.prob
                 label = ("Violence (trained classifier)" if self.clip.violent
-                         else ("Elevated activity" if p >= thr * 0.7 else "Clear"))
+                         else ("Camera/scene motion (held)" if self.clip.held and p >= thr
+                               else ("Elevated activity" if p >= thr * 0.7 else "Clear")))
                 return ViolenceResult(score, p, self.clip.violent, label, persons, rounded, weapons,
                                       weapon_alert, "clip", p)
         if self.clip is not None:  # trained model configured but still collecting its first ~2 s: stay quiet, don't fall back to motion

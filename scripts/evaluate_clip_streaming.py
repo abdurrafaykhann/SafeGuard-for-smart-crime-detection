@@ -28,6 +28,7 @@ def main() -> int:
     ap.add_argument("feats_dir", type=Path)
     ap.add_argument("--split", default="val")
     ap.add_argument("--out", type=Path)
+    ap.add_argument("--no-gate", action="store_true", help="evaluate without the scene-wide-motion gate")
     a = ap.parse_args()
 
     model = ClipModel(Config.MODELS_DIR / Config.CLIP_MODEL, True, Config.CLIP_THRESHOLD)
@@ -38,7 +39,7 @@ def main() -> int:
         d = np.load(f)
         off = np.concatenate([[0], np.cumsum(d["lengths"])])
         for i in range(len(d["lengths"])):
-            s, ever = ClipStream(model), False
+            s, ever = ClipStream(model, not a.no_gate), False
             for row in d["frames"][off[i]:off[i + 1]]:
                 s.add_row(row)
                 ever = ever or s.violent
