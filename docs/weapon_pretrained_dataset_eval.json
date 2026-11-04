@@ -1,0 +1,27 @@
+{
+  "note": "image-level recall (any matching box >= conf) on 405 clean re-split test images; optimistic, models may have seen similar data",
+  "test_images": {
+    "total": 405,
+    "with_gun": 287,
+    "with_knife": 192
+  },
+  "models": {
+    "weapon-detection-yolov11n.onnx": {
+      "gun@0.25": 0.72,
+      "gun@0.50": 0.53,
+      "knife@0.25": 0.75,
+      "knife@0.50": 0.64
+    },
+    "Subh775/Threat-Detection-YOLOv8n": {
+      "gun@0.25": 0.55,
+      "gun@0.50": 0.36,
+      "knife@0.25": 0.73,
+      "knife@0.50": 0.52
+    },
+    "COCO yolov8n": {
+      "knife@0.25": 0.02,
+      "knife@0.50": 0.02
+    }
+  },
+  "zoom_out_on_webcam": "no help: knife recall stayed <= 10% at 1.6x, 2.2x and 3.0x canvas"
+}

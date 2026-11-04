@@ -97,9 +97,31 @@ few centimetres from a webcam.
 4. `eval_webcam.py` scores any model on the held-out webcam frames; enable a model in the app only if knife recall is high
    and its false-alarm rate is near zero (`SAFEGUARD_WEAPON_ENABLED=true`, `SAFEGUARD_WEAPON_WEIGHTS=...`).
 
-**Data licence.** The NDJSON export states no licence and no source credit; check before publishing weights trained on
-it. **Status:** training results will be added here once the model has been trained and scored; until then weapon
-detection stays off by default.
+**What we use instead of our own model.** Training was set up but not needed once the pretrained models were tested
+fairly on two different kinds of image. Image-level recall on 405 clean-re-split test images from the dataset
+(287 with a gun, 192 with a knife; a hit means any matching box above the confidence level, so it is optimistic and these
+models may have seen similar images in training) versus the author's close-up webcam frames:
+
+| Model | Gun images @0.25 / @0.50 | Knife images @0.25 / @0.50 | Webcam knife recall @0.25 | Webcam false alarms @0.50 |
+|---|---|---|---|---|
+| weapon-detection-yolov11n (ONNX) | 72% / 53% | 75% / 64% | 9% | 0% |
+| Subh775/Threat-Detection-YOLOv8n | 55% / 36% | 73% / 52% | 9% | 1% |
+| stock COCO yolov8n (`knife` class only) | n/a | 2% / 2% | 4% | 0% |
+
+Reading: the community models do find weapons in ordinary photo / CCTV-style images, and they stay quiet on the author's
+webcam scene at conf >= 0.5, but they almost never find a knife held a few centimetres from a blurry webcam. Shrinking
+the frame onto a larger canvas (zoom-out 1.6x-3x) did not help (recall stayed <= 10%). The app therefore treats
+weapon detection as an **optional, experimental** extra:
+
+```bash
+python scripts/weapons/download_pretrained.py          # downloads + inspects the ONNX graph; not committed (data licence unknown)
+# .env:  SAFEGUARD_WEAPON_ENABLED=true   SAFEGUARD_WEAPON_WEIGHTS=Weapon_yolo11n.onnx
+```
+
+A weapon alert needs 3 consecutive frames at >= 0.55 confidence. Do not rely on it for close-up webcams. Training our own
+(`notebooks/train_weapon_detector.ipynb`, data pipeline in `scripts/weapons/`) remains available for a camera-specific model.
+**Data licence.** The NDJSON export used for the training pipeline states no licence and no source credit; check it
+before publishing weights trained on it.
 
 ### Performance
 
