@@ -2,58 +2,6 @@
 {% block title %}Intelligent video surveillance{% endblock %}
 {% block content %}
 <main>
-<section class="container" id="check" style="padding-top:36px">
-  <div class="panel panel-pad" style="max-width:860px;margin:0 auto">
-    <span class="eyebrow">Public fraud check · no sign-in needed</span>
-    <h2 style="margin:6px 0 4px">Before you pay or share details, check who you are dealing with.</h2>
-    <p style="margin:0 0 14px">Type a business, website or agency name (or a web address). We check it against complaints filed with law enforcement.</p>
-    <form method="get" action="{{ url_for('web.index') }}#check" role="search" style="display:flex;gap:10px;flex-wrap:wrap">
-      <input name="q" type="text" value="{{ q }}" maxlength="200" required placeholder="e.g. Brightpath Holdings Ltd or quickprofit-invest.example" aria-label="Business, website or agency name" style="flex:1;min-width:240px">
-      <button class="btn btn-primary" type="submit"><svg class="icon"><use href="#i-search"/></svg>Check</button>
-    </form>
-    {% if result %}
-      {% if not result.valid %}
-        <div class="panel result" style="margin-top:14px"><svg class="icon" style="color:var(--warn)"><use href="#i-alert"/></svg><div><b>Please enter at least two characters.</b></div></div>
-      {% elif result.verdict == 'unsafe' %}
-        <div class="panel result flag" style="margin-top:14px"><svg class="icon"><use href="#i-flag"/></svg><div><b>UNSAFE: complaints are on record against this name.</b>
-          <p style="margin:4px 0 0">Do not send money or personal details until you have verified it independently.</p></div></div>
-      {% elif result.verdict == 'caution' %}
-        <div class="panel result" style="margin-top:14px;border-color:var(--warn)"><svg class="icon" style="color:var(--warn)"><use href="#i-alert"/></svg><div><b>Be careful: this is close to a name with complaints.</b>
-          <p style="margin:4px 0 0">Check the spelling, or confirm you have the right business, before you go ahead.</p></div></div>
-      {% else %}
-        <div class="panel result clear" style="margin-top:14px"><svg class="icon"><use href="#i-clear"/></svg><div><b>No complaints found for “{{ result.query }}”.</b>
-          <p style="margin:4px 0 0">That only means nothing is on record. It is not a guarantee of safety: be cautious with unexpected requests for money or passwords.</p></div></div>
-      {% endif %}
-      {% for m in (result.matches or []) + (result.similar or []) %}
-        <div class="panel panel-pad" style="margin-top:10px">
-          <b>{{ m.name }}</b>{% if m.domain %} <code>{{ m.domain }}</code>{% endif %}
-          {% if m in result.similar %}<span class="badge sev-medium">similar name</span>{% endif %}
-          <div class="td-sub">{{ m.type|capitalize }} · {{ m.complaints }} complaint{{ '' if m.complaints == 1 else 's' }} ({{ m.active }} active) · highest status: {{ m.highest_status.replace('_', ' ') }}</div>
-          <div class="td-sub">Categories: {{ m.categories|join(', ') }} · first reported {{ m.first_reported }}, latest {{ m.last_reported }}</div>
-          {% if m.examples %}<ul style="margin:6px 0 0;padding-left:18px">{% for e in m.examples %}<li class="td-sub">{{ e }}</li>{% endfor %}</ul>{% endif %}
-          <div class="hint" style="margin-top:6px">Case ref: {{ m.references|join(', ') }}</div>
-        </div>
-      {% endfor %}
-      {% if result.valid %}<p class="hint" style="margin:12px 0 0">Demo database: every record is fictional. A complaint is an allegation, not proof of guilt.</p>{% endif %}
-    {% endif %}
-    {% if reported %}<div class="panel result clear" style="margin-top:14px"><svg class="icon"><use href="#i-clear"/></svg><div><b>Thank you. Your report was sent for review.</b><p style="margin:4px 0 0">It does not appear in results until a staff member approves it.</p></div></div>{% endif %}
-    <details id="report" style="margin-top:16px"{% if report_error %} open{% endif %}>
-      <summary style="cursor:pointer;font-weight:600">Report a business or website you think is a scam</summary>
-      {% if report_error %}<p style="color:var(--warn)">Please give a name and a category.</p>{% endif %}
-      <form method="post" action="{{ url_for('web.report') }}" style="display:grid;gap:10px;margin-top:10px">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <input name="entity_name" type="text" required maxlength="160" placeholder="Business, agency or website name" aria-label="Name">
-        <input name="entity_domain" type="text" maxlength="253" placeholder="Web address (optional)" aria-label="Web address">
-        <input name="category" type="text" required maxlength="60" placeholder="What kind of scam? e.g. fake investment" aria-label="Category">
-        <textarea name="description" rows="3" maxlength="400" placeholder="What happened? Please do not include names, phone numbers or account details of any person." aria-label="Description"></textarea>
-        <input name="website_url" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
-        <button class="btn" type="submit">Send report for review</button>
-        <span class="hint">We collect no contact details. Reports are reviewed by staff before they affect any result; false reports may be rejected.</span>
-      </form>
-    </details>
-    <p class="hint" style="margin:14px 0 0">Browser shortcut: drag <a href="{{ bookmarklet }}" onclick="return false" style="font-weight:700">Check this site</a> to your bookmarks bar, then click it on any website to check it here.</p>
-  </div>
-</section>
 <section class="container hero">
   <div>
     <span class="eyebrow">Real-time AI surveillance · v2</span>
@@ -135,5 +83,57 @@
 </section>
 
 <div class="container"><div class="cta-band"><h2>See it running.</h2><p style="max-width:48ch;margin:0 auto 26px">Sign in as an operator to open the live wall, review alerts and explore analytics.</p><a class="btn btn-primary btn-lg" href="{{ url_for('console.index') }}">Launch console</a></div></div>
+<section class="container" id="check" style="padding-top:56px;padding-bottom:56px">
+  <div class="panel panel-pad" style="max-width:860px;margin:0 auto">
+    <span class="eyebrow">Public fraud check · no sign-in needed</span>
+    <h2 style="margin:6px 0 4px">Before you pay or share details, check who you are dealing with.</h2>
+    <p style="margin:0 0 14px">Type a business, website or agency name (or a web address). We check it against complaints filed with law enforcement.</p>
+    <form method="get" action="{{ url_for('web.index') }}#check" role="search" style="display:flex;gap:10px;flex-wrap:wrap">
+      <input name="q" type="text" value="{{ q }}" maxlength="200" required placeholder="e.g. Brightpath Holdings Ltd or quickprofit-invest.example" aria-label="Business, website or agency name" style="flex:1;min-width:240px">
+      <button class="btn btn-primary" type="submit"><svg class="icon"><use href="#i-search"/></svg>Check</button>
+    </form>
+    {% if result %}
+      {% if not result.valid %}
+        <div class="panel result" style="margin-top:14px"><svg class="icon" style="color:var(--warn)"><use href="#i-alert"/></svg><div><b>Please enter at least two characters.</b></div></div>
+      {% elif result.verdict == 'unsafe' %}
+        <div class="panel result flag" style="margin-top:14px"><svg class="icon"><use href="#i-flag"/></svg><div><b>UNSAFE: complaints are on record against this name.</b>
+          <p style="margin:4px 0 0">Do not send money or personal details until you have verified it independently.</p></div></div>
+      {% elif result.verdict == 'caution' %}
+        <div class="panel result" style="margin-top:14px;border-color:var(--warn)"><svg class="icon" style="color:var(--warn)"><use href="#i-alert"/></svg><div><b>Be careful: this is close to a name with complaints.</b>
+          <p style="margin:4px 0 0">Check the spelling, or confirm you have the right business, before you go ahead.</p></div></div>
+      {% else %}
+        <div class="panel result clear" style="margin-top:14px"><svg class="icon"><use href="#i-clear"/></svg><div><b>No complaints found for “{{ result.query }}”.</b>
+          <p style="margin:4px 0 0">That only means nothing is on record. It is not a guarantee of safety: be cautious with unexpected requests for money or passwords.</p></div></div>
+      {% endif %}
+      {% for m in (result.matches or []) + (result.similar or []) %}
+        <div class="panel panel-pad" style="margin-top:10px">
+          <b>{{ m.name }}</b>{% if m.domain %} <code>{{ m.domain }}</code>{% endif %}
+          {% if m in result.similar %}<span class="badge sev-medium">similar name</span>{% endif %}
+          <div class="td-sub">{{ m.type|capitalize }} · {{ m.complaints }} complaint{{ '' if m.complaints == 1 else 's' }} ({{ m.active }} active) · highest status: {{ m.highest_status.replace('_', ' ') }}</div>
+          <div class="td-sub">Categories: {{ m.categories|join(', ') }} · first reported {{ m.first_reported }}, latest {{ m.last_reported }}</div>
+          {% if m.examples %}<ul style="margin:6px 0 0;padding-left:18px">{% for e in m.examples %}<li class="td-sub">{{ e }}</li>{% endfor %}</ul>{% endif %}
+          <div class="hint" style="margin-top:6px">Case ref: {{ m.references|join(', ') }}</div>
+        </div>
+      {% endfor %}
+      {% if result.valid %}<p class="hint" style="margin:12px 0 0">Demo database: every record is fictional. A complaint is an allegation, not proof of guilt.</p>{% endif %}
+    {% endif %}
+    {% if reported %}<div class="panel result clear" style="margin-top:14px"><svg class="icon"><use href="#i-clear"/></svg><div><b>Thank you. Your report was sent for review.</b><p style="margin:4px 0 0">It does not appear in results until a staff member approves it.</p></div></div>{% endif %}
+    <details id="report" style="margin-top:16px"{% if report_error %} open{% endif %}>
+      <summary style="cursor:pointer;font-weight:600">Report a business or website you think is a scam</summary>
+      {% if report_error %}<p style="color:var(--warn)">Please give a name and a category.</p>{% endif %}
+      <form method="post" action="{{ url_for('web.report') }}" style="display:grid;gap:10px;margin-top:10px">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input name="entity_name" type="text" required maxlength="160" placeholder="Business, agency or website name" aria-label="Name">
+        <input name="entity_domain" type="text" maxlength="253" placeholder="Web address (optional)" aria-label="Web address">
+        <input name="category" type="text" required maxlength="60" placeholder="What kind of scam? e.g. fake investment" aria-label="Category">
+        <textarea name="description" rows="3" maxlength="400" placeholder="What happened? Please do not include names, phone numbers or account details of any person." aria-label="Description"></textarea>
+        <input name="website_url" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
+        <button class="btn" type="submit">Send report for review</button>
+        <span class="hint">We collect no contact details. Reports are reviewed by staff before they affect any result; false reports may be rejected.</span>
+      </form>
+    </details>
+    <p class="hint" style="margin:14px 0 0">Browser shortcut: drag <a href="{{ bookmarklet }}" onclick="return false" style="font-weight:700">Check this site</a> to your bookmarks bar, then click it on any website to check it here.</p>
+  </div>
+</section>
 </main>
 {% endblock %}
