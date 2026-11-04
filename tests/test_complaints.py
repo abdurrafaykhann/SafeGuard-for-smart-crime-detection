@@ -56,3 +56,16 @@ def test_filing_a_complaint_is_admin_only(client, admin, app):
     assert r.status_code == 201
     with app.app_context():
         assert cp.lookup("fresh-scam.example")["verdict"] == "unsafe"
+
+
+def test_staff_can_list_search_and_update_status(client, admin, app):
+    _add(app, "Orchid Travel", "reported", "orchid.example")
+    rows = admin.get("/api/complaints?q=orchid").get_json()
+    assert len(rows) == 1 and rows[0]["entity_name"] == "Orchid Travel"
+    assert admin.get("/api/complaints?status=confirmed").get_json() == []
+    assert admin.patch(f"/api/complaints/{rows[0]['id']}", json={"status": "dismissed"}).status_code == 200
+    assert admin.patch(f"/api/complaints/{rows[0]['id']}", json={"status": "bogus"}).status_code == 400
+    with app.app_context():
+        assert cp.lookup("orchid.example")["verdict"] == "caution"          # dismissed no longer counts as unsafe
+    assert admin.get("/console/complaints").status_code == 200
+    assert client.application.test_client().get("/api/complaints").status_code in (302, 401)

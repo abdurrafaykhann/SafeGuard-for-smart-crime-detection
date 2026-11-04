@@ -33,6 +33,12 @@ def watchlist():
     return render_template("console/watchlist.html", active="watchlist")
 
 
+@bp.get("/complaints")
+@login_required
+def complaints():
+    return render_template("console/complaints.html", active="complaints")
+
+
 @bp.get("/search")
 @login_required
 def search():

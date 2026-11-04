@@ -1,0 +1,30 @@
+{% extends 'console/base.html' %}
+{% block title %}Complaints{% endblock %}
+{% block eyebrow %}Public fraud check{% endblock %}
+{% block heading %}Complaints register{% endblock %}
+{% block sub %}<p>Complaints filed against businesses, websites and agencies. These feed the public fraud check on the home page. Dismissed complaints no longer mark a name unsafe. No complainant details are stored.</p>{% endblock %}
+{% block content %}
+<div class="split">
+  {% if current_user.is_admin %}
+  <form class="panel panel-pad" id="file-complaint" autocomplete="off">
+    <h3>File a complaint</h3>
+    <div class="field"><label for="c-name">Business / agency / site name</label><input id="c-name" name="entity_name" type="text" required maxlength="160"></div>
+    <div class="field"><label for="c-domain">Web address (optional)</label><input id="c-domain" name="entity_domain" type="text" maxlength="253" placeholder="example-shop.example"></div>
+    <div class="field"><label for="c-type">Type</label><select id="c-type" name="entity_type"><option value="business">Business</option><option value="website">Website</option><option value="agency">Agency</option></select></div>
+    <div class="field"><label for="c-cat">Category</label><input id="c-cat" name="category" type="text" required maxlength="60" placeholder="e.g. Investment scam"></div>
+    <div class="field"><label for="c-status">Status</label><select id="c-status" name="status"><option value="reported">Reported</option><option value="under_investigation">Under investigation</option><option value="confirmed">Confirmed</option></select></div>
+    <div class="field"><label for="c-summary">Short description (shown publicly, no personal details)</label><textarea id="c-summary" name="summary" rows="3" maxlength="400"></textarea></div>
+    <button class="btn btn-primary" type="submit" style="width:100%"><svg class="icon"><use href="#i-plus"/></svg>File complaint</button>
+  </form>
+  {% else %}
+  <div class="panel panel-pad"><h3>Read-only</h3><p>Only administrators can file or update complaints.</p></div>
+  {% endif %}
+  <div class="panel">
+    <div class="panel-head"><h3>Register</h3>
+      <span style="display:flex;gap:8px"><input id="c-q" type="search" placeholder="Search name, web address or ref" style="min-width:200px">
+      <select id="c-filter"><option value="">All statuses</option><option value="reported">Reported</option><option value="under_investigation">Under investigation</option><option value="confirmed">Confirmed</option><option value="dismissed">Dismissed</option></select></span></div>
+    <div id="c-list"></div>
+  </div>
+</div>
+{% endblock %}
+{% block page_scripts %}<script src="{{ url_for('static', filename='js/complaints.js') }}"></script>{% endblock %}

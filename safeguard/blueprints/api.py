@@ -419,6 +419,38 @@ def complaint_create():
     return jsonify(reference=c.reference, entity=name, status=status), 201
 
 
+@bp.get("/complaints")
+@login_required
+def complaint_list():
+    from ..models import Complaint
+    q = Complaint.query
+    term = (request.args.get("q") or "").strip()[:100]
+    if term:
+        like = f"%{term.lower()}%"
+        q = q.filter(db.or_(Complaint.name_key.like(like), db.func.lower(Complaint.entity_domain).like(like),
+                            db.func.lower(Complaint.reference).like(like)))
+    if request.args.get("status") in {"reported", "under_investigation", "confirmed", "dismissed"}:
+        q = q.filter(Complaint.status == request.args["status"])
+    rows = q.order_by(Complaint.filed_at.desc()).limit(200).all()
+    return jsonify([{"id": c.id, "reference": c.reference, "entity_name": c.entity_name, "entity_domain": c.entity_domain,
+                     "entity_type": c.entity_type, "category": c.category, "summary": c.summary, "status": c.status,
+                     "filed_at": iso(c.filed_at), "created_by": c.created_by} for c in rows])
+
+
+@bp.patch("/complaints/<int:cid>")
+@admin_required
+def complaint_update(cid: int):
+    from ..models import Complaint
+    c = db.get_or_404(Complaint, cid)
+    status = (request.get_json(silent=True) or {}).get("status")
+    if status not in {"reported", "under_investigation", "confirmed", "dismissed"}:
+        return _bad("Unknown status.")
+    old, c.status = c.status, status
+    db.session.commit()
+    audit(current_user.username, "complaint_status", f"{c.reference} {old} -> {status}", client_ip())
+    return jsonify(id=c.id, status=c.status)
+
+
 # ---------------------------------------------------------------------- video
 @bp.post("/analysis")
 @login_required
