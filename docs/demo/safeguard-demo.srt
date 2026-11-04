@@ -1,0 +1,83 @@
+1
+00:00:00,694 --> 00:00:07,617
+Three cameras. One of them has an incident. Can you spot it before the AI does?
+
+2
+00:00:13,117 --> 00:00:19,070
+The gym camera. SafeGuard flagged it automatically, with nobody watching.
+
+3
+00:00:19,783 --> 00:00:29,826
+This is SafeGuard, a real-time AI surveillance console I built for my final year project at the University of Hertfordshire. Here is everything it does.
+
+4
+00:00:30,909 --> 00:00:43,462
+Every camera is captured once and analysed once, however many people are watching. A trained classifier scores five second windows of motion, and a separate model hunts for weapons.
+
+5
+00:00:44,006 --> 00:00:51,909
+When something fires, the incident feed updates instantly, and the alert shows why it fired, not just a score.
+
+6
+00:00:55,597 --> 00:01:02,435
+Every alert keeps a snapshot, a short video from before and after, and the cues behind the decision.
+
+7
+00:01:02,952 --> 00:01:11,235
+An operator acknowledges it, and one click exports an evidence report: the snapshot hash, the reasoning, and who handled it.
+
+8
+00:01:34,179 --> 00:01:40,678
+The weapon detector watches the same streams. Here it catches a rifle, then a knife.
+
+9
+00:01:55,921 --> 00:02:03,254
+Analytics show alert trends, busiest hours, hot spot cameras and how quickly operators respond.
+
+10
+00:02:03,762 --> 00:02:08,135
+You can also upload a recorded video and let SafeGuard scan it.
+
+11
+00:02:10,326 --> 00:02:15,180
+It returns an incident timeline, the peak risk and evidence frames.
+
+12
+00:02:15,789 --> 00:02:25,596
+Face search ranks a photo against the enrolled watchlist and opens the full case file. Faces are blurred in this demo, and every record is fictional.
+
+13
+00:02:26,105 --> 00:02:34,508
+On a fifty four person test, the right person ranked first ninety eight percent of the time, with each photo held out of the gallery.
+
+14
+00:02:35,242 --> 00:02:39,296
+Quick quiz. Is this website safe to pay?
+
+15
+00:02:45,667 --> 00:02:54,320
+Not safe. Thirteen complaints are on record. Anyone can check a business or website here, with no login.
+
+16
+00:02:54,831 --> 00:03:02,849
+A near miss spelling gets a careful warning. An unknown name says no complaints found, which is not the same as safe.
+
+17
+00:03:08,120 --> 00:03:14,138
+The public can report a business too, but a tip only counts after a staff member approves it.
+
+18
+00:03:24,150 --> 00:03:27,269
+Approved, and the check now flags it.
+
+19
+00:03:27,777 --> 00:03:38,815
+Under the hood: hashed passwords, CSRF protection, rate limits, audit logging, automatic data retention, and eighty three automated tests.
+
+20
+00:03:39,330 --> 00:03:50,917
+And I measure honestly. The violence model scores seventy nine percent recall and eighty one percent precision on four hundred held out clips, and the README documents where it fails.
+
+21
+00:03:51,427 --> 00:04:01,095
+That is SafeGuard. The code and documentation are on GitHub. Which feature would you build next? Tell me in the comments.

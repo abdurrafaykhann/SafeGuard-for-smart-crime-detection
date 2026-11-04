@@ -154,6 +154,21 @@ PyTorch violence model (heuristic cues only), the weapon model, and the face-pho
 public figures; do not publish them). The free tier forgets its database on restart. Review the repo for secrets before
 making it public: `.env`, `instance/` and model weights are git-ignored and excluded from the image by `.dockerignore`.
 
+### Demo video (`docs/demo/`)
+
+A 4-minute narrated walkthrough with two interactive quiz moments, recorded from the live app by `scripts/demo_video/make_demo.py`
+(stock footage is served as fake IP cameras by `stream_server.py`; a scripted Chrome session records the screen; Windows speech
+narrates; ffmpeg mixes and encodes). `index.html` is a companion page with clickable chapters and the two quizzes; `CREDITS.md`
+lists the footage; `LINKEDIN_POST.md` has a post draft and chapter timestamps. Faces are blurred while recording and every record
+is fictional. The MP4 is git-ignored (12 MB); regenerate it with the script (needs ffmpeg, Chrome, `pip install -r requirements-demo.txt`).
+
+What the stock clips actually showed (23 free-licence Pexels clips run through the live detectors, `scripts/evaluate_demo_clips.py`,
+`docs/evaluation_stock_clips.json`): the violence classifier fired on 7 of 8 sparring clips **and on 5 of 6 calm street clips**; the
+weapon model raised alerts on 7 of 9 gun/knife clips, but also on 5 of 8 sparring clips (reading gloves and limbs as pistols or knives) and
+1 of 6 calm clips. Re-framing a calm clip (cropping it to fill the tile) changed whether it triggered alerts, so these models are
+sensitive to framing and to footage unlike their training data. The clips used in the video were picked from these trial results to
+show the software working; the measured accuracy figures are the validation numbers above, not these examples.
+
 ### Corrupted-frame guard
 
 A glitching webcam once sent frames that were mostly digital noise, and the weapon model "found" a rifle in them (7 weapon

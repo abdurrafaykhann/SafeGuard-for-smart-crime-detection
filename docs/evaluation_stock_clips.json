@@ -1,0 +1,397 @@
+{
+  "summary": {
+    "fight": {
+      "clips": 8,
+      "violence_alerts": 7,
+      "weapon_alerts": 5
+    },
+    "gun": {
+      "clips": 6,
+      "violence_alerts": 3,
+      "weapon_alerts": 4
+    },
+    "knife": {
+      "clips": 3,
+      "violence_alerts": 1,
+      "weapon_alerts": 3
+    },
+    "normal": {
+      "clips": 6,
+      "violence_alerts": 5,
+      "weapon_alerts": 1
+    }
+  },
+  "clips": [
+    {
+      "category": "fight",
+      "file": "fight/36019279.mp4",
+      "seconds": 36.5,
+      "frames": 292,
+      "violence_alert": true,
+      "first_violence_s": 4.0,
+      "violent_frames": 64,
+      "peak_clip_prob": 0.625,
+      "weapon_alert": true,
+      "first_weapon_s": 28.8,
+      "peak_weapon_conf": 0.707,
+      "weapon_classes": {
+        "pistol": 0.707,
+        "knife": 0.482
+      }
+    },
+    {
+      "category": "fight",
+      "file": "fight/4761806.mp4",
+      "seconds": 24.8,
+      "frames": 207,
+      "violence_alert": true,
+      "first_violence_s": 15.4,
+      "violent_frames": 24,
+      "peak_clip_prob": 0.555,
+      "weapon_alert": true,
+      "first_weapon_s": 22.6,
+      "peak_weapon_conf": 0.694,
+      "weapon_classes": {
+        "pistol": 0.648,
+        "knife": 0.694
+      }
+    },
+    {
+      "category": "fight",
+      "file": "fight/6296278.mp4",
+      "seconds": 15.2,
+      "frames": 127,
+      "violence_alert": true,
+      "first_violence_s": 2.9,
+      "violent_frames": 71,
+      "peak_clip_prob": 0.758,
+      "weapon_alert": false,
+      "first_weapon_s": null,
+      "peak_weapon_conf": 0.0,
+      "weapon_classes": {}
+    },
+    {
+      "category": "fight",
+      "file": "fight/6296285.mp4",
+      "seconds": 5.9,
+      "frames": 50,
+      "violence_alert": true,
+      "first_violence_s": 2.9,
+      "violent_frames": 26,
+      "peak_clip_prob": 0.817,
+      "weapon_alert": true,
+      "first_weapon_s": 0.2,
+      "peak_weapon_conf": 0.793,
+      "weapon_classes": {
+        "pistol": 0.793
+      }
+    },
+    {
+      "category": "fight",
+      "file": "fight/6296447.mp4",
+      "seconds": 19.5,
+      "frames": 163,
+      "violence_alert": true,
+      "first_violence_s": 5.8,
+      "violent_frames": 75,
+      "peak_clip_prob": 0.613,
+      "weapon_alert": true,
+      "first_weapon_s": 2.4,
+      "peak_weapon_conf": 0.683,
+      "weapon_classes": {
+        "pistol": 0.652,
+        "knife": 0.683
+      }
+    },
+    {
+      "category": "fight",
+      "file": "fight/6296696.mp4",
+      "seconds": 11.4,
+      "frames": 96,
+      "violence_alert": false,
+      "first_violence_s": null,
+      "violent_frames": 0,
+      "peak_clip_prob": 0.415,
+      "weapon_alert": false,
+      "first_weapon_s": null,
+      "peak_weapon_conf": 0.525,
+      "weapon_classes": {
+        "pistol": 0.525
+      }
+    },
+    {
+      "category": "fight",
+      "file": "fight/7777758.mp4",
+      "seconds": 9.7,
+      "frames": 81,
+      "violence_alert": true,
+      "first_violence_s": 2.9,
+      "violent_frames": 57,
+      "peak_clip_prob": 0.7,
+      "weapon_alert": true,
+      "first_weapon_s": 0.7,
+      "peak_weapon_conf": 0.8,
+      "weapon_classes": {
+        "pistol": 0.8
+      }
+    },
+    {
+      "category": "fight",
+      "file": "fight/7790830.mp4",
+      "seconds": 18.0,
+      "frames": 150,
+      "violence_alert": true,
+      "first_violence_s": 2.9,
+      "violent_frames": 94,
+      "peak_clip_prob": 0.604,
+      "weapon_alert": false,
+      "first_weapon_s": null,
+      "peak_weapon_conf": 0.538,
+      "weapon_classes": {
+        "pistol": 0.538
+      }
+    },
+    {
+      "category": "gun",
+      "file": "gun/5243197.mp4",
+      "seconds": 9.6,
+      "frames": 80,
+      "violence_alert": true,
+      "first_violence_s": 2.9,
+      "violent_frames": 38,
+      "peak_clip_prob": 0.796,
+      "weapon_alert": true,
+      "first_weapon_s": 6.0,
+      "peak_weapon_conf": 0.728,
+      "weapon_classes": {
+        "pistol": 0.728,
+        "knife": 0.617
+      }
+    },
+    {
+      "category": "gun",
+      "file": "gun/6091316.mp4",
+      "seconds": 12.6,
+      "frames": 105,
+      "violence_alert": false,
+      "first_violence_s": null,
+      "violent_frames": 0,
+      "peak_clip_prob": 0.418,
+      "weapon_alert": false,
+      "first_weapon_s": null,
+      "peak_weapon_conf": 0.584,
+      "weapon_classes": {
+        "pistol": 0.584
+      }
+    },
+    {
+      "category": "gun",
+      "file": "gun/6092105.mp4",
+      "seconds": 14.9,
+      "frames": 125,
+      "violence_alert": true,
+      "first_violence_s": 12.5,
+      "violent_frames": 21,
+      "peak_clip_prob": 0.523,
+      "weapon_alert": true,
+      "first_weapon_s": 8.6,
+      "peak_weapon_conf": 0.783,
+      "weapon_classes": {
+        "rifle": 0.783
+      }
+    },
+    {
+      "category": "gun",
+      "file": "gun/6092110.mp4",
+      "seconds": 8.9,
+      "frames": 75,
+      "violence_alert": false,
+      "first_violence_s": null,
+      "violent_frames": 0,
+      "peak_clip_prob": 0.444,
+      "weapon_alert": true,
+      "first_weapon_s": 0.2,
+      "peak_weapon_conf": 0.804,
+      "weapon_classes": {
+        "rifle": 0.804
+      }
+    },
+    {
+      "category": "gun",
+      "file": "gun/6092116.mp4",
+      "seconds": 9.2,
+      "frames": 77,
+      "violence_alert": false,
+      "first_violence_s": null,
+      "violent_frames": 0,
+      "peak_clip_prob": 0.438,
+      "weapon_alert": false,
+      "first_weapon_s": null,
+      "peak_weapon_conf": 0.553,
+      "weapon_classes": {
+        "pistol": 0.514,
+        "rifle": 0.553
+      }
+    },
+    {
+      "category": "gun",
+      "file": "gun/8105520.mp4",
+      "seconds": 21.9,
+      "frames": 183,
+      "violence_alert": true,
+      "first_violence_s": 7.7,
+      "violent_frames": 40,
+      "peak_clip_prob": 0.586,
+      "weapon_alert": true,
+      "first_weapon_s": 5.3,
+      "peak_weapon_conf": 0.841,
+      "weapon_classes": {
+        "pistol": 0.841
+      }
+    },
+    {
+      "category": "knife",
+      "file": "knife/30166089.mp4",
+      "seconds": 3.8,
+      "frames": 33,
+      "violence_alert": false,
+      "first_violence_s": null,
+      "violent_frames": 0,
+      "peak_clip_prob": 0.386,
+      "weapon_alert": true,
+      "first_weapon_s": 0.2,
+      "peak_weapon_conf": 0.776,
+      "weapon_classes": {
+        "knife": 0.776
+      }
+    },
+    {
+      "category": "knife",
+      "file": "knife/5735079.mp4",
+      "seconds": 24.6,
+      "frames": 197,
+      "violence_alert": false,
+      "first_violence_s": null,
+      "violent_frames": 0,
+      "peak_clip_prob": 0.451,
+      "weapon_alert": true,
+      "first_weapon_s": 2.3,
+      "peak_weapon_conf": 0.86,
+      "weapon_classes": {
+        "knife": 0.86
+      }
+    },
+    {
+      "category": "knife",
+      "file": "knife/8094256.mp4",
+      "seconds": 15.4,
+      "frames": 129,
+      "violence_alert": true,
+      "first_violence_s": 2.9,
+      "violent_frames": 56,
+      "peak_clip_prob": 0.629,
+      "weapon_alert": true,
+      "first_weapon_s": 1.9,
+      "peak_weapon_conf": 0.835,
+      "weapon_classes": {
+        "knife": 0.835,
+        "pistol": 0.565
+      }
+    },
+    {
+      "category": "normal",
+      "file": "normal/27697943.mp4",
+      "seconds": 11.9,
+      "frames": 102,
+      "violence_alert": true,
+      "first_violence_s": 10.3,
+      "violent_frames": 8,
+      "peak_clip_prob": 0.476,
+      "weapon_alert": false,
+      "first_weapon_s": null,
+      "peak_weapon_conf": 0.0,
+      "weapon_classes": {}
+    },
+    {
+      "category": "normal",
+      "file": "normal/37601314.mp4",
+      "seconds": 19.2,
+      "frames": 161,
+      "violence_alert": true,
+      "first_violence_s": 19.2,
+      "violent_frames": 1,
+      "peak_clip_prob": 0.559,
+      "weapon_alert": false,
+      "first_weapon_s": null,
+      "peak_weapon_conf": 0.743,
+      "weapon_classes": {
+        "pistol": 0.743,
+        "knife": 0.59
+      }
+    },
+    {
+      "category": "normal",
+      "file": "normal/38836318.mp4",
+      "seconds": 16.0,
+      "frames": 133,
+      "violence_alert": true,
+      "first_violence_s": 9.6,
+      "violent_frames": 24,
+      "peak_clip_prob": 0.528,
+      "weapon_alert": false,
+      "first_weapon_s": null,
+      "peak_weapon_conf": 0.455,
+      "weapon_classes": {
+        "knife": 0.455
+      }
+    },
+    {
+      "category": "normal",
+      "file": "normal/39569280.mp4",
+      "seconds": 18.6,
+      "frames": 140,
+      "violence_alert": true,
+      "first_violence_s": 13.9,
+      "violent_frames": 32,
+      "peak_clip_prob": 0.8,
+      "weapon_alert": true,
+      "first_weapon_s": 3.7,
+      "peak_weapon_conf": 0.752,
+      "weapon_classes": {
+        "rifle": 0.752,
+        "knife": 0.669
+      }
+    },
+    {
+      "category": "normal",
+      "file": "normal/6059529.mp4",
+      "seconds": 23.9,
+      "frames": 179,
+      "violence_alert": true,
+      "first_violence_s": 3.2,
+      "violent_frames": 51,
+      "peak_clip_prob": 0.665,
+      "weapon_alert": false,
+      "first_weapon_s": null,
+      "peak_weapon_conf": 0.51,
+      "weapon_classes": {
+        "knife": 0.51
+      }
+    },
+    {
+      "category": "normal",
+      "file": "normal/6307658.mp4",
+      "seconds": 10.0,
+      "frames": 80,
+      "violence_alert": false,
+      "first_violence_s": null,
+      "violent_frames": 0,
+      "peak_clip_prob": 0.389,
+      "weapon_alert": false,
+      "first_weapon_s": null,
+      "peak_weapon_conf": 0.0,
+      "weapon_classes": {}
+    }
+  ],
+  "note": "23 free-licence Pexels clips run through the live detectors at 8 fps (scripts/evaluate_demo_clips.py). Categories are the clip's subject, not a ground-truth label of violence: 'fight' = staged boxing/sparring, 'gun'/'knife' = prop or stock weapons, 'normal' = pedestrians."
+}

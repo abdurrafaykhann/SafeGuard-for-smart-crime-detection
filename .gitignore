@@ -18,3 +18,6 @@ models/violence_clip.joblib
 # Old FYP face model (142 MB, Git LFS): kept on disk only
 models/legacy/*.h5
 models/*.h5
+
+# Demo video media (12 MB, regenerate with scripts/demo_video/make_demo.py or download from the release)
+docs/demo/*.mp4

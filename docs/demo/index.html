@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SafeGuard demo</title>
+<style>
+  :root { --bg:#060a12; --panel:#0d1624; --line:#1d2b40; --text:#e8eef7; --dim:#9fb0c6; --accent:#46e1ff; --accent2:#8b7bff; --good:#38e0a0; --bad:#ff5d73; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:radial-gradient(circle at 20% 0%, #10243d 0%, var(--bg) 55%); color:var(--text); font:16px/1.5 Inter, 'Segoe UI', system-ui, sans-serif; }
+  a { color: var(--accent); }
+  header, main, footer { width:min(1180px, 100% - 32px); margin-inline:auto; }
+  header { padding:28px 0 8px; }
+  h1 { margin:0 0 6px; font-size:clamp(28px, 4vw, 44px); letter-spacing:-.02em; }
+  h1 span { background:linear-gradient(90deg,var(--accent),var(--accent2)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  header p { margin:0; color:var(--dim); max-width:70ch; }
+  .layout { display:grid; grid-template-columns: minmax(0,1fr) 320px; gap:20px; margin-top:20px; }
+  video { width:100%; border-radius:14px; background:#000; border:1px solid var(--line); }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:14px; }
+  .panel h2 { font-size:13px; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); margin:0 0 10px; font-family:Consolas, monospace; }
+  .chap { display:flex; width:100%; justify-content:space-between; gap:10px; align-items:center; text-align:left; padding:9px 10px; margin:0 0 4px; border-radius:10px; border:1px solid transparent; background:transparent; color:var(--text); cursor:pointer; font:inherit; font-size:14px; }
+  .chap:hover { background:#13213a; }
+  .chap[aria-current="true"] { background:#16294a; border-color:var(--accent); }
+  .chap time { color:var(--dim); font-family:Consolas, monospace; font-size:12px; }
+  .quizzes { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px,1fr)); gap:16px; margin:20px 0; }
+  .quiz h3 { margin:0 0 10px; font-size:18px; }
+  .opts { display:flex; gap:8px; flex-wrap:wrap; }
+  .opt { flex:1; min-width:96px; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:#101c30; color:var(--text); cursor:pointer; font:inherit; font-weight:600; }
+  .opt:hover { border-color:var(--accent); }
+  .opt.right { background:rgba(56,224,160,.18); border-color:var(--good); color:var(--good); }
+  .opt.wrong { background:rgba(255,93,115,.14); border-color:var(--bad); color:var(--bad); }
+  .result { min-height:1.5em; margin-top:10px; color:var(--dim); }
+  .note { color:var(--dim); font-size:14px; }
+  footer { padding:10px 0 40px; color:var(--dim); font-size:14px; }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Safe<span>Guard</span> in 4 minutes</h1>
+  <p>AI surveillance console and public fraud check. Tap a chapter to jump, and try the two quizzes before you watch the answers.</p>
+</header>
+<main>
+  <div class="layout">
+    <div>
+      <video id="v" controls preload="metadata" playsinline poster="">
+        <source src="safeguard-demo.mp4" type="video/mp4">
+        <track kind="captions" src="safeguard-demo.vtt" srclang="en" label="English (also burned in)">
+      </video>
+    </div>
+    <aside class="panel" aria-label="Chapters">
+      <h2>Chapters</h2>
+      <div id="chapters"></div>
+    </aside>
+  </div>
+
+  <section class="quizzes" aria-label="Quizzes">
+    <div class="panel quiz" data-seek="hook_reveal">
+      <h2>Quiz 1 · Live wall</h2>
+      <h3>Three cameras, one incident. Which one did the AI flag?</h3>
+      <div class="opts"><button class="opt" data-right="0">Lobby</button><button class="opt" data-right="1">Gym floor</button><button class="opt" data-right="0">Car park</button></div>
+      <div class="result" aria-live="polite"></div>
+    </div>
+    <div class="panel quiz" data-seek="fraud_reveal">
+      <h3 style="margin-top:0">Is "zenith-crypto.example" safe to pay?</h3>
+      <h2>Quiz 2 · Fraud check</h2>
+      <div class="opts"><button class="opt" data-right="0">Safe</button><button class="opt" data-right="1">Not safe</button></div>
+      <div class="result" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="panel note">
+    <h2>About this demo</h2>
+    <p>All footage is free-licence stock (Pexels) and shows staged or prop scenes. Faces are blurred and every record is fictional. The clips were chosen to show the software working: on a wider trial of 23 stock clips the violence classifier also raised false alarms on calm street footage, which is why the closing card quotes the measured validation numbers (79% recall, 81% precision on 400 held-out clips) rather than these examples. Details and credits: <a href="CREDITS.md">CREDITS.md</a>. Source code: <a href="https://github.com/abdurrafaykhann/SafeGuard-for-smart-crime-detection">GitHub</a>.</p>
+  </section>
+</main>
+<footer>Built by Abdul Rafay Khan · University of Hertfordshire · supervised by Justin Mifsud</footer>
+<script>
+  const CHAPTERS = [{"key": "hook", "title": "Spot the incident (quiz)", "t": 0.7}, {"key": "hook_reveal", "title": "The reveal", "t": 13.1}, {"key": "intro", "title": "What is SafeGuard", "t": 19.8}, {"key": "live", "title": "Live wall", "t": 30.9}, {"key": "feed", "title": "Incident feed", "t": 44.0}, {"key": "alert", "title": "Alerts with video evidence", "t": 55.6}, {"key": "ack", "title": "Acknowledge and PDF report", "t": 63.0}, {"key": "weapon", "title": "Weapon detection", "t": 94.2}, {"key": "analytics", "title": "Analytics", "t": 115.9}, {"key": "video", "title": "Video analysis", "t": 123.8}, {"key": "video_result", "title": "Analysis results", "t": 130.3}, {"key": "faces", "title": "Face search", "t": 135.8}, {"key": "faces_acc", "title": "Case file and accuracy", "t": 146.1}, {"key": "quiz_fraud", "title": "Fraud check quiz", "t": 155.2}, {"key": "fraud_reveal", "title": "Fraud check result", "t": 165.7}, {"key": "fraud_caution", "title": "Near misses and unknown names", "t": 174.8}, {"key": "fraud_report", "title": "Public reports", "t": 188.1}, {"key": "fraud_after", "title": "Staff approval", "t": 204.2}, {"key": "tech", "title": "Security and engineering", "t": 207.8}, {"key": "honest", "title": "Measured accuracy", "t": 219.3}, {"key": "outro", "title": "Thanks and next steps", "t": 231.4}];
+  const v = document.getElementById('v');
+  const list = document.getElementById('chapters');
+  const fmt = (t) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
+  CHAPTERS.forEach((c, i) => {
+    const b = document.createElement('button');
+    b.className = 'chap'; b.type = 'button';
+    b.innerHTML = `<span>${c.title}</span><time>${fmt(c.t)}</time>`;
+    b.addEventListener('click', () => { v.currentTime = c.t; v.play(); });
+    list.append(b);
+  });
+  v.addEventListener('timeupdate', () => {
+    let cur = 0;
+    CHAPTERS.forEach((c, i) => { if (v.currentTime >= c.t - 0.2) cur = i; });
+    [...list.children].forEach((b, i) => b.setAttribute('aria-current', i === cur ? 'true' : 'false'));
+  });
+  const seek = (key) => { const c = CHAPTERS.find((x) => x.key === key); if (c) { v.currentTime = Math.max(c.t - 1, 0); v.play(); } };
+  document.querySelectorAll('.quiz').forEach((q) => {
+    q.querySelectorAll('.opt').forEach((b) => b.addEventListener('click', () => {
+      const right = b.dataset.right === '1';
+      q.querySelectorAll('.opt').forEach((o) => { o.classList.remove('right', 'wrong'); if (o.dataset.right === '1') o.classList.add('right'); });
+      if (!right) b.classList.add('wrong');
+      q.querySelector('.result').innerHTML = (right ? 'Correct. ' : 'Not quite. ') + `<a href="#" class="see">Watch the reveal</a>`;
+      q.querySelector('.see').addEventListener('click', (e) => { e.preventDefault(); seek(q.dataset.seek); });
+    }));
+  });
+</script>
+</body>
+</html>

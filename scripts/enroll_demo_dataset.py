@@ -68,6 +68,9 @@ def main() -> int:
     ap.add_argument("--replace", action="store_true", help="first remove entries previously created by this script")
     ap.add_argument("--seed", type=int, default=7)
     ap.add_argument("--own", default="me ", help="folders whose name contains this are enrolled under their own name, no record")
+    ap.add_argument("--exclude", action="append", default=[], help="folder name to skip entirely (repeatable)")
+    ap.add_argument("--holdout", action="store_true",
+                    help="keep each person's last photo OUT of the watchlist (people with 3+ photos) and list it in the map, for honest cross-photo tests")
     a = ap.parse_args()
 
     from safeguard import create_app
@@ -78,7 +81,7 @@ def main() -> int:
     sg = app.extensions["safeguard"]
     if not sg.faces.can_recognize:
         raise SystemExit("Face models missing. Run: python scripts/download_models.py")
-    folders = sorted(p for p in a.dataset.iterdir() if p.is_dir())
+    folders = sorted(p for p in a.dataset.iterdir() if p.is_dir() and p.name not in set(a.exclude))
     rng = random.Random(a.seed)
     names = [f"{f} {l}" for f in FIRST for l in LAST]
     rng.shuffle(names)
@@ -104,8 +107,10 @@ def main() -> int:
         n = 0
         for folder in folders:
             shots = []
-            for img_path in sorted(folder.iterdir()):
-                if img_path.suffix.lower() not in {".jpg", ".jpeg", ".png", ".webp"}:
+            images = [p for p in sorted(folder.iterdir()) if p.suffix.lower() in {".jpg", ".jpeg", ".png", ".webp"}]
+            held = images[-1].name if a.holdout and len(images) >= 3 else None
+            for img_path in images:
+                if img_path.name == held:
                     continue
                 img = cv2.imread(str(img_path))
                 face = sg.faces.largest_face(img) if img is not None else None
@@ -129,7 +134,7 @@ def main() -> int:
                                    record=json.dumps(record))
             entry.photos = [WatchlistPhoto(embedding=e.astype(np.float32).tobytes(), photo_path=p) for e, p in shots[1:]]
             db.session.add(entry)
-            mapping[folder.name] = {"label": label, "photos": len(shots)}
+            mapping[folder.name] = {"label": label, "photos": len(shots), **({"held_out": held} if held else {})}
         db.session.commit()
         sg.faces.load_gallery(WatchlistEntry.query.all())
         print(f"Enrolled {n} people, {sum(m['photos'] for m in mapping.values())} photos.")

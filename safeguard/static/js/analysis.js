@@ -52,7 +52,7 @@
     }
     const r = job.result;
     const kpi = (label, value, hot) => el('div', { class: `panel kpi ${hot ? 'hot' : ''}` }, el('span', { class: 'label', text: label }), el('b', { text: value }));
-    host.replaceChildren(
+    host.replaceChildren(...[
       el('div', { class: 'panel-head' }, el('h3', { text: job.filename }), el('span', { class: 'chip', text: r.mode })),
       el('div', { class: 'kpis', style: 'padding:16px;margin:0;grid-template-columns:repeat(3,1fr)' },
         kpi('Duration', fmt(r.duration_s)), kpi('Incidents', r.episodes.length, r.episodes.length > 0), kpi('Peak risk', pct(r.peak_score), r.peak_score >= 0.62)),
@@ -69,7 +69,7 @@
         ? el('div', { class: 'panel-pad' }, el('div', { class: 'label', text: 'Watchlist hits', style: 'margin-bottom:10px' }),
           ...Object.entries(r.watchlist_hits).map(([name, h]) => el('div', { class: 'td-sub', text: `${name} at ${fmt(h.t)} · ${Math.round(h.similarity * 100)}% similar · ${h.risk} risk` })))
         : null,
-      r.evidence.length ? el('div', { class: 'evidence' }, ...r.evidence.filter((x) => x.file).map((x) => el('figure', { style: 'margin:0' }, el('img', { src: `/api/evidence/${x.file}`, alt: `Evidence at ${fmt(x.t)}`, loading: 'lazy' }), el('figcaption', { class: 'td-sub', text: fmt(x.t) })))) : null);
+      r.evidence.length ? el('div', { class: 'evidence' }, ...r.evidence.filter((x) => x.file).map((x) => el('figure', { style: 'margin:0' }, el('img', { src: `/api/evidence/${x.file}`, alt: `Evidence at ${fmt(x.t)}`, loading: 'lazy' }), el('figcaption', { class: 'td-sub', text: fmt(x.t) })))) : null].filter(Boolean));
   }
 
   function track(id) {
