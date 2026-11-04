@@ -6,8 +6,8 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 COPY safeguard safeguard
 COPY scripts scripts
-COPY models models
 COPY run.py .
+RUN python scripts/download_models.py || echo 'face models not downloaded; recognition stays off'
 RUN mkdir -p /app/instance && chown -R app /app
 USER app
 VOLUME /app/instance

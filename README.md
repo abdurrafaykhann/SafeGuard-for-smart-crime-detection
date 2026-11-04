@@ -144,6 +144,16 @@ distance; fails on a knife held centimetres from a blurry webcam).
 **Known limitation:** moving or shaking the camera itself, or large movements right in front of it, can raise
 violence alerts (the models never saw camera shake). Calibrate with `SAFEGUARD_CLIP_THRESHOLD` and keep the camera still.
 
+### Hosting a public demo (prepared, not deployed)
+
+`render.yaml` and the Dockerfile are ready for a free Render web service (HTTPS is provided by the host). Steps: push the
+repo to GitHub, create a Blueprint in Render from it, and set `SAFEGUARD_ADMIN_PASSWORD` in the dashboard (it is never in
+the repo). With `SAFEGUARD_DEMO_SEED=true` the first start fills the public fraud check with the fictional complaints so the
+home page works straight away. What the hosted demo does NOT include, on purpose: cameras (a cloud server has none), the
+PyTorch violence model (heuristic cues only), the weapon model, and the face-photo demo set (those are photos of real
+public figures; do not publish them). The free tier forgets its database on restart. Review the repo for secrets before
+making it public: `.env`, `instance/` and model weights are git-ignored and excluded from the image by `.dockerignore`.
+
 ### Evidence clips
 
 Every alert now carries a short video: the 5 s before it and 5 s after (`SAFEGUARD_EVIDENCE_BEFORE` /

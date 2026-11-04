@@ -1,5 +1,6 @@
 """Entry point.  Dev:  python run.py      Prod:  waitress is used automatically unless --dev."""
 import argparse
+import os
 
 from safeguard import create_app
 
@@ -8,7 +9,7 @@ app = create_app()
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--host", default="127.0.0.1")
-    parser.add_argument("--port", type=int, default=5000)
+    parser.add_argument("--port", type=int, default=int(os.environ.get("PORT", 5000)))
     parser.add_argument("--dev", action="store_true", help="Flask debug server with auto-reload")
     args = parser.parse_args()
     if args.dev:

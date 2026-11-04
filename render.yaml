@@ -1,0 +1,20 @@
+# Render Blueprint for a public DEMO. Nothing is deployed until you connect this repo in Render.
+# Demo limits: no cameras in the cloud, heuristics-only violence cues, fictional complaints data only,
+# free-tier disk is wiped on every restart.
+services:
+  - type: web
+    name: safeguard-demo
+    runtime: docker
+    plan: free
+    healthCheckPath: /healthz
+    envVars:
+      - key: SAFEGUARD_DEMO_SEED
+        value: "true"
+      - key: SAFEGUARD_COOKIE_SECURE
+        value: "true"
+      - key: SAFEGUARD_ADMIN_PASSWORD
+        sync: false            # you enter this in the Render dashboard; never commit it
+      - key: SAFEGUARD_WEAPON_ENABLED
+        value: "false"
+      - key: SAFEGUARD_AUTOSTART_CAMERAS
+        value: "false"

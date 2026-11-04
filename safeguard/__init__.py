@@ -55,6 +55,7 @@ def create_app(config: type = Config) -> Flask:
         db.create_all()  # additive only; the old build called drop_all() on every start
         _add_missing_columns()
         _bootstrap_admin(app)
+        _seed_demo(app)
         _refresh_gallery(app)
 
     _register_hooks(app)
@@ -129,6 +130,13 @@ def _bootstrap_admin(app: Flask) -> None:
         app.logger.warning("\n%s\n FIRST RUN - admin account created\n   username: %s\n   password: %s\n"
                            " Shown once. Set SAFEGUARD_ADMIN_PASSWORD to choose your own.\n%s",
                            banner, user.username, password, banner)
+
+
+def _seed_demo(app: Flask) -> None:
+    from .models import Complaint
+    if app.config.get("DEMO_SEED") and not Complaint.query.count():
+        from .services.demo_data import seed_complaints
+        app.logger.info("demo mode: seeded %d fictional complaints", seed_complaints())
 
 
 def _refresh_gallery(app: Flask) -> None:

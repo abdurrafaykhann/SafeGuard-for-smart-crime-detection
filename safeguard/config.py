@@ -77,6 +77,7 @@ class Config:
     ALERT_COOLDOWN_SECONDS = _env_float("ALERT_COOLDOWN", 20.0)
     ANALYSIS_FPS = _env_float("ANALYSIS_FPS", 8.0)  # 8: the clip model takes its 4 samples/s from every 2nd frame
     FACE_INTERVAL_SECONDS = _env_float("FACE_INTERVAL", 1.0)
+    DEMO_SEED = _env_bool("DEMO_SEED", False)  # hosted demo: fill the fraud-check database with fictional complaints on first start
     FRAME_WIDTH = _env_int("FRAME_WIDTH", 640)
     EVIDENCE_BEFORE = _env_float("EVIDENCE_BEFORE", 5.0)  # seconds of video kept before an alert (0 + 0 disables evidence clips)
     EVIDENCE_AFTER = _env_float("EVIDENCE_AFTER", 5.0)    # seconds recorded after it

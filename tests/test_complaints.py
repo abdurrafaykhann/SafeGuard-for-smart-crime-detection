@@ -101,3 +101,22 @@ def test_report_form_rejects_bots_and_bad_input(client, app):
 def test_home_page_has_report_form_and_bookmarklet(client):
     html = client.get("/").get_data(as_text=True)
     assert "Report a business" in html and "javascript:(function()" in html and "Check this site" in html
+
+
+def test_demo_mode_seeds_fictional_complaints_once(tmp_path):
+    from safeguard import create_app
+    from safeguard.config import TestConfig
+
+    class Demo(TestConfig):
+        INSTANCE_DIR = tmp_path
+        DATA_DIR = tmp_path / "data"
+        DEMO_SEED = True
+
+    app = create_app(Demo)
+    with app.app_context():
+        first = Complaint.query.count()
+        assert first > 50 and cp.lookup("zenith-crypto.example")["verdict"] == "unsafe"
+    app2 = create_app(Demo)                    # second start must not duplicate
+    with app2.app_context():
+        assert Complaint.query.count() == first
+    app.extensions["safeguard"].manager.stop_all()
