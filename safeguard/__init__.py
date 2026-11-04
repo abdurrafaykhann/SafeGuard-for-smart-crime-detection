@@ -62,6 +62,7 @@ def create_app(config: type = Config) -> Flask:
 
     if not app.config.get("TESTING"):
         _background_tasks(app)
+        _warm_up_models(app)
     return app
 
 
@@ -74,6 +75,31 @@ def _limit_torch_threads(n: int) -> None:
         cv2.setNumThreads(max(1, n))
     except Exception:  # torch is an optional dependency
         pass
+
+
+def _warm_up_models(app: Flask) -> None:
+    """The first prediction of each model triggers a long one-off chain of imports and graph setup
+    (minutes on a cold start). Pay that at boot, in the background, instead of inside the first camera's
+    analysis thread, so pressing Start is quick."""
+    import threading
+
+    import numpy as np
+
+    sg = app.extensions["safeguard"]
+
+    def run():
+        t0 = time.time()
+        blank = np.full((480, 640, 3), 110, np.uint8)
+        for name, fn in (("violence model", lambda: sg.yolo.available and sg.yolo.infer(blank)),
+                         ("weapon model", lambda: sg.weapons.available and sg.weapons.infer(blank)),
+                         ("face detector", lambda: sg.faces.detect(blank))):
+            try:
+                fn()
+            except Exception as exc:  # warm-up is best effort; real errors surface when a camera runs
+                app.logger.warning("warm-up of %s failed: %s", name, exc)
+        app.logger.info("models warmed up in %.0fs", time.time() - t0)
+
+    threading.Thread(target=run, name="warmup", daemon=True).start()
 
 
 def _bootstrap_admin(app: Flask) -> None:

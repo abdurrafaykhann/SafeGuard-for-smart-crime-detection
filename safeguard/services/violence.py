@@ -104,6 +104,31 @@ class YoloBackend:
         return best, persons
 
 
+def _limit_onnx_threads(n: int) -> None:
+    """ONNX Runtime defaults to one thread per core and busy-waits between calls, which took the whole machine
+    (~1000% CPU). Ultralytics builds its session with default options, so wrap InferenceSession once to inject
+    a small thread pool with spinning disabled."""
+    try:
+        import onnxruntime as ort
+    except Exception:
+        return
+    if getattr(ort.InferenceSession, "_safeguard_limited", False):
+        return
+    base = ort.InferenceSession
+
+    class LimitedSession(base):
+        _safeguard_limited = True
+
+        def __init__(self, path_or_bytes, sess_options=None, *args, **kwargs):
+            opts = sess_options or ort.SessionOptions()
+            opts.intra_op_num_threads = n
+            opts.inter_op_num_threads = 1
+            opts.add_session_config_entry("session.intra_op.allow_spinning", "0")
+            super().__init__(path_or_bytes, opts, *args, **kwargs)
+
+    ort.InferenceSession = LimitedSession
+
+
 class WeaponBackend:
     """Optional second detector (guns / knives). Lazy and failure-tolerant like YoloBackend.
 
@@ -122,6 +147,8 @@ class WeaponBackend:
             return
         try:
             from ultralytics import YOLO
+            if str(weights_path).lower().endswith(".onnx"):
+                _limit_onnx_threads(2)
             self.model = YOLO(str(weights_path))
         except Exception as exc:
             self.error = f"could not load weapon model: {exc}"
@@ -220,10 +247,11 @@ class ViolenceDetector:
         contact = self._contact_cue(persons)
         interaction = float(np.clip(contact * motion * 1.6, 0.0, 1.0)) if len(persons) >= 2 else 0.0
 
-        weapons: list = []
-        if self.weapons and self.weapons.available:
+        weapons: list = getattr(self, "_last_weapons", [])
+        self._weapon_tick = getattr(self, "_weapon_tick", -1) + 1
+        if self.weapons and self.weapons.available and self._weapon_tick % 2 == 0:  # every 2nd frame is plenty
             try:
-                weapons = self.weapons.infer(frame)
+                weapons = self._last_weapons = self.weapons.infer(frame)
             except Exception as exc:
                 log.warning("weapon inference failed: %s", exc)
         weapon_cue = max((c for _, c, _ in weapons), default=0.0)

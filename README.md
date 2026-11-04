@@ -130,6 +130,20 @@ core and idle OpenMP workers spun. Capping PyTorch to 4 threads (re-applied afte
 resets it) and `OMP_WAIT_POLICY=PASSIVE` cut that to ~2.2 cores at 107 ms/frame, and the whole server with one camera and
 one viewer to ~1-2 cores while still delivering ~5.5 fps (the 6 fps analysis cap). Tune with `SAFEGUARD_TORCH_THREADS`.
 
+**With every model on** (trained violence classifier, YOLO, face detection and the optional ONNX weapon model, one camera
+and one viewer) the server uses about **2 cores (~200% CPU)** on a 12-core machine, and a first frame appears about 3 s
+after pressing Start (first violence score ~5 s). Two fixes made that possible: ONNX Runtime defaults to one busy-waiting
+thread per core and took the whole machine (~1000%), so its session is capped at 2 threads with spinning off and the weapon
+model runs on every second analysed frame; and the first prediction of each model triggers a long one-off import chain
+(minutes on a cold start), so all models are warmed up in a background thread at boot.
+
+**Live check of the weapon model.** With the camera showing a room, a person standing a few metres away holding a knife
+raised a *Weapon detected: knife* alert at 81% confidence, matching the earlier image-level results (works at a normal
+distance; fails on a knife held centimetres from a blurry webcam).
+
+**Known limitation:** moving or shaking the camera itself, or large movements right in front of it, can raise
+violence alerts (the models never saw camera shake). Calibrate with `SAFEGUARD_CLIP_THRESHOLD` and keep the camera still.
+
 ## Architecture
 
 ```
