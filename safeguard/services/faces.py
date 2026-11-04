@@ -40,7 +40,7 @@ class FaceMatch:
 
 
 class FaceEngine:
-    def __init__(self, models_dir: Path, match_threshold: float = 0.40) -> None:
+    def __init__(self, models_dir: Path, match_threshold: float = 0.50) -> None:
         self.match_threshold = match_threshold
         self._lock = threading.Lock()  # cv2 DNN objects are not re-entrant
         self.detector = None

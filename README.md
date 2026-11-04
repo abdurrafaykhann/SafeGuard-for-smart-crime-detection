@@ -169,6 +169,16 @@ weapon model raised alerts on 7 of 9 gun/knife clips, but also on 5 of 8 sparrin
 sensitive to framing and to footage unlike their training data. The clips used in the video were picked from these trial results to
 show the software working; the measured accuracy figures are the validation numbers above, not these examples.
 
+### How the YOLO violence model was trained
+
+`models/Yolo_nano_weights.pt` is a YOLOv8-nano detector (classes `non_violence`, `violence`) that I **fine-tuned** from the
+COCO-pretrained `yolov8n.pt` (Ultralytics 8.2.90) for 50 epochs at 640 px, batch 16, on Google Colab (training date 2024-09-09).
+Ultralytics' built-in augmentation was switched off (`mosaic=0`, `augment=False`). These details are read from the training record
+stored inside the checkpoint, not from memory. Validation metrics at the best epoch: precision 0.846, recall 0.871,
+**mAP@50 0.912**, mAP@50-95 0.678. They come from the validation split that also picked the best epoch, so treat them as slightly
+optimistic; this is a frame-level detector and the clip-level classifier above is what makes the live decision. The dataset name
+and image count are not recorded in the checkpoint: [add them here].
+
 ### Corrupted-frame guard
 
 A glitching webcam once sent frames that were mostly digital noise, and the weapon model "found" a rifle in them (7 weapon
@@ -222,8 +232,33 @@ pretrained SFace model, so adding a person is one enrolment, not a retrain.
 
 Measured with `scripts/evaluate_identification.py` on a 54-person, 273-photo set (2-10 photos each; each photo queried
 against a gallery that excludes it; 8 photos skipped because no face was detected): **top-1 97.7%, top-3 99.6%**; at the
-app's 0.40 threshold it answers 94.3% of queries and is right 99.6% of the time it answers (`docs/evaluation_identification.json`).
+app's 0.50 threshold it answers 88.7% of queries and is right 100.0% of the time it answers (`docs/evaluation_identification.json`).
 These are web-style portraits of public figures; expect lower accuracy on CCTV-quality images, and a match is a lead to verify.
+
+**Strangers and bigger watchlists (this changed the default threshold).** That 97.7% only says the right person is found when
+they are enrolled. The worse error in surveillance is a person who is *not* enrolled scoring above the threshold and being shown
+with someone's case file. Two measurements (`scripts/evaluate_open_set.py`, `scripts/evaluate_gallery_scale.py`):
+
+*Open set, same 54-person set, half enrolled / half strangers, 30 random splits (4,041 stranger queries):* at the old 0.40
+threshold **3.0%** of strangers were wrongly matched (95% CI 2.6-3.6%); at 0.45 and above, 0 of 4,041 (upper bound 0.09%).
+
+*Bigger gallery, Labeled Faces in the Wild, one enrolment photo per person, 9,164 photos of 1,680 people, 5 random draws per size:*
+
+| People enrolled | Top-1 (enrolled people) | Strangers wrongly matched at 0.40 | at 0.45 | at 0.50 | Enrolled people accepted correctly at 0.50 |
+|---|---|---|---|---|---|
+| 100 | 99.6% | 2.32% | 0.26% | 0.04% | 94.1% |
+| 250 | 98.8% | 5.50% | 0.60% | 0.05% | 93.4% |
+| 500 | 98.4% | 10.67% | 1.35% | 0.17% | 93.4% |
+| 1,000 | 98.0% | 19.95% | 2.47% | 0.31% | 93.5% |
+
+The false-match rate grows roughly in proportion to the number of people enrolled, so the old default of 0.40 would have matched
+about one stranger in five against a 1,000-person watchlist. The default is now **0.50** (`SAFEGUARD_FACE_MATCH_THRESHOLD`):
+about 0.3% of strangers matched at 1,000 people, at the cost of rejecting about 6% of enrolled faces. Raise it further for larger
+lists. Caveats: LFW is mostly well-lit celebrity portraits, so CCTV-quality faces will do worse; and a match is still only a lead.
+
+*Search time (one query, 128-dimension vectors, this laptop):* numpy brute force 0.02 ms at 1,000 vectors, 0.15 ms at 10,000,
+2.8 ms at 100,000, 27 ms at 1,000,000. FAISS (flat inner product) was no faster at any of these sizes (0.03, 0.13, 3.1, 29 ms),
+so the app keeps plain numpy; an approximate FAISS index (HNSW/IVF) would only be worth adding beyond a few hundred thousand faces.
 
 **Scene-wide-motion gate (added, benefit unproven).** Alerts are held while at least half of the last 5 s of samples
 have more than 30% of the picture changing at once (`SAFEGUARD_SCENE_MOTION_GATE`, on by default; the card shows

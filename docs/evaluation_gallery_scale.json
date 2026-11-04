@@ -1,0 +1,160 @@
+{
+  "people_total": 1680,
+  "faces": 9164,
+  "sizes": [
+    {
+      "gallery_people": 100,
+      "repeats": 5,
+      "enrolled_queries": 2640,
+      "stranger_queries": 42680,
+      "top1_enrolled": 0.9962,
+      "by_threshold": {
+        "0.4": {
+          "enrolled_right": 0.9848,
+          "enrolled_wrong_person": 0.0004,
+          "enrolled_rejected": 0.0148,
+          "stranger_false_match": 0.0232
+        },
+        "0.45": {
+          "enrolled_right": 0.9701,
+          "enrolled_wrong_person": 0.0,
+          "enrolled_rejected": 0.0299,
+          "stranger_false_match": 0.0026
+        },
+        "0.5": {
+          "enrolled_right": 0.9413,
+          "enrolled_wrong_person": 0.0,
+          "enrolled_rejected": 0.0587,
+          "stranger_false_match": 0.0004
+        },
+        "0.55": {
+          "enrolled_right": 0.8826,
+          "enrolled_wrong_person": 0.0,
+          "enrolled_rejected": 0.1174,
+          "stranger_false_match": 0.00012
+        }
+      }
+    },
+    {
+      "gallery_people": 250,
+      "repeats": 5,
+      "enrolled_queries": 5772,
+      "stranger_queries": 38798,
+      "top1_enrolled": 0.988,
+      "by_threshold": {
+        "0.4": {
+          "enrolled_right": 0.9782,
+          "enrolled_wrong_person": 0.0017,
+          "enrolled_rejected": 0.0201,
+          "stranger_false_match": 0.05498
+        },
+        "0.45": {
+          "enrolled_right": 0.9634,
+          "enrolled_wrong_person": 0.0009,
+          "enrolled_rejected": 0.0357,
+          "stranger_false_match": 0.00603
+        },
+        "0.5": {
+          "enrolled_right": 0.9343,
+          "enrolled_wrong_person": 0.0005,
+          "enrolled_rejected": 0.0651,
+          "stranger_false_match": 0.00049
+        },
+        "0.55": {
+          "enrolled_right": 0.8763,
+          "enrolled_wrong_person": 0.0005,
+          "enrolled_rejected": 0.1232,
+          "stranger_false_match": 0.00018
+        }
+      }
+    },
+    {
+      "gallery_people": 500,
+      "repeats": 5,
+      "enrolled_queries": 10850,
+      "stranger_queries": 32470,
+      "top1_enrolled": 0.9844,
+      "by_threshold": {
+        "0.4": {
+          "enrolled_right": 0.9767,
+          "enrolled_wrong_person": 0.0034,
+          "enrolled_rejected": 0.0199,
+          "stranger_false_match": 0.10668
+        },
+        "0.45": {
+          "enrolled_right": 0.9617,
+          "enrolled_wrong_person": 0.0015,
+          "enrolled_rejected": 0.0369,
+          "stranger_false_match": 0.01352
+        },
+        "0.5": {
+          "enrolled_right": 0.9338,
+          "enrolled_wrong_person": 0.0006,
+          "enrolled_rejected": 0.0655,
+          "stranger_false_match": 0.00169
+        },
+        "0.55": {
+          "enrolled_right": 0.876,
+          "enrolled_wrong_person": 0.0006,
+          "enrolled_rejected": 0.1234,
+          "stranger_false_match": 0.00068
+        }
+      }
+    },
+    {
+      "gallery_people": 1000,
+      "repeats": 5,
+      "enrolled_queries": 21502,
+      "stranger_queries": 19318,
+      "top1_enrolled": 0.9805,
+      "by_threshold": {
+        "0.4": {
+          "enrolled_right": 0.9751,
+          "enrolled_wrong_person": 0.0075,
+          "enrolled_rejected": 0.0173,
+          "stranger_false_match": 0.1995
+        },
+        "0.45": {
+          "enrolled_right": 0.9614,
+          "enrolled_wrong_person": 0.0028,
+          "enrolled_rejected": 0.0358,
+          "stranger_false_match": 0.02474
+        },
+        "0.5": {
+          "enrolled_right": 0.9352,
+          "enrolled_wrong_person": 0.0011,
+          "enrolled_rejected": 0.0637,
+          "stranger_false_match": 0.00311
+        },
+        "0.55": {
+          "enrolled_right": 0.8773,
+          "enrolled_wrong_person": 0.0009,
+          "enrolled_rejected": 0.1218,
+          "stranger_false_match": 0.00104
+        }
+      }
+    }
+  ],
+  "search_time": [
+    {
+      "vectors": 1000,
+      "numpy_ms_per_query": 0.022,
+      "faiss_flat_ms_per_query": 0.028
+    },
+    {
+      "vectors": 10000,
+      "numpy_ms_per_query": 0.152,
+      "faiss_flat_ms_per_query": 0.127
+    },
+    {
+      "vectors": 100000,
+      "numpy_ms_per_query": 2.773,
+      "faiss_flat_ms_per_query": 3.109
+    },
+    {
+      "vectors": 1000000,
+      "numpy_ms_per_query": 26.788,
+      "faiss_flat_ms_per_query": 28.99
+    }
+  ]
+}

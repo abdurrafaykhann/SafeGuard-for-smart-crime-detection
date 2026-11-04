@@ -1,0 +1,86 @@
+{
+  "people": 54,
+  "photos": 267,
+  "splits": 30,
+  "enrolled_queries": 3942,
+  "stranger_queries": 4041,
+  "rows": [
+    {
+      "threshold": 0.3,
+      "stranger_false_match": 0.45756000989853995,
+      "stranger_ci95": [
+        0.442246842316157,
+        0.47295379248744057
+      ],
+      "enrolled_correct": 0.9832572298325722,
+      "enrolled_wrong_person": 0.0106544901065449,
+      "enrolled_rejected": 0.0060882800608828
+    },
+    {
+      "threshold": 0.35,
+      "stranger_false_match": 0.1915367483296214,
+      "stranger_ci95": [
+        0.17969894700751932,
+        0.20396047738131212
+      ],
+      "enrolled_correct": 0.976154236428209,
+      "enrolled_wrong_person": 0.0106544901065449,
+      "enrolled_rejected": 0.013191273465246067
+    },
+    {
+      "threshold": 0.4,
+      "stranger_false_match": 0.030438010393466965,
+      "stranger_ci95": [
+        0.02557101713988836,
+        0.036196939360559025
+      ],
+      "enrolled_correct": 0.9370877727042111,
+      "enrolled_wrong_person": 0.0017757483510908167,
+      "enrolled_rejected": 0.06113647894469812
+    },
+    {
+      "threshold": 0.45,
+      "stranger_false_match": 0.0,
+      "stranger_ci95": [
+        0.0,
+        0.0009497528901997051
+      ],
+      "enrolled_correct": 0.9112125824454591,
+      "enrolled_wrong_person": 0.0,
+      "enrolled_rejected": 0.08878741755454084
+    },
+    {
+      "threshold": 0.5,
+      "stranger_false_match": 0.0,
+      "stranger_ci95": [
+        0.0,
+        0.0009497528901997051
+      ],
+      "enrolled_correct": 0.8802638254693049,
+      "enrolled_wrong_person": 0.0,
+      "enrolled_rejected": 0.11973617453069507
+    },
+    {
+      "threshold": 0.55,
+      "stranger_false_match": 0.0,
+      "stranger_ci95": [
+        0.0,
+        0.0009497528901997051
+      ],
+      "enrolled_correct": 0.7955352612886859,
+      "enrolled_wrong_person": 0.0,
+      "enrolled_rejected": 0.20446473871131404
+    },
+    {
+      "threshold": 0.6,
+      "stranger_false_match": 0.0,
+      "stranger_ci95": [
+        0.0,
+        0.0009497528901997051
+      ],
+      "enrolled_correct": 0.7004058853373922,
+      "enrolled_wrong_person": 0.0,
+      "enrolled_rejected": 0.2995941146626078
+    }
+  ]
+}

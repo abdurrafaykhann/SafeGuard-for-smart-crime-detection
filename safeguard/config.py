@@ -81,7 +81,7 @@ class Config:
     FRAME_WIDTH = _env_int("FRAME_WIDTH", 640)
     EVIDENCE_BEFORE = _env_float("EVIDENCE_BEFORE", 5.0)  # seconds of video kept before an alert (0 + 0 disables evidence clips)
     EVIDENCE_AFTER = _env_float("EVIDENCE_AFTER", 5.0)    # seconds recorded after it
-    FACE_MATCH_THRESHOLD = _env_float("FACE_MATCH_THRESHOLD", 0.40)
+    FACE_MATCH_THRESHOLD = _env_float("FACE_MATCH_THRESHOLD", 0.50)  # 0.40 matched ~20% of strangers with 1000 people enrolled (docs/evaluation_gallery_scale.json)
     CLIP_ENABLED = _env_bool("CLIP_ENABLED", True)  # use the trained clip classifier whenever its file exists
     CLIP_MODEL = _env("CLIP_MODEL", "violence_clip.joblib")
     SCENE_MOTION_GATE = _env_bool("SCENE_MOTION_GATE", True)  # hold violence alerts while the whole picture is moving (camera shake)
