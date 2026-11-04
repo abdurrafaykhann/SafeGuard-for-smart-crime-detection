@@ -14,7 +14,9 @@ bp = Blueprint("web", __name__)
 def index():
     """Home page. No login: anyone can look up a business, website or agency name here."""
     q = (request.args.get("q") or "").strip()
-    return render_template("index.html", q=q, result=complaints.lookup(q) if q else None)
+    return render_template("index.html", q=q, result=complaints.lookup(q) if q else None,
+                           reported=request.args.get("reported") == "1", report_error=request.args.get("report_error") == "1",
+                           bookmarklet="javascript:(function(){window.open('" + request.host_url.rstrip("/") + "/?q='+encodeURIComponent(location.hostname)+'#check')})()")
 
 
 @bp.route("/check", methods=["GET", "POST"])
@@ -23,6 +25,26 @@ def check():
     """Kept for old links: the checker now lives on the home page."""
     q = request.values.get("q") or request.values.get("domain") or ""
     return redirect(url_for("web.index", q=q.strip()[:200]) + "#check" if q.strip() else url_for("web.index") + "#check", 303)
+
+
+@bp.post("/report")
+@limiter.limit("5 per hour")
+def report():
+    """Anyone may tip off staff about a business. Held for review; never changes the fraud check by itself."""
+    from ..models import PublicReport
+    from ..services.complaints import name_key, parse_query
+    f = request.form
+    if f.get("website_url"):  # honeypot: real people never see or fill this field
+        return redirect(url_for("web.index", reported=1) + "#check", 303)
+    name = (f.get("entity_name") or "").strip()[:160]
+    category = (f.get("category") or "").strip()[:60]
+    if len(name_key(name)) < 2 or not category:
+        return redirect(url_for("web.index", report_error=1) + "#report", 303)
+    domain = parse_query(f.get("entity_domain") or "")["domain"]
+    db.session.add(PublicReport(entity_name=name, entity_domain=domain, category=category,
+                                description=(f.get("description") or "").strip()[:400]))
+    db.session.commit()
+    return redirect(url_for("web.index", reported=1) + "#check", 303)
 
 
 @bp.get("/api/public/check")

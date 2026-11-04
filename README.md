@@ -164,6 +164,12 @@ categories, status, dates, short anonymous summaries); nothing about complainant
 names, reserved `.example` domains). Matching is name-based, so common names will collide with real businesses once real
 data is used: treat a hit as a reason to look closer, not as proof.
 
+Public reports and the browser shortcut: the home page also has a "Report a business" form (no contact details collected,
+5 per hour per address, hidden honeypot field against bots). A report has no effect on any result until an admin approves
+it on the Complaints page, which files a normal complaint (audit-logged); rejected tips are kept for the record. A
+"Check this site" bookmarklet (drag it to the bookmarks bar) opens the checker for whatever site you are on. Near-identical
+spellings of a flagged name show as "Be careful".
+
 ### Identifying a person from a photo (watchlist + case files)
 
 Upload a photo on the **Face search** page; the system names the closest enrolled person and shows their case file

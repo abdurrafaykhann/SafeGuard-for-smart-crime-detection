@@ -40,5 +40,28 @@
       form.reset(); load();
     } catch (err) { toast('Could not file', err.message, 'error', 8000); }
   });
+  async function loadReports() {
+    const host = document.getElementById('r-list');
+    if (!host) return;
+    const rows = await api('/api/reports');
+    host.replaceChildren(...(rows.length ? rows.map((r) => el('div', { class: 'match-row', style: 'grid-template-columns:1fr auto' },
+      el('div', {}, el('b', { text: r.entity_name }), r.entity_domain ? el('span', { class: 'mono td-sub', text: `  ${r.entity_domain}` }) : null,
+        el('div', { class: 'td-sub', text: `${r.category} · received ${stamp(r.created_at)}` }),
+        r.description ? el('div', { class: 'td-sub', text: r.description }) : null),
+      el('div', { style: 'display:flex;gap:6px' },
+        el('button', { class: 'btn btn-sm btn-primary', type: 'button', onclick: () => decide(r, 'approve') }, 'Approve'),
+        el('button', { class: 'btn btn-sm', type: 'button', onclick: () => decide(r, 'reject') }, 'Reject'))))
+      : [empty('flag', 'No reports waiting', 'Tips from the public appear here for review.')]));
+  }
+
+  async function decide(r, decision) {
+    try {
+      await api(`/api/reports/${r.id}/${decision}`, { method: 'POST' });
+      toast(decision === 'approve' ? 'Approved' : 'Rejected', r.entity_name, 'success');
+      loadReports(); load();
+    } catch (e) { toast('Could not update', e.message, 'error'); }
+  }
+
+  loadReports().catch(() => {});
   load().catch((e) => toast('Failed to load', e.message, 'error'));
 })();

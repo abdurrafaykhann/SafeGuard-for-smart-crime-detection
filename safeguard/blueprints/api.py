@@ -470,6 +470,37 @@ def complaint_list():
                      "filed_at": iso(c.filed_at), "created_by": c.created_by} for c in rows])
 
 
+@bp.get("/reports")
+@admin_required
+def report_list():
+    from ..models import PublicReport
+    rows = PublicReport.query.filter_by(status="pending").order_by(PublicReport.created_at).limit(100).all()
+    return jsonify([{"id": r.id, "created_at": iso(r.created_at), "entity_name": r.entity_name, "entity_domain": r.entity_domain,
+                     "category": r.category, "description": r.description} for r in rows])
+
+
+@bp.post("/reports/<int:rid>/<decision>")
+@admin_required
+def report_decide(rid: int, decision: str):
+    from ..models import Complaint, PublicReport
+    from ..services.complaints import name_key
+    if decision not in {"approve", "reject"}:
+        abort(404)
+    r = db.get_or_404(PublicReport, rid)
+    if r.status != "pending":
+        return _bad("That report was already reviewed.")
+    r.status, r.reviewed_by = ("approved" if decision == "approve" else "rejected"), current_user.username
+    ref = None
+    if decision == "approve":
+        ref = f"FR-{utcnow().year}-{Complaint.query.count() + 1:04d}"
+        db.session.add(Complaint(reference=ref, entity_name=r.entity_name, name_key=name_key(r.entity_name), entity_domain=r.entity_domain,
+                                 entity_type="website" if r.entity_domain else "business", category=r.category,
+                                 summary=r.description, status="reported", created_by=f"public-report #{r.id} / {current_user.username}"))
+    db.session.commit()
+    audit(current_user.username, f"report_{decision}", f"#{rid} {r.entity_name} {ref or ''}", client_ip())
+    return jsonify(id=rid, status=r.status, reference=ref)
+
+
 @bp.patch("/complaints/<int:cid>")
 @admin_required
 def complaint_update(cid: int):

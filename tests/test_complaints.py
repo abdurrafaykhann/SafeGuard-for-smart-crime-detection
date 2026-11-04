@@ -69,3 +69,35 @@ def test_staff_can_list_search_and_update_status(client, admin, app):
         assert cp.lookup("orchid.example")["verdict"] == "caution"          # dismissed no longer counts as unsafe
     assert admin.get("/console/complaints").status_code == 200
     assert client.application.test_client().get("/api/complaints").status_code in (302, 401)
+
+
+def test_public_report_is_held_until_staff_approve_it(client, admin, app):
+    pub = app.test_client()
+    r = pub.post("/report", data={"entity_name": "Sunrise Gold Traders", "category": "Investment scam", "entity_domain": "https://sunrise-gold.example/x",
+                                  "description": "asked for upfront fees"})
+    assert r.status_code == 303 and "reported=1" in r.headers["Location"]
+    with app.app_context():
+        assert cp.lookup("Sunrise Gold Traders")["verdict"] == "no_record"            # a tip alone changes nothing
+    pending = admin.get("/api/reports").get_json()
+    assert len(pending) == 1 and pending[0]["entity_domain"] == "sunrise-gold.example"
+    assert admin.post(f"/api/reports/{pending[0]['id']}/approve").get_json()["reference"].startswith("FR-")
+    with app.app_context():
+        assert cp.lookup("sunrise-gold.example")["verdict"] == "unsafe"
+    assert admin.post(f"/api/reports/{pending[0]['id']}/reject").status_code == 400    # already reviewed
+    assert pub.get("/api/reports").status_code in (302, 401)
+
+
+def test_report_form_rejects_bots_and_bad_input(client, app):
+    pub = app.test_client()
+    pub.post("/report", data={"entity_name": "Bot Corp", "category": "x", "website_url": "http://spam"})
+    r = pub.post("/report", data={"entity_name": "", "category": ""})
+    assert "report_error=1" in r.headers["Location"]
+    admin = app.test_client()
+    from tests.conftest import login
+    login(admin)
+    assert admin.get("/api/reports").get_json() == []
+
+
+def test_home_page_has_report_form_and_bookmarklet(client):
+    html = client.get("/").get_data(as_text=True)
+    assert "Report a business" in html and "javascript:(function()" in html and "Check this site" in html

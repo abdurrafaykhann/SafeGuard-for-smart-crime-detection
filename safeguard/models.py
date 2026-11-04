@@ -214,3 +214,16 @@ class Complaint(db.Model):
     created_by = db.Column(db.String(64))
 
     ACTIVE = ("reported", "under_investigation", "confirmed")
+
+
+class PublicReport(db.Model):
+    """A tip from the public about a business/website. It has NO effect on the fraud check until a staff
+    member approves it (which files a normal Complaint). No contact details are collected."""
+    id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(db.DateTime, default=utcnow, index=True)
+    entity_name = db.Column(db.String(160), nullable=False)
+    entity_domain = db.Column(db.String(253))
+    category = db.Column(db.String(60), nullable=False)
+    description = db.Column(db.String(400), default="")
+    status = db.Column(db.String(12), default="pending", index=True)  # pending | approved | rejected
+    reviewed_by = db.Column(db.String(64))

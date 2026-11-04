@@ -19,11 +19,16 @@
   {% else %}
   <div class="panel panel-pad"><h3>Read-only</h3><p>Only administrators can file or update complaints.</p></div>
   {% endif %}
+  <div>
+  {% if current_user.is_admin %}
+  <div class="panel" style="margin-bottom:18px"><div class="panel-head"><h3>Public reports awaiting review</h3></div><div id="r-list"></div></div>
+  {% endif %}
   <div class="panel">
     <div class="panel-head"><h3>Register</h3>
       <span style="display:flex;gap:8px"><input id="c-q" type="search" placeholder="Search name, web address or ref" style="min-width:200px">
       <select id="c-filter"><option value="">All statuses</option><option value="reported">Reported</option><option value="under_investigation">Under investigation</option><option value="confirmed">Confirmed</option><option value="dismissed">Dismissed</option></select></span></div>
     <div id="c-list"></div>
+  </div>
   </div>
 </div>
 {% endblock %}
