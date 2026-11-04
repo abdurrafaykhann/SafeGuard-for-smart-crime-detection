@@ -360,7 +360,28 @@ def watchlist_delete(eid: int):
 @bp.get("/watchlist/<int:eid>")
 @login_required
 def watchlist_detail(eid: int):
-    return jsonify(db.get_or_404(WatchlistEntry, eid).to_dict(detail=True))
+    entry = db.get_or_404(WatchlistEntry, eid)
+    data = entry.to_dict(detail=True)
+    data["photo_ids"] = [p.id for p in entry.photos if p.photo_path]
+    if request.args.get("history") == "1":
+        hits = (AuditLog.query.filter(AuditLog.action == "face_search_hit", AuditLog.detail.like(f"entry:{eid} %"))
+                .order_by(AuditLog.created_at.desc()).limit(30).all())
+        data["searches"] = [{"at": iso(h.created_at), "by": h.username, "similarity": float(h.detail.split("sim:")[1])} for h in hits]
+        sightings = Alert.query.filter_by(watchlist_id=eid).order_by(Alert.created_at.desc()).limit(30).all()
+        data["sightings"] = [{"id": a.id, "at": iso(a.created_at), "camera": a.camera_name, "confidence": round(a.confidence or 0, 3),
+                              "acknowledged_by": a.acknowledged_by} for a in sightings]
+    return jsonify(data)
+
+
+@bp.get("/watchlist/<int:eid>/photos/<int:pid>")
+@login_required
+def watchlist_extra_photo(eid: int, pid: int):
+    from ..models import WatchlistPhoto
+    photo = db.get_or_404(WatchlistPhoto, pid)
+    path = current_app.config["DATA_DIR"] / "watchlist" / (photo.photo_path or "")
+    if photo.entry_id != eid or not photo.photo_path or not path.is_file():
+        abort(404)
+    return send_file(path, mimetype="image/jpeg", max_age=3600)
 
 
 @bp.get("/watchlist/<int:eid>/photo")
@@ -388,6 +409,8 @@ def search_face():
     matches = s.faces.top_matches(s.faces.embed(img, face), 5)
     threshold = current_app.config["FACE_MATCH_THRESHOLD"]
     audit(current_user.username, "face_search", f"{len(matches)} candidates", client_ip())
+    if matches and matches[0].similarity >= threshold:  # remembered so the person's case file shows who looked them up
+        audit(current_user.username, "face_search_hit", f"entry:{matches[0].entry_id} sim:{matches[0].similarity:.3f}", client_ip())
     closed_set = None
     if s.cnn.available:  # original FYP CNN: a guess over a fixed identity list, shown separately and labelled as such
         crop = s.cnn.crop(img, face.box)

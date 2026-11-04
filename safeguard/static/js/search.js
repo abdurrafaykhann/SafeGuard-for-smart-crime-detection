@@ -36,7 +36,7 @@
       };
       results.replaceChildren(...[closed].filter(Boolean), ...data.matches.map((m) => el('div', {}, el('div', { class: 'match-row' },
         el('img', { src: `/api/watchlist/${m.id}/photo`, alt: '' }),
-        el('div', {}, el('b', { text: m.label }), el('div', { class: `td-sub risk-${m.risk}`, text: `${m.risk} risk` })),
+        el('div', {}, el('a', { href: `/console/watchlist/${m.id}`, style: 'font-weight:700', text: m.label }), el('div', { class: `td-sub risk-${m.risk}`, text: `${m.risk} risk` })),
         el('div', { style: 'text-align:right' },
           el('div', { class: 'mono', text: `${Math.round(m.similarity * 100)}% similar`, style: 'font-size:15px' }),
           el('span', { class: `badge ${m.is_match ? 'sev-high' : 'sev-medium'}`, text: m.is_match ? 'possible match' : 'below threshold' }))), caseFile(m))));

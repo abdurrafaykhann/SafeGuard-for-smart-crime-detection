@@ -1,0 +1,21 @@
+{% extends 'console/base.html' %}
+{% block title %}Case file{% endblock %}
+{% block eyebrow %}Investigate{% endblock %}
+{% block heading %}Case file{% endblock %}
+{% block sub %}<p><a href="{{ url_for('console.watchlist') }}">&larr; Back to the watchlist</a></p>{% endblock %}
+{% block content %}
+<div id="person" data-id="{{ eid }}">
+  <div class="split">
+    <div class="panel panel-pad" id="p-summary"><div class="skeleton" style="height:120px"></div></div>
+    <div class="panel"><div class="panel-head"><h3>Photos on file</h3></div><div id="p-photos" class="panel-pad" style="display:flex;gap:10px;flex-wrap:wrap"></div></div>
+  </div>
+  <div class="split" style="margin-top:18px">
+    <div class="panel"><div class="panel-head"><h3>Recorded offences</h3></div><div id="p-offences" class="panel-pad"></div></div>
+    <div>
+      <div class="panel"><div class="panel-head"><h3>Searches that matched this person</h3></div><div id="p-searches"></div></div>
+      <div class="panel" style="margin-top:18px"><div class="panel-head"><h3>Camera sightings</h3></div><div id="p-sightings"></div></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block page_scripts %}<script src="{{ url_for('static', filename='js/person.js') }}"></script>{% endblock %}

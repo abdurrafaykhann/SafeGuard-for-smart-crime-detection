@@ -34,3 +34,24 @@ def test_case_file_round_trip_and_bad_json():
     assert e.to_dict(detail=True)["record"]["case_number"] == "D1" and "record" not in e.to_dict()
     e.record = "not json"
     assert e.case_file() == {}
+
+
+def test_case_file_endpoint_lists_photos_searches_and_sightings(admin, app):
+    import json as _json
+    from safeguard.extensions import db
+    from safeguard.models import Alert, AuditLog, WatchlistPhoto
+    with app.app_context():
+        e = _entry(7, "Case Person", _vec(1, 0), _vec(0, 1))
+        e.photos[0].photo_path = "x.jpg"
+        db.session.add(e)
+        db.session.add(AuditLog(username="op", action="face_search_hit", detail="entry:7 sim:0.812"))
+        db.session.add(AuditLog(username="op", action="face_search_hit", detail="entry:70 sim:0.900"))  # a different person (id 70)
+        db.session.add(Alert(kind="watchlist", severity="high", title="m", watchlist_id=7, camera_name="Door", confidence=0.7))
+        db.session.commit()
+    d = admin.get("/api/watchlist/7?history=1").get_json()
+    assert d["record"]["case_number"] == "D7" and len(d["photo_ids"]) == 1
+    assert [s["similarity"] for s in d["searches"]] == [0.812]          # entry 70 must not leak into entry 7
+    assert d["sightings"][0]["camera"] == "Door"
+    assert admin.get("/console/watchlist/7").status_code == 200
+    assert admin.get("/api/watchlist/7/photos/999").status_code == 404
+    assert "searches" not in admin.get("/api/watchlist/7").get_json()

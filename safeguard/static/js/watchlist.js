@@ -9,7 +9,7 @@
       : el('div', { style: 'aspect-ratio:1;background:#000' });
     const remove = isAdmin ? el('button', { class: 'btn btn-danger btn-sm', type: 'button', onclick: () => del(p) }, icon('trash'), 'Remove') : null;
     return el('article', { class: 'panel person' }, img, el('div', { class: 'body' },
-      el('b', { text: p.label }),
+      el('a', { href: `/console/watchlist/${p.id}`, style: 'font-weight:700', text: p.label }),
       el('div', { class: 'td-sub', text: p.category }),
       el('div', { style: 'margin:10px 0' }, el('span', { class: `badge risk-${p.risk}`, text: `${p.risk} risk`, style: 'background:var(--surface-2)' })),
       el('div', { class: 'td-sub', text: `Basis: ${p.consent_basis}` }),

@@ -33,6 +33,12 @@ def watchlist():
     return render_template("console/watchlist.html", active="watchlist")
 
 
+@bp.get("/watchlist/<int:eid>")
+@login_required
+def person(eid: int):
+    return render_template("console/person.html", active="watchlist", eid=eid)
+
+
 @bp.get("/complaints")
 @login_required
 def complaints():
