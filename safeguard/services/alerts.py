@@ -89,6 +89,8 @@ def purge_old(app) -> int:
         for a in old:
             if a.snapshot_path:
                 (snapshot_dir(app) / a.snapshot_path).unlink(missing_ok=True)
+            if a.clip_path:
+                (app.config["DATA_DIR"] / "clips" / a.clip_path).unlink(missing_ok=True)
             db.session.delete(a)
         db.session.commit()
         return len(old)

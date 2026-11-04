@@ -16,6 +16,7 @@ import numpy as np
 from .alerts import create_alert
 from .camera import CameraStream
 from .events import bus
+from .recorder import ClipRecorder
 from .faces import FaceEngine
 from .violence import ViolenceDetector, WeaponBackend, YoloBackend
 
@@ -45,6 +46,7 @@ class CameraPipeline:
         self._episode_start: float | None = None
         self._episode_escalated = False
         self._last_alert: dict[str, float] = {}
+        self.recorder = ClipRecorder(app, cfg["EVIDENCE_BEFORE"], cfg["EVIDENCE_AFTER"], cfg["ANALYSIS_FPS"])
 
     # ---- lifecycle
     def start(self) -> None:
@@ -58,6 +60,7 @@ class CameraPipeline:
         if self._thread:
             self._thread.join(timeout=4)
         self.stream.stop()
+        self.recorder.flush()
         with self._cond:
             self._cond.notify_all()
 
@@ -75,6 +78,11 @@ class CameraPipeline:
                 self._cond.notify_all()
 
     # ---- helpers
+    def _alert(self, **kwargs) -> None:
+        """Raise an alert and start its evidence clip (buffered 'before' frames plus a few seconds after)."""
+        payload = create_alert(self.app, **kwargs)
+        self.recorder.request(payload["id"])
+
     def _cooldown_ok(self, key: str) -> bool:
         now = time.monotonic()
         if now - self._last_alert.get(key, -1e9) >= self.app.config["ALERT_COOLDOWN_SECONDS"]:
@@ -86,7 +94,7 @@ class CameraPipeline:
         if res.weapon_alert and self._cooldown_ok("weapon"):
             kinds = sorted({k for k, _, _ in res.weapons})
             best = max(c for _, c, _ in res.weapons)
-            create_alert(self.app, kind="weapon", severity="critical" if res.violent else "high",
+            self._alert(kind="weapon", severity="critical" if res.violent else "high",
                          title=f"Weapon detected: {', '.join(kinds)}", confidence=best,
                          camera=self.camera, frame=frame,
                          meta={"weapons": [{"class": k, "confidence": round(c, 3)} for k, c, _ in res.weapons],
@@ -98,13 +106,13 @@ class CameraPipeline:
             if self._episode_start is None:
                 self._episode_start, self._episode_escalated = now, False
                 if self._cooldown_ok("violence"):
-                    create_alert(self.app, kind="violence", severity="high", title=res.label,
+                    self._alert(kind="violence", severity="high", title=res.label,
                                  confidence=res.smoothed, camera=self.camera, frame=frame,
                                  meta={"cues": res.cues, "persons": len(res.persons), "mode": self.detector.mode,
                                        "decided_by": res.source})
             elif not self._episode_escalated and now - self._episode_start >= self.app.config["PERSISTENT_SECONDS"]:
                 self._episode_escalated = True
-                create_alert(self.app, kind="persistent", severity="critical",
+                self._alert(kind="persistent", severity="critical",
                              title=f"Sustained incident ({int(now - self._episode_start)}s): {res.label}",
                              confidence=res.smoothed, camera=self.camera, frame=frame,
                              meta={"cues": res.cues, "duration_s": round(now - self._episode_start, 1)})
@@ -134,7 +142,7 @@ class CameraPipeline:
                     text, colour = f"CNN: {label} {conf:.0%}", AMBER
                     matches.append({"label": label, "similarity": round(conf, 3), "risk": "unverified", "source": "cnn"})
                     if self._cooldown_ok(f"cnn-{label}"):
-                        create_alert(self.app, kind="watchlist", severity="medium",
+                        self._alert(kind="watchlist", severity="medium",
                                      title=f"Closed-set CNN suggests: {label}", confidence=conf,
                                      camera=self.camera, frame=frame,
                                      meta={"source": "closed-set CNN", "confidence": round(conf, 3),
@@ -143,7 +151,7 @@ class CameraPipeline:
             if match:
                 matches.append({"label": match.label, "similarity": round(match.similarity, 3), "risk": match.risk})
                 if self._cooldown_ok(f"face-{match.entry_id}"):
-                    create_alert(self.app, kind="watchlist", severity="high" if match.risk != "low" else "medium",
+                    self._alert(kind="watchlist", severity="high" if match.risk != "low" else "medium",
                                  title=f"Watchlist match: {match.label}", confidence=match.similarity,
                                  camera=self.camera, frame=frame, watchlist_id=match.entry_id,
                                  meta={"risk": match.risk, "similarity": round(match.similarity, 3)})
@@ -199,6 +207,7 @@ class CameraPipeline:
                 cv2.rectangle(overlay, (0, 0), (overlay.shape[1] - 1, overlay.shape[0] - 1), RED, 3)
             self._hud(overlay, bool(res and res.violent), self.state["label"] if self.detector else "monitoring", self.camera.name)
             self._publish_jpeg(overlay)
+            self.recorder.push(overlay)
 
             if started - last_state_push >= 1.0:
                 last_state_push = started

@@ -234,6 +234,16 @@ def alerts_snapshot(aid: int):
     return send_file(path, mimetype="image/jpeg", max_age=3600)
 
 
+@bp.get("/alerts/<int:aid>/clip")
+@login_required
+def alerts_clip(aid: int):
+    alert = db.get_or_404(Alert, aid)
+    path = current_app.config["DATA_DIR"] / "clips" / (alert.clip_path or "")
+    if not alert.clip_path or not path.is_file():
+        abort(404)
+    return send_file(path, mimetype="video/webm", max_age=3600, conditional=True)
+
+
 def _csv_safe(value) -> str:
     text = "" if value is None else str(value)
     return "'" + text if text[:1] in {"=", "+", "-", "@", "\t", "\r"} else text  # spreadsheet formula injection

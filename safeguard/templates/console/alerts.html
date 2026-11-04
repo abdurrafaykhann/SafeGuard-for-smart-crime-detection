@@ -21,6 +21,6 @@
   <div class="empty" id="empty" hidden><svg class="icon"><use href="#i-clear"/></svg><b>No alerts match</b><span>Try clearing a filter.</span></div>
   <div class="pager"><span id="count"></span><span><button class="btn btn-sm" id="prev">Previous</button> <button class="btn btn-sm" id="next">Next</button></span></div>
 </div>
-<dialog id="viewer"><div class="dialog-body"><img id="viewer-img" alt="Alert snapshot" style="border-radius:12px;width:100%;background:#000;margin-bottom:16px"><div id="viewer-meta"></div></div><div class="dialog-actions"><button class="btn" id="viewer-close">Close</button></div></dialog>
+<dialog id="viewer"><div class="dialog-body"><img id="viewer-img" alt="Alert snapshot" style="border-radius:12px;width:100%;background:#000;margin-bottom:16px"><video id="viewer-clip" controls muted playsinline preload="metadata" hidden style="border-radius:12px;width:100%;background:#000;margin-bottom:16px"></video><div id="viewer-meta"></div></div><div class="dialog-actions"><button class="btn" id="viewer-close">Close</button></div></dialog>
 {% endblock %}
 {% block page_scripts %}<script src="{{ url_for('static', filename='js/alerts.js') }}"></script>{% endblock %}

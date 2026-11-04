@@ -144,6 +144,14 @@ distance; fails on a knife held centimetres from a blurry webcam).
 **Known limitation:** moving or shaking the camera itself, or large movements right in front of it, can raise
 violence alerts (the models never saw camera shake). Calibrate with `SAFEGUARD_CLIP_THRESHOLD` and keep the camera still.
 
+### Evidence clips
+
+Every alert now carries a short video: the 5 s before it and 5 s after (`SAFEGUARD_EVIDENCE_BEFORE` /
+`SAFEGUARD_EVIDENCE_AFTER`, set both to 0 to disable). Each camera keeps a rolling buffer of its annotated frames as small
+JPEGs (about 1 MB for 5 s), so cost is paid once per camera. The clip is encoded to WebM (VP8, plays in current browsers)
+on a background thread, attached to the alert, shown in the alert viewer and deleted by the retention policy with the
+alert. Clips are recorded at the analysis rate (8 fps), not the camera's full frame rate.
+
 ### Public fraud check (home page, no sign-in)
 
 Anyone can type a business, website or agency name (or a web address) on the home page and see whether complaints

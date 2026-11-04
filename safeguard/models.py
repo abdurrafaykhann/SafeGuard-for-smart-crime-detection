@@ -134,6 +134,7 @@ class Alert(db.Model):
     camera_name = db.Column(db.String(80))
     watchlist_id = db.Column(db.Integer, db.ForeignKey("watchlist_entry.id", ondelete="SET NULL"))
     snapshot_path = db.Column(db.String(255))
+    clip_path = db.Column(db.String(255))  # evidence video (WebM) around the alert
     meta = db.Column(db.Text, default="{}")
     acknowledged_by = db.Column(db.String(64))
     acknowledged_at = db.Column(db.DateTime)
@@ -154,7 +155,7 @@ class Alert(db.Model):
             "confidence": round(self.confidence or 0.0, 3),
             "camera_id": self.camera_id, "camera": self.camera_name,
             "watchlist": self.watchlist.label if self.watchlist else None,
-            "has_snapshot": bool(self.snapshot_path), "meta": self.meta_dict(),
+            "has_snapshot": bool(self.snapshot_path), "has_clip": bool(self.clip_path), "meta": self.meta_dict(),
             "acknowledged_by": self.acknowledged_by, "acknowledged_at": iso(self.acknowledged_at),
         }
 

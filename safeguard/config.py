@@ -78,6 +78,8 @@ class Config:
     ANALYSIS_FPS = _env_float("ANALYSIS_FPS", 8.0)  # 8: the clip model takes its 4 samples/s from every 2nd frame
     FACE_INTERVAL_SECONDS = _env_float("FACE_INTERVAL", 1.0)
     FRAME_WIDTH = _env_int("FRAME_WIDTH", 640)
+    EVIDENCE_BEFORE = _env_float("EVIDENCE_BEFORE", 5.0)  # seconds of video kept before an alert (0 + 0 disables evidence clips)
+    EVIDENCE_AFTER = _env_float("EVIDENCE_AFTER", 5.0)    # seconds recorded after it
     FACE_MATCH_THRESHOLD = _env_float("FACE_MATCH_THRESHOLD", 0.40)
     CLIP_ENABLED = _env_bool("CLIP_ENABLED", True)  # use the trained clip classifier whenever its file exists
     CLIP_MODEL = _env("CLIP_MODEL", "violence_clip.joblib")

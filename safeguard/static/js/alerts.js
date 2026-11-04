@@ -15,7 +15,7 @@
 
   function row(a) {
     const thumb = a.has_snapshot
-      ? el('img', { src: `/api/alerts/${a.id}/snapshot`, alt: 'Snapshot', loading: 'lazy', style: 'width:84px;height:54px;object-fit:cover;border-radius:8px;cursor:pointer;background:#000;border:1px solid var(--line)', onclick: () => openViewer(a) })
+      ? el('img', { title: a.has_clip ? 'Has video clip' : '', src: `/api/alerts/${a.id}/snapshot`, alt: 'Snapshot', loading: 'lazy', style: 'width:84px;height:54px;object-fit:cover;border-radius:8px;cursor:pointer;background:#000;border:1px solid var(--line)', onclick: () => openViewer(a) })
       : el('span', { class: 'td-sub', text: 'none' });
     const ackCell = a.acknowledged_at
       ? el('span', { class: 'td-sub' }, icon('check'), ` ${a.acknowledged_by}`)
@@ -51,6 +51,10 @@
 
   function openViewer(a) {
     $('viewer-img').src = `/api/alerts/${a.id}/snapshot`;
+    const clip = $('viewer-clip');
+    clip.hidden = !a.has_clip;
+    $('viewer-img').hidden = !!a.has_clip;
+    if (a.has_clip) clip.src = `/api/alerts/${a.id}/clip`; else clip.removeAttribute('src');
     const cues = a.meta?.cues ? Object.entries(a.meta.cues) : [];
     $('viewer-meta').replaceChildren(
       el('h3', { text: a.title }),
@@ -60,6 +64,7 @@
           el('span', { text: k }), el('div', { class: 'track' }, el('i', { style: `width:${Math.round(v * 100)}%` })), el('span', { text: pct(v) })))) : null);
     $('viewer').showModal();
   }
+  $('viewer').addEventListener('close', () => $('viewer-clip').pause());
   $('viewer-close').addEventListener('click', () => $('viewer').close());
   $('viewer').addEventListener('click', (e) => { if (e.target === $('viewer')) $('viewer').close(); });
 

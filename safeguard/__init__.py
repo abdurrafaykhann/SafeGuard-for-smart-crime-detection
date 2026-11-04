@@ -70,10 +70,11 @@ def create_app(config: type = Config) -> Flask:
 def _add_missing_columns() -> None:
     """create_all() never alters existing tables; add columns introduced after a database was created."""
     from sqlalchemy import inspect, text
-    have = {c["name"] for c in inspect(db.engine).get_columns("watchlist_entry")}
-    if "record" not in have:
-        with db.engine.begin() as conn:
-            conn.execute(text("ALTER TABLE watchlist_entry ADD COLUMN record TEXT DEFAULT ''"))
+    insp = inspect(db.engine)
+    for table, column, ddl in (("watchlist_entry", "record", "TEXT DEFAULT ''"), ("alert", "clip_path", "VARCHAR(255)")):
+        if column not in {c["name"] for c in insp.get_columns(table)}:
+            with db.engine.begin() as conn:
+                conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {ddl}"))
 
 
 def _limit_torch_threads(n: int) -> None:
