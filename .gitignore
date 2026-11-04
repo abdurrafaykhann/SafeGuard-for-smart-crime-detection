@@ -14,3 +14,7 @@ models/Weapon_*.pt
 models/Weapon_*.onnx
 # Trained clip classifier (17 MB, regenerate with scripts/train_clip_classifier.py)
 models/violence_clip.joblib
+
+# Old FYP face model (142 MB, Git LFS): kept on disk only
+models/legacy/*.h5
+models/*.h5
