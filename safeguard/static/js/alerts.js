@@ -57,12 +57,12 @@
     $('viewer-img').hidden = !!a.has_clip;
     if (a.has_clip) clip.src = `/api/alerts/${a.id}/clip`; else clip.removeAttribute('src');
     const cues = a.meta?.cues ? Object.entries(a.meta.cues) : [];
-    $('viewer-meta').replaceChildren(
+    $('viewer-meta').replaceChildren(...[
       el('h3', { text: a.title }),
       el('p', { text: `${a.camera || 'Camera'} · ${stamp(a.created_at)} · confidence ${pct(a.confidence)}` }),
       cues.length ? el('div', {}, el('div', { class: 'label', text: 'Why this fired', style: 'margin-bottom:8px' }),
         ...cues.map(([k, v]) => el('div', { class: 'bar-row', style: 'grid-template-columns:100px 1fr 44px' },
-          el('span', { text: k }), el('div', { class: 'track' }, el('i', { style: `width:${Math.round(v * 100)}%` })), el('span', { text: pct(v) })))) : null);
+          el('span', { text: k }), el('div', { class: 'track' }, el('i', { style: `width:${Math.round(v * 100)}%` })), el('span', { text: pct(v) })))) : null].filter(Boolean));
     $('viewer').showModal();
   }
   $('viewer').addEventListener('close', () => $('viewer-clip').pause());
