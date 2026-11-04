@@ -1,0 +1,10 @@
+{
+  "people": 54,
+  "queries": 265,
+  "skipped_no_face": 8,
+  "top1": 0.9773584905660377,
+  "top3": 0.9962264150943396,
+  "threshold": 0.4,
+  "answered": 0.9433962264150944,
+  "correct_when_answered": 0.996
+}

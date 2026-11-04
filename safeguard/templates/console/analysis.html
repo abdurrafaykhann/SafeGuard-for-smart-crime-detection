@@ -1,0 +1,19 @@
+{% extends 'console/base.html' %}
+{% block title %}Video analysis{% endblock %}
+{% block eyebrow %}Investigate{% endblock %}
+{% block heading %}Video analysis{% endblock %}
+{% block sub %}<p>Scan a recorded clip for violent incidents. The upload is deleted as soon as analysis finishes.</p>{% endblock %}
+{% block content %}
+<div class="split">
+  <div class="panel panel-pad">
+    <label class="dropzone" id="drop" for="file"><svg class="icon"><use href="#i-film"/></svg><b>Drop a video or click to browse</b><span class="hint">MP4, AVI, MOV, MKV, WebM</span></label>
+    <input id="file" type="file" accept=".mp4,.avi,.mov,.mkv,.webm,video/*" class="sr-only">
+    <div id="picked" class="hint" style="margin-top:12px"></div>
+    <button class="btn btn-primary" id="go" style="width:100%;margin-top:14px" disabled><svg class="icon"><use href="#i-play"/></svg>Analyse</button>
+    <h3 style="margin:26px 0 8px;font-size:14px">Recent jobs</h3>
+    <div id="jobs"></div>
+  </div>
+  <div class="panel" id="report"><div class="empty"><svg class="icon"><use href="#i-film"/></svg><b>No report yet</b><span>Upload a clip, or open a recent job.</span></div></div>
+</div>
+{% endblock %}
+{% block page_scripts %}<script src="{{ url_for('static', filename='js/analysis.js') }}"></script>{% endblock %}

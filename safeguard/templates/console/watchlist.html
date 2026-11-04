@@ -1,0 +1,32 @@
+{% extends 'console/base.html' %}
+{% block title %}Watchlist{% endblock %}
+{% block eyebrow %}Consent register{% endblock %}
+{% block heading %}Watchlist{% endblock %}
+{% block sub %}<p>Only people enrolled here can ever be matched. Each entry records who added it and on what basis.</p>{% endblock %}
+{% block content %}
+{% if not sys_recognition %}
+<div class="alert-box info" style="margin-bottom:18px">Face recognition models are not installed, so enrolment is disabled. Run <code>python scripts/download_models.py</code> and restart the server.</div>
+{% endif %}
+<div class="split">
+  {% if current_user.is_admin %}
+  <form class="panel panel-pad" id="enrol" enctype="multipart/form-data" autocomplete="off">
+    <h3>Enrol a person</h3>
+    <div class="field"><label for="w-label">Name / label</label><input id="w-label" name="label" type="text" required maxlength="100"></div>
+    <div class="field"><label for="w-photo">Clear front-facing photo</label><input id="w-photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp" required></div>
+    <div class="field"><label for="w-risk">Risk level</label><select id="w-risk" name="risk"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option></select></div>
+    <div class="field"><label for="w-cat">Category</label><input id="w-cat" name="category" type="text" value="person of interest" maxlength="40"></div>
+    <div class="field"><label for="w-basis">Legal / consent basis</label><input id="w-basis" name="consent_basis" type="text" required maxlength="200" placeholder="e.g. Written consent, staff access list, court order ref."></div>
+    <div class="field"><label for="w-notes">Notes</label><textarea id="w-notes" name="notes" rows="2" maxlength="400"></textarea></div>
+    <label class="check" style="margin-bottom:18px"><input type="checkbox" name="consent_confirmed" required><span>I confirm I have consent or lawful authority to enrol this person and that this action will be logged.</span></label>
+    <button class="btn btn-primary" type="submit" style="width:100%" {{ '' if sys_recognition else 'disabled' }}><svg class="icon"><use href="#i-plus"/></svg>Enrol</button>
+  </form>
+  {% else %}
+  <div class="panel panel-pad"><h3>Read-only</h3><p>Only administrators can enrol or remove people. You can still see who is on the register.</p></div>
+  {% endif %}
+  <div>
+    <div class="cards" id="cards"></div>
+    <div class="panel empty" id="empty" hidden><svg class="icon"><use href="#i-users"/></svg><b>Nobody enrolled</b><span>Faces are never matched unless someone is added here.</span></div>
+  </div>
+</div>
+{% endblock %}
+{% block page_scripts %}<script src="{{ url_for('static', filename='js/watchlist.js') }}"></script>{% endblock %}

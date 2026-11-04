@@ -1,0 +1,25 @@
+{% extends 'console/base.html' %}
+{% block title %}Cameras{% endblock %}
+{% block eyebrow %}Administration{% endblock %}
+{% block heading %}Cameras{% endblock %}
+{% block sub %}<p>Add webcams or network streams. Local file paths are deliberately not accepted.</p>{% endblock %}
+{% block content %}
+<div class="split">
+  <form class="panel panel-pad" id="add">
+    <h3>Add a camera</h3>
+    <div class="field"><label for="c-name">Name</label><input id="c-name" name="name" type="text" required maxlength="80" placeholder="Main entrance"></div>
+    <div class="field"><label for="c-source">Source</label><input id="c-source" name="source" type="text" required maxlength="300" placeholder="0   or   rtsp://user:pass@192.168.1.20/stream"><span class="hint">A webcam index (0, 1, …) or an rtsp / http(s) URL.</span></div>
+    <div class="field"><label for="c-loc">Location</label><input id="c-loc" name="location" type="text" maxlength="120"></div>
+    <label class="check" style="margin-bottom:10px"><input type="checkbox" name="detect_violence" checked><span>Violence detection</span></label>
+    <label class="check" style="margin-bottom:10px"><input type="checkbox" name="detect_faces" checked><span>Face detection &amp; watchlist matching</span></label>
+    <label class="check" style="margin-bottom:18px"><input type="checkbox" name="autostart"><span>Start automatically with the server</span></label>
+    <button class="btn btn-primary" type="submit" style="width:100%"><svg class="icon"><use href="#i-plus"/></svg>Add camera</button>
+  </form>
+  <div class="panel">
+    <div class="panel-head"><h3>Configured cameras</h3></div>
+    <div class="table-wrap"><table><thead><tr><th>Camera</th><th>Source</th><th>Analysis</th><th>Status</th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
+    <div class="empty" id="empty" hidden><svg class="icon"><use href="#i-camera"/></svg><b>No cameras yet</b><span>Add your first camera on the left.</span></div>
+  </div>
+</div>
+{% endblock %}
+{% block page_scripts %}<script src="{{ url_for('static', filename='js/cameras.js') }}"></script>{% endblock %}

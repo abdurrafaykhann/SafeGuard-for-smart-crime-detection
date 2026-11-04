@@ -1,0 +1,19 @@
+{% extends 'console/base.html' %}
+{% block title %}Face search{% endblock %}
+{% block eyebrow %}Investigate{% endblock %}
+{% block heading %}Face search{% endblock %}
+{% block sub %}<p>Upload a photo to rank the closest watchlist entries. Results are leads, not proof. Every search is logged.</p>{% endblock %}
+{% block content %}
+<div class="split">
+  <div class="panel panel-pad">
+    <label class="dropzone" id="drop" for="file"><svg class="icon"><use href="#i-upload"/></svg><b>Drop a photo or click to browse</b><span class="hint">JPEG, PNG or WebP · up to 8 MB</span></label>
+    <input id="file" type="file" accept="image/jpeg,image/png,image/webp" class="sr-only">
+    <img id="preview" alt="Selected photo" hidden style="margin-top:16px;border-radius:12px;max-height:300px;width:100%;object-fit:cover">
+  </div>
+  <div class="panel" id="results-panel">
+    <div class="panel-head"><h3>Candidates</h3><span class="hint" id="threshold"></span></div>
+    <div id="results"><div class="empty"><svg class="icon"><use href="#i-search"/></svg><b>No search yet</b><span>Results appear here, strongest first.</span></div></div>
+  </div>
+</div>
+{% endblock %}
+{% block page_scripts %}<script src="{{ url_for('static', filename='js/search.js') }}"></script>{% endblock %}

@@ -1,0 +1,16 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+instance/
+*.db
+# Downloaded, not committed (see scripts/download_models.py)
+models/*.onnx
+
+# Optional third-party weapon weights: not redistributed (see README)
+models/Weapon_*.pt
+models/Weapon_*.onnx
+# Trained clip classifier (17 MB, regenerate with scripts/train_clip_classifier.py)
+models/violence_clip.joblib

@@ -1,0 +1,7 @@
+﻿# Optional: enables the trained YOLO violence model (models/Yolo_nano_weights.pt).
+# Heavy (PyTorch). Without it SafeGuard runs in "heuristics-only" mode and says so in the UI.
+-r requirements.txt
+# ultralytics depends on the non-headless opencv-python; keep it on the same 4.x line
+# as the core pin, because OpenCV 5 removed the cascade API used as a fallback.
+opencv-python>=4.9,<5
+ultralytics>=8.2

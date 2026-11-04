@@ -1,0 +1,139 @@
+{% extends '_public.html' %}
+{% block title %}Intelligent video surveillance{% endblock %}
+{% block content %}
+<main>
+<section class="container hero">
+  <div>
+    <span class="eyebrow">Real-time AI surveillance · v2</span>
+    <h1>Eyes on every frame.<br><span class="grad">Judgement stays human.</span></h1>
+    <p class="lead">SafeGuard watches multiple camera feeds, flags violent incidents as they unfold and matches only the faces you have lawfully enrolled, then hands every decision to a trained operator with a full audit trail.</p>
+    <div class="hero-cta">
+      <a class="btn btn-primary btn-lg" href="{{ url_for('console.index') }}">Open the console <svg class="icon"><use href="#i-live"/></svg></a>
+      <a class="btn btn-lg" href="#pipeline">See how it works</a>
+    </div>
+  </div>
+  <div class="hud" aria-hidden="true">
+    <svg viewBox="0 0 480 360" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0c1626" stop-opacity="0"/><stop offset="1" stop-color="#46e1ff" stop-opacity=".16"/></linearGradient>
+      </defs>
+      <g stroke="#46e1ff" stroke-opacity=".12">
+        <path d="M0 250 480 250M0 280 480 280M0 320 480 320"/><path d="M240 230 0 360M240 230 120 360M240 230 240 360M240 230 360 360M240 230 480 360"/>
+      </g>
+      <rect y="230" width="480" height="130" fill="url(#floor)"/>
+      <g opacity=".9">
+        <ellipse cx="150" cy="268" rx="26" ry="6" fill="#000" opacity=".5"/><circle cx="150" cy="156" r="15" fill="#1a2a42"/><path d="M128 262v-70q0-22 22-22t22 22v70z" fill="#16243a"/>
+        <ellipse cx="318" cy="270" rx="26" ry="6" fill="#000" opacity=".5"/><circle cx="318" cy="160" r="15" fill="#1a2a42"/><path d="M296 264v-70q0-22 22-22t22 22v70z" fill="#16243a"/>
+      </g>
+      <g class="hud-box" fill="none" stroke-width="1.6">
+        <rect x="122" y="136" width="56" height="132" rx="3" stroke="#38e0a0"/>
+        <path d="M122 150v-14h14M178 150v-14h-14M122 254v14h14M178 254v14h-14" stroke="#38e0a0" stroke-width="3"/>
+      </g>
+      <g fill="none" stroke="#ff4d6a" stroke-width="1.6">
+        <rect x="290" y="140" width="56" height="132" rx="3"/><path d="M290 154v-14h14M346 154v-14h-14M290 258v14h14M346 258v14h-14" stroke-width="3"/>
+      </g>
+      <g stroke="#46e1ff" stroke-width="2"><path d="M14 14h26M14 14v26M466 14h-26M466 14v26M14 346h26M14 346v-26M466 346h-26M466 346v-26" fill="none"/></g>
+    </svg>
+    <span class="hud-scan"></span>
+    <span class="hud-tag" style="left:20%;top:30%;color:#38e0a0">PERSON · 0.94</span>
+    <span class="hud-tag" style="left:55%;top:32%;color:#ff4d6a">ALTERCATION · SCORE 0.81</span>
+    <span class="hud-tag" style="left:16px;bottom:16px">CAM-01 · ENTRANCE · 6 FPS</span>
+  </div>
+</section>
+
+<section class="container">
+  <div class="stat-strip">
+    <div><b>1×</b><span>capture thread per camera, however many people watch</span></div>
+    <div><b>4 cues</b><span>fused into one explainable risk score</span></div>
+    <div><b>100%</b><span>of enrolments need documented consent</span></div>
+    <div><b>0</b><span>raw photos kept, only a tight face crop</span></div>
+  </div>
+</section>
+
+<section class="container section" id="features">
+  <div class="section-head"><span class="eyebrow">Capabilities</span><h2>Everything an operations room needs, nothing it doesn't.</h2></div>
+  <div class="grid-3">
+    <article class="panel feature"><div class="icon-wrap"><svg class="icon"><use href="#i-live"/></svg></div><h3>Multi-camera live wall</h3><p>Webcams and RTSP/HTTP streams side by side, with resilient reconnects and per-camera analytics that never block each other.</p></article>
+    <article class="panel feature"><div class="icon-wrap"><svg class="icon"><use href="#i-alert"/></svg></div><h3>Explainable violence detection</h3><p>A YOLO model plus motion, contact and injury cues. Every alert shows <em>why</em> it fired, and sustained incidents escalate automatically.</p></article>
+    <article class="panel feature"><div class="icon-wrap"><svg class="icon"><use href="#i-users"/></svg></div><h3>Consent-based watchlist</h3><p>Face matching runs only against people an administrator enrolled with a stated legal basis. Every lookup is audit-logged.</p></article>
+    <article class="panel feature"><div class="icon-wrap"><svg class="icon"><use href="#i-bell"/></svg></div><h3>Instant notifications</h3><p>Alerts stream to every open console in real time, and can fan out to a webhook, Telegram or email.</p></article>
+    <article class="panel feature"><div class="icon-wrap"><svg class="icon"><use href="#i-film"/></svg></div><h3>Recorded-video analysis</h3><p>Drop in a clip and get an incident timeline, peak risk and evidence frames. The upload is deleted when processing ends.</p></article>
+    <article class="panel feature"><div class="icon-wrap"><svg class="icon"><use href="#i-chart"/></svg></div><h3>Operational analytics</h3><p>Trends by day and hour, hot-spot cameras and mean time-to-acknowledge, exportable to CSV.</p></article>
+  </div>
+</section>
+
+<section class="container section" id="pipeline">
+  <div class="section-head"><span class="eyebrow">Pipeline</span><h2>From pixels to a decision in four steps.</h2></div>
+  <div class="steps">
+    <div class="panel step"><h3>Capture</h3><p>One thread per source keeps only the newest frame, so latency never builds up.</p></div>
+    <div class="panel step"><h3>Analyse</h3><p>Detection runs once per camera on a throttled loop and is shared by every viewer.</p></div>
+    <div class="panel step"><h3>Escalate</h3><p>Cooldowns prevent alert storms; sustained incidents are promoted to critical.</p></div>
+    <div class="panel step"><h3>Decide</h3><p>An operator reviews the evidence, acknowledges and the action is recorded.</p></div>
+  </div>
+</section>
+
+<section class="container section" id="responsible">
+  <div class="section-head"><span class="eyebrow">Responsible by design</span><h2>Powerful tools need guardrails.</h2></div>
+  <div class="principles">
+    <div class="panel principle"><svg class="icon"><use href="#i-check"/></svg><div><h3>Human in the loop</h3><p>The system recommends; people decide. No automatic action is ever taken on a match.</p></div></div>
+    <div class="panel principle"><svg class="icon"><use href="#i-check"/></svg><div><h3>Consent &amp; legal basis</h3><p>No enrolment without a recorded basis and an explicit confirmation from the administrator.</p></div></div>
+    <div class="panel principle"><svg class="icon"><use href="#i-check"/></svg><div><h3>Data minimisation &amp; retention</h3><p>Only face crops are stored, and alerts and snapshots are purged automatically after the retention period.</p></div></div>
+    <div class="panel principle"><svg class="icon"><use href="#i-check"/></svg><div><h3>Honest limits</h3><p>Similarity is a score, not proof. <a href="{{ url_for('web.ethics') }}">Read the limitations</a> before relying on any result.</p></div></div>
+  </div>
+</section>
+
+<div class="container"><div class="cta-band"><h2>See it running.</h2><p style="max-width:48ch;margin:0 auto 26px">Sign in as an operator to open the live wall, review alerts and explore analytics.</p><a class="btn btn-primary btn-lg" href="{{ url_for('console.index') }}">Launch console</a></div></div>
+<section class="container" id="check" style="padding-top:56px;padding-bottom:56px">
+  <div class="panel panel-pad" style="max-width:860px;margin:0 auto">
+    <span class="eyebrow">Public fraud check · no sign-in needed</span>
+    <h2 style="margin:6px 0 4px">Before you pay or share details, check who you are dealing with.</h2>
+    <p style="margin:0 0 14px">Type a business, website or agency name (or a web address). We check it against complaints filed with law enforcement.</p>
+    <form method="get" action="{{ url_for('web.index') }}#check" role="search" style="display:flex;gap:10px;flex-wrap:wrap">
+      <input name="q" type="text" value="{{ q }}" maxlength="200" required placeholder="e.g. Brightpath Holdings Ltd or quickprofit-invest.example" aria-label="Business, website or agency name" style="flex:1;min-width:240px">
+      <button class="btn btn-primary" type="submit"><svg class="icon"><use href="#i-search"/></svg>Check</button>
+    </form>
+    {% if result %}
+      {% if not result.valid %}
+        <div class="panel result" style="margin-top:14px"><svg class="icon" style="color:var(--warn)"><use href="#i-alert"/></svg><div><b>Please enter at least two characters.</b></div></div>
+      {% elif result.verdict == 'unsafe' %}
+        <div class="panel result flag" style="margin-top:14px"><svg class="icon"><use href="#i-flag"/></svg><div><b>UNSAFE: complaints are on record against this name.</b>
+          <p style="margin:4px 0 0">Do not send money or personal details until you have verified it independently.</p></div></div>
+      {% elif result.verdict == 'caution' %}
+        <div class="panel result" style="margin-top:14px;border-color:var(--warn)"><svg class="icon" style="color:var(--warn)"><use href="#i-alert"/></svg><div><b>Be careful: this is close to a name with complaints.</b>
+          <p style="margin:4px 0 0">Check the spelling, or confirm you have the right business, before you go ahead.</p></div></div>
+      {% else %}
+        <div class="panel result clear" style="margin-top:14px"><svg class="icon"><use href="#i-clear"/></svg><div><b>No complaints found for “{{ result.query }}”.</b>
+          <p style="margin:4px 0 0">That only means nothing is on record. It is not a guarantee of safety: be cautious with unexpected requests for money or passwords.</p></div></div>
+      {% endif %}
+      {% for m in (result.matches or []) + (result.similar or []) %}
+        <div class="panel panel-pad" style="margin-top:10px">
+          <b>{{ m.name }}</b>{% if m.domain %} <code>{{ m.domain }}</code>{% endif %}
+          {% if m in result.similar %}<span class="badge sev-medium">similar name</span>{% endif %}
+          <div class="td-sub">{{ m.type|capitalize }} · {{ m.complaints }} complaint{{ '' if m.complaints == 1 else 's' }} ({{ m.active }} active) · highest status: {{ m.highest_status.replace('_', ' ') }}</div>
+          <div class="td-sub">Categories: {{ m.categories|join(', ') }} · first reported {{ m.first_reported }}, latest {{ m.last_reported }}</div>
+          {% if m.examples %}<ul style="margin:6px 0 0;padding-left:18px">{% for e in m.examples %}<li class="td-sub">{{ e }}</li>{% endfor %}</ul>{% endif %}
+          <div class="hint" style="margin-top:6px">Case ref: {{ m.references|join(', ') }}</div>
+        </div>
+      {% endfor %}
+      {% if result.valid %}<p class="hint" style="margin:12px 0 0">Demo database: every record is fictional. A complaint is an allegation, not proof of guilt.</p>{% endif %}
+    {% endif %}
+    {% if reported %}<div class="panel result clear" style="margin-top:14px"><svg class="icon"><use href="#i-clear"/></svg><div><b>Thank you. Your report was sent for review.</b><p style="margin:4px 0 0">It does not appear in results until a staff member approves it.</p></div></div>{% endif %}
+    <details id="report" style="margin-top:16px"{% if report_error %} open{% endif %}>
+      <summary style="cursor:pointer;font-weight:600">Report a business or website you think is a scam</summary>
+      {% if report_error %}<p style="color:var(--warn)">Please give a name and a category.</p>{% endif %}
+      <form method="post" action="{{ url_for('web.report') }}" style="display:grid;gap:10px;margin-top:10px">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input name="entity_name" type="text" required maxlength="160" placeholder="Business, agency or website name" aria-label="Name">
+        <input name="entity_domain" type="text" maxlength="253" placeholder="Web address (optional)" aria-label="Web address">
+        <input name="category" type="text" required maxlength="60" placeholder="What kind of scam? e.g. fake investment" aria-label="Category">
+        <textarea name="description" rows="3" maxlength="400" placeholder="What happened? Please do not include names, phone numbers or account details of any person." aria-label="Description"></textarea>
+        <input name="website_url" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
+        <button class="btn" type="submit">Send report for review</button>
+        <span class="hint">We collect no contact details. Reports are reviewed by staff before they affect any result; false reports may be rejected.</span>
+      </form>
+    </details>
+    <p class="hint" style="margin:14px 0 0">Browser shortcut: drag <a href="{{ bookmarklet }}" onclick="return false" style="font-weight:700">Check this site</a> to your bookmarks bar, then click it on any website to check it here.</p>
+  </div>
+</section>
+</main>
+{% endblock %}

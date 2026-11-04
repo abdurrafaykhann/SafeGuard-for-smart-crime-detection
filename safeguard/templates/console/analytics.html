@@ -1,0 +1,25 @@
+{% extends 'console/base.html' %}
+{% block title %}Analytics{% endblock %}
+{% block eyebrow %}Insights{% endblock %}
+{% block heading %}Analytics{% endblock %}
+{% block sub %}<p>Where and when incidents happen, and how quickly the team responds.</p>{% endblock %}
+{% block content %}
+<div class="toolbar" style="margin-bottom:16px"><label class="label" for="range">Period</label>
+  <select id="range"><option value="7">Last 7 days</option><option value="14" selected>Last 14 days</option><option value="30">Last 30 days</option><option value="90">Last 90 days</option></select></div>
+<section class="kpis">
+  <div class="panel kpi"><span class="label">Total alerts</span><b id="a-total">–</b><small>in period</small></div>
+  <div class="panel kpi hot"><span class="label">Critical</span><b id="a-crit">–</b><small>sustained incidents</small></div>
+  <div class="panel kpi"><span class="label">Acknowledged</span><b id="a-ack">–</b><small id="a-open">&nbsp;</small></div>
+  <div class="panel kpi"><span class="label">Mean time to acknowledge</span><b id="a-mtta">–</b><small>operator response</small></div>
+</section>
+<div class="chart-grid">
+  <div class="panel"><div class="panel-head"><h3>Alerts per day</h3><div class="legend"><span><i style="background:var(--orange)"></i>Violence</span><span><i style="background:var(--crit)"></i>Sustained</span><span><i style="background:#ffd84d"></i>Weapon</span><span><i style="background:var(--accent-2)"></i>Watchlist</span></div></div><div class="chart" id="c-days"></div></div>
+  <div class="panel"><div class="panel-head"><h3>By type</h3></div><div class="chart" id="c-kind" style="display:grid;place-items:center;padding-top:20px"></div></div>
+</div>
+<div class="chart-grid even">
+  <div class="panel"><div class="panel-head"><h3>Busiest hours (UTC)</h3></div><div class="chart" id="c-hours"></div></div>
+  <div class="panel"><div class="panel-head"><h3>Hot-spot cameras</h3></div><div class="panel-pad" id="c-cams"></div></div>
+</div>
+<div class="panel" style="margin-top:16px"><div class="panel-head"><h3>Most frequent watchlist matches</h3></div><div class="panel-pad" id="c-people"></div></div>
+{% endblock %}
+{% block page_scripts %}<script src="{{ url_for('static', filename='js/analytics.js') }}"></script>{% endblock %}
