@@ -347,6 +347,12 @@ def watchlist_delete(eid: int):
     return "", 204
 
 
+@bp.get("/watchlist/<int:eid>")
+@login_required
+def watchlist_detail(eid: int):
+    return jsonify(db.get_or_404(WatchlistEntry, eid).to_dict(detail=True))
+
+
 @bp.get("/watchlist/<int:eid>/photo")
 @login_required
 def watchlist_photo(eid: int):
@@ -378,9 +384,13 @@ def search_face():
         closed_set = {"min_conf": s.cnn.min_conf, "predictions": [
             {"label": lab, "confidence": round(conf, 3), "above_floor": conf >= s.cnn.min_conf}
             for lab, conf in (s.cnn.topk(crop, 3) if crop is not None else [])]}
+    by_id = {e.id: e for e in WatchlistEntry.query.filter(WatchlistEntry.id.in_([m.entry_id for m in matches])).all()}
     return jsonify(threshold=threshold, closed_set=closed_set, matches=[
         {"id": m.entry_id, "label": m.label, "risk": m.risk, "similarity": round(m.similarity, 3),
-         "is_match": m.similarity >= threshold} for m in matches])
+         "is_match": m.similarity >= threshold,
+         # the full case file is only sent for real matches; weak candidates get the summary
+         **({"details": by_id[m.entry_id].to_dict(detail=True)} if m.similarity >= threshold and m.entry_id in by_id else {})}
+        for m in matches])
 
 
 # ---------------------------------------------------------------------- video

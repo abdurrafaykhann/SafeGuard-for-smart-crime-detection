@@ -20,12 +20,26 @@
         ...data.closed_set.predictions.map((p) => el('div', { class: 'td-sub', text: `${p.label} · ${Math.round(p.confidence * 100)}% ${p.above_floor ? '(above' : '(below'} ${Math.round(data.closed_set.min_conf * 100)}% floor)` })),
         el('div', { class: 'hint', text: 'A guess among known identities only; it cannot say "none of these". Verify manually.', style: 'margin-top:6px' })) : null;
       if (!data.matches.length) { results.replaceChildren(...[closed].filter(Boolean), empty('users', 'Watchlist is empty', 'Enrol people to match against.')); return; }
-      results.replaceChildren(...[closed].filter(Boolean), ...data.matches.map((m) => el('div', { class: 'match-row' },
+      const kv = (k, v) => (v === undefined || v === null || v === '' ? null : el('div', { class: 'td-sub' }, el('b', { text: `${k}: ` }), document.createTextNode(String(v))));
+      const caseFile = (m) => {
+        const d = m.details; if (!d) return null;
+        const r = d.record || {};
+        const off = (r.offences || []).map((o) => el('li', { text: `${o.date} · ${o.offence} (${o.location}) — ${o.outcome}` }));
+        return el('div', { class: 'panel-pad', style: 'border-top:1px solid var(--line);display:grid;gap:4px' },
+          r.demo ? el('div', { class: 'hint', text: 'FICTIONAL DEMO RECORD — not real data', style: 'color:var(--warn,#e0a030)' }) : null,
+          kv('Case number', r.case_number), kv('Category', d.category), kv('Status', r.status), kv('Aliases', (r.aliases || []).join(', ')),
+          kv('Age', r.age), kv('Gender', r.gender), kv('Nationality', r.nationality), kv('Height', r.height_cm ? r.height_cm + ' cm' : ''),
+          kv('Last known location', r.last_known_location), kv('Summary', r.summary || d.notes),
+          off.length ? el('div', { class: 'label', text: 'Recorded offences', style: 'margin-top:6px' }) : null,
+          off.length ? el('ul', { style: 'margin:0;padding-left:18px' }, ...off) : null,
+          kv('Photos on file', d.photo_count), kv('Basis for record', d.consent_basis));
+      };
+      results.replaceChildren(...[closed].filter(Boolean), ...data.matches.map((m) => el('div', {}, el('div', { class: 'match-row' },
         el('img', { src: `/api/watchlist/${m.id}/photo`, alt: '' }),
         el('div', {}, el('b', { text: m.label }), el('div', { class: `td-sub risk-${m.risk}`, text: `${m.risk} risk` })),
         el('div', { style: 'text-align:right' },
           el('div', { class: 'mono', text: `${Math.round(m.similarity * 100)}% similar`, style: 'font-size:15px' }),
-          el('span', { class: `badge ${m.is_match ? 'sev-high' : 'sev-medium'}`, text: m.is_match ? 'possible match' : 'below threshold' })))));
+          el('span', { class: `badge ${m.is_match ? 'sev-high' : 'sev-medium'}`, text: m.is_match ? 'possible match' : 'below threshold' }))), caseFile(m))));
     } catch (e) {
       results.replaceChildren(empty('alert', 'Search failed', e.message));
       toast('Search failed', e.message, 'error');

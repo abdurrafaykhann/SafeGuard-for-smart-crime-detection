@@ -120,27 +120,33 @@ class FaceEngine:
     def load_gallery(self, entries) -> None:
         vectors, meta = [], []
         for e in entries:
-            v = e.vector()
-            if v.shape[0] == 128:
-                vectors.append(v)
-                meta.append((e.id, e.label, e.risk))
+            for v in e.vectors():  # every enrolled photo of a person is a separate row; ranking keeps the best per person
+                if v.shape[0] == 128:
+                    vectors.append(v)
+                    meta.append((e.id, e.label, e.risk))
         self._gallery = np.vstack(vectors) if vectors else np.zeros((0, 128), dtype=np.float32)
         self._gallery_meta = meta
+
+    def _best_per_person(self, embedding: np.ndarray) -> list[tuple[float, int]]:
+        """(similarity, gallery row) for each person's closest photo, strongest first."""
+        sims = self._gallery @ embedding  # both L2-normalised -> cosine similarity
+        best: dict[int, int] = {}
+        for i, (entry_id, _, _) in enumerate(self._gallery_meta):
+            if entry_id not in best or sims[i] > sims[best[entry_id]]:
+                best[entry_id] = i
+        return sorted(((float(sims[i]), i) for i in best.values()), reverse=True)
 
     def match(self, embedding: np.ndarray | None) -> FaceMatch | None:
         if embedding is None or not len(self._gallery_meta):
             return None
-        sims = self._gallery @ embedding  # both L2-normalised -> cosine similarity
-        best = int(np.argmax(sims))
-        if float(sims[best]) < self.match_threshold:
+        sim, i = self._best_per_person(embedding)[0]
+        if sim < self.match_threshold:
             return None
-        entry_id, label, risk = self._gallery_meta[best]
-        return FaceMatch(entry_id, label, risk, float(sims[best]))
+        entry_id, label, risk = self._gallery_meta[i]
+        return FaceMatch(entry_id, label, risk, sim)
 
     def top_matches(self, embedding: np.ndarray, k: int = 5) -> list[FaceMatch]:
         if embedding is None or not len(self._gallery_meta):
             return []
-        sims = self._gallery @ embedding
-        order = np.argsort(-sims)[:k]
-        return [FaceMatch(self._gallery_meta[i][0], self._gallery_meta[i][1], self._gallery_meta[i][2], float(sims[i]))
-                for i in order]
+        return [FaceMatch(self._gallery_meta[i][0], self._gallery_meta[i][1], self._gallery_meta[i][2], sim)
+                for sim, i in self._best_per_person(embedding)[:k]]

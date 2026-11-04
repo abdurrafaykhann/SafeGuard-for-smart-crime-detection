@@ -144,6 +144,20 @@ distance; fails on a knife held centimetres from a blurry webcam).
 **Known limitation:** moving or shaking the camera itself, or large movements right in front of it, can raise
 violence alerts (the models never saw camera shake). Calibrate with `SAFEGUARD_CLIP_THRESHOLD` and keep the camera still.
 
+### Identifying a person from a photo (watchlist + case files)
+
+Upload a photo on the **Face search** page; the system names the closest enrolled person and shows their case file
+(case number, status, aliases, age, nationality, last known location, recorded offences, photos on file). Each person can
+have several photos; ranking uses their best-matching photo. `scripts/enroll_demo_dataset.py DATASET_DIR` bulk-enrols a
+folder-per-person image set with **invented names and fictional case files** flagged "demo" (real folder names are never
+used as labels; the folder-to-name map stays in git-ignored `instance/`). No training is needed: matching uses the
+pretrained SFace model, so adding a person is one enrolment, not a retrain.
+
+Measured with `scripts/evaluate_identification.py` on a 54-person, 273-photo set (2-10 photos each; each photo queried
+against a gallery that excludes it; 8 photos skipped because no face was detected): **top-1 97.7%, top-3 99.6%**; at the
+app's 0.40 threshold it answers 94.3% of queries and is right 99.6% of the time it answers (`docs/evaluation_identification.json`).
+These are web-style portraits of public figures; expect lower accuracy on CCTV-quality images, and a match is a lead to verify.
+
 **Scene-wide-motion gate (added, benefit unproven).** Alerts are held while at least half of the last 5 s of samples
 have more than 30% of the picture changing at once (`SAFEGUARD_SCENE_MOTION_GATE`, on by default; the card shows
 "Camera/scene motion (held)"). The 30% / half-window values were chosen from the *training* clips only: in RWF-2000

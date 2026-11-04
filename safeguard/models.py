@@ -83,16 +83,44 @@ class WatchlistEntry(db.Model):
     consent_basis = db.Column(db.String(200), nullable=False)
     created_by = db.Column(db.String(64))
     created_at = db.Column(db.DateTime, default=utcnow)
+    record = db.Column(db.Text, default="")  # JSON "case file" (aliases, offences, status ...); free-form dict
+    photos = db.relationship("WatchlistPhoto", backref="entry", cascade="all, delete-orphan", lazy="selectin")
 
     def vector(self) -> np.ndarray:
         return np.frombuffer(self.embedding, dtype=np.float32)
 
-    def to_dict(self) -> dict:
-        return {
+    def vectors(self) -> list[np.ndarray]:
+        """One face signature per enrolled photo (the entry's own photo plus any extras)."""
+        return [self.vector()] + [p.vector() for p in self.photos]
+
+    def case_file(self) -> dict:
+        try:
+            data = json.loads(self.record or "{}")
+            return data if isinstance(data, dict) else {}
+        except ValueError:
+            return {}
+
+    def to_dict(self, detail: bool = False) -> dict:
+        d = {
             "id": self.id, "label": self.label, "category": self.category, "notes": self.notes,
             "risk": self.risk, "consent_basis": self.consent_basis, "created_by": self.created_by,
             "created_at": iso(self.created_at), "has_photo": bool(self.photo_path),
+            "photo_count": 1 + len(self.photos),
         }
+        if detail:
+            d["record"] = self.case_file()
+        return d
+
+
+class WatchlistPhoto(db.Model):
+    """Additional enrolled photos of the same person; more photos make recognition more robust."""
+    id = db.Column(db.Integer, primary_key=True)
+    entry_id = db.Column(db.Integer, db.ForeignKey("watchlist_entry.id", ondelete="CASCADE"), nullable=False, index=True)
+    embedding = db.Column(db.LargeBinary, nullable=False)
+    photo_path = db.Column(db.String(255))
+
+    def vector(self) -> np.ndarray:
+        return np.frombuffer(self.embedding, dtype=np.float32)
 
 
 class Alert(db.Model):

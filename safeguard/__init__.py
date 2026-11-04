@@ -53,6 +53,7 @@ def create_app(config: type = Config) -> Flask:
 
     with app.app_context():
         db.create_all()  # additive only; the old build called drop_all() on every start
+        _add_missing_columns()
         _bootstrap_admin(app)
         _refresh_gallery(app)
 
@@ -64,6 +65,15 @@ def create_app(config: type = Config) -> Flask:
         _background_tasks(app)
         _warm_up_models(app)
     return app
+
+
+def _add_missing_columns() -> None:
+    """create_all() never alters existing tables; add columns introduced after a database was created."""
+    from sqlalchemy import inspect, text
+    have = {c["name"] for c in inspect(db.engine).get_columns("watchlist_entry")}
+    if "record" not in have:
+        with db.engine.begin() as conn:
+            conn.execute(text("ALTER TABLE watchlist_entry ADD COLUMN record TEXT DEFAULT ''"))
 
 
 def _limit_torch_threads(n: int) -> None:
