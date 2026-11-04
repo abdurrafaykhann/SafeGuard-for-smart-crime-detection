@@ -47,7 +47,7 @@ on the Live wall.
 pip install -r requirements-ml.txt   # pulls in PyTorch
 ```
 
-`models/Yolo_nano_weights.pt` is picked up automatically. Without it the system runs in
+Put the third-party `Yolo_nano_weights.pt` (see *Third-party models and credits* below) in `models/` and it is picked up automatically. Without it the system runs in
 **heuristics-only** mode, and the UI shows that badge, so results are never misrepresented.
 
 ## Weapon detection (optional, experimental)
@@ -169,15 +169,23 @@ weapon model raised alerts on 7 of 9 gun/knife clips, but also on 5 of 8 sparrin
 sensitive to framing and to footage unlike their training data. The clips used in the video were picked from these trial results to
 show the software working; the measured accuracy figures are the validation numbers above, not these examples.
 
-### How the YOLO violence model was trained
+### Third-party models and credits
 
-`models/Yolo_nano_weights.pt` is a YOLOv8-nano detector (classes `non_violence`, `violence`) that I **fine-tuned** from the
-COCO-pretrained `yolov8n.pt` (Ultralytics 8.2.90) for 50 epochs at 640 px, batch 16, on Google Colab (training date 2024-09-09).
-Ultralytics' built-in augmentation was switched off (`mosaic=0`, `augment=False`). These details are read from the training record
-stored inside the checkpoint, not from memory. Validation metrics at the best epoch: precision 0.846, recall 0.871,
-**mAP@50 0.912**, mAP@50-95 0.678. They come from the validation split that also picked the best epoch, so treat them as slightly
-optimistic; this is a frame-level detector and the clip-level classifier above is what makes the live decision. The dataset name
-and image count are not recorded in the checkpoint: [add them here].
+| Model | Where it comes from | Licence | In this repo? |
+|---|---|---|---|
+| `Yolo_nano_weights.pt`, YOLOv8-nano fight/violence detector | [Musawer1214/Fight-Violence-detection-yolov8](https://github.com/Musawer1214/Fight-Violence-detection-yolov8): **trained by that repository's author, not by me** | none declared | No: not redistributed, download it yourself |
+| Weapon detector (`Weapon_threat_yolov8n.pt`) | [Subh775/Threat-Detection-YOLOv8n](https://huggingface.co/Subh775/Threat-Detection-YOLOv8n) | MIT | No (git-ignored) |
+| Weapon detector (`Weapon_yolo11n.onnx`) | community export, see the weapon section | not verified | No (git-ignored) |
+| YuNet face detector, SFace face recognizer | OpenCV Zoo (`scripts/download_models.py`) | open licences | Downloaded on demand |
+
+The training record stored inside the violence checkpoint says it was fine-tuned from `yolov8n.pt` (Ultralytics 8.2.90) for 50 epochs at
+640 px, batch 16, with a validation mAP@50 of 0.912 (precision 0.846, recall 0.871). That is the original author's run (the file is
+byte-identical to the one in their repository, which was created on 2024-09-20). I use it as one cue among several and I did
+not train it. If you want to use it, get it from the author's repository and check with them about reuse, since it has no licence.
+
+**What I trained myself:** the clip-level violence classifier (RWF-2000, section above), and, for the original final-year project, a custom
+closed-set face CNN (reported in my FYP report as 89.3% accuracy on 302 samples; not re-measured here). The weapon and face-recognition
+models above are pretrained and were only integrated and evaluated.
 
 ### Corrupted-frame guard
 

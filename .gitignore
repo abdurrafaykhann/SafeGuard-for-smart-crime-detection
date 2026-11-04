@@ -21,3 +21,6 @@ models/*.h5
 
 # Demo video media (12 MB, regenerate with scripts/demo_video/make_demo.py or download from the release)
 docs/demo/*.mp4
+
+# Third-party violence model by Musawer1214 (no licence declared): not redistributed, see README
+models/Yolo_nano_weights.pt
