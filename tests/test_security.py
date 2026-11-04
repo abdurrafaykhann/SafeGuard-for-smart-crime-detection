@@ -25,7 +25,7 @@ def test_console_pages_redirect_to_login(client, path):
 
 
 def test_public_pages_render(client):
-    for path in ["/", "/login", "/check", "/privacy", "/terms", "/ethics", "/healthz"]:
+    for path in ["/", "/login", "/privacy", "/terms", "/ethics", "/healthz"]:
         assert client.get(path).status_code == 200, path
 
 

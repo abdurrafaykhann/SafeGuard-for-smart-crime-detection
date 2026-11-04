@@ -144,6 +144,18 @@ distance; fails on a knife held centimetres from a blurry webcam).
 **Known limitation:** moving or shaking the camera itself, or large movements right in front of it, can raise
 violence alerts (the models never saw camera shake). Calibrate with `SAFEGUARD_CLIP_THRESHOLD` and keep the camera still.
 
+### Public fraud check (home page, no sign-in)
+
+Anyone can type a business, website or agency name (or a web address) on the home page and see whether complaints
+have been filed with law enforcement against it. **UNSAFE** = at least one active complaint on an exact match (same
+name, same domain, or a domain whose main word equals the name); **Be careful** = only a near-identical spelling of a
+name with complaints, or only dismissed complaints; **No complaints found** = nothing on record, shown with the
+reminder that this is not a guarantee of safety. Only aggregate facts about the accused entity are shown (counts,
+categories, status, dates, short anonymous summaries); nothing about complainants is stored. Staff file complaints with
+`POST /api/complaints` (admin, audit-logged). `scripts/seed_demo_complaints.py` loads **fictional** demo data (invented
+names, reserved `.example` domains). Matching is name-based, so common names will collide with real businesses once real
+data is used: treat a hit as a reason to look closer, not as proof.
+
 ### Identifying a person from a photo (watchlist + case files)
 
 Upload a photo on the **Face search** page; the system names the closest enrolled person and shows their case file

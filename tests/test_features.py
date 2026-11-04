@@ -129,12 +129,9 @@ def test_retention_purges_old_alerts(app):
 
 
 # ---------------------------------------------------------------- misc routes
-def test_fraud_check(client):
-    flagged = client.post("/check", data={"domain": "https://www.FakeBank.com/login"})
-    assert b"on the fraud list" in flagged.data
-    assert b"No report found" in client.post("/check", data={"domain": "example.org"}).data
-    bad = client.post("/check", data={"domain": "<script>alert(1)</script>"}).data
-    assert b"look like a domain" in bad and b"<script>alert" not in bad  # input is never echoed unescaped
+def test_old_fraud_check_url_redirects_to_home(client):
+    r = client.get("/check?q=anything")
+    assert r.status_code == 303 and r.headers["Location"].startswith("/?q=anything")
 
 
 def test_video_upload_rejects_bad_extension(admin):

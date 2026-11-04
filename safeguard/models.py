@@ -193,3 +193,23 @@ class AuditLog(db.Model):
 def audit(username: str | None, action: str, detail: str = "", ip: str | None = None) -> None:
     db.session.add(AuditLog(username=username, action=action, detail=detail[:300], ip=ip))
     db.session.commit()
+
+
+class Complaint(db.Model):
+    """A complaint filed with law enforcement against a business, website or agency.
+
+    Deliberately holds nothing about the complainant: the public checker only ever shows aggregate
+    facts about the accused entity (counts, categories, status, dates)."""
+    id = db.Column(db.Integer, primary_key=True)
+    reference = db.Column(db.String(24), unique=True, nullable=False)
+    entity_name = db.Column(db.String(160), nullable=False)
+    name_key = db.Column(db.String(160), nullable=False, index=True)  # normalised for matching
+    entity_domain = db.Column(db.String(253), index=True)
+    entity_type = db.Column(db.String(20), default="business")  # business | website | agency
+    category = db.Column(db.String(60), nullable=False)
+    summary = db.Column(db.String(400), default="")
+    status = db.Column(db.String(20), default="reported")  # reported | under_investigation | confirmed | dismissed
+    filed_at = db.Column(db.DateTime, default=utcnow)
+    created_by = db.Column(db.String(64))
+
+    ACTIVE = ("reported", "under_investigation", "confirmed")

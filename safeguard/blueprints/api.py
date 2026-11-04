@@ -393,6 +393,32 @@ def search_face():
         for m in matches])
 
 
+# ----------------------------------------------------------------- complaints
+@bp.post("/complaints")
+@admin_required
+@limiter.limit("60 per hour")
+def complaint_create():
+    """File a complaint against a business / website / agency (law-enforcement staff). Nothing about the
+    complainant is stored; the public checker only shows aggregate facts about the accused entity."""
+    from ..models import Complaint
+    from ..services.complaints import name_key, parse_query
+    name = (request.form.get("entity_name") or "").strip()[:160]
+    category = (request.form.get("category") or "").strip()[:60]
+    if len(name_key(name)) < 2 or not category:
+        return _bad("Entity name and category are required.")
+    q = parse_query(request.form.get("entity_domain") or name)
+    status = request.form.get("status") if request.form.get("status") in {"reported", "under_investigation", "confirmed", "dismissed"} else "reported"
+    etype = request.form.get("entity_type") if request.form.get("entity_type") in {"business", "website", "agency"} else "business"
+    n = Complaint.query.count() + 1
+    c = Complaint(reference=f"FR-{utcnow().year}-{n:04d}", entity_name=name, name_key=name_key(name), entity_domain=q["domain"],
+                  entity_type=etype, category=category, summary=(request.form.get("summary") or "")[:400], status=status,
+                  created_by=current_user.username)
+    db.session.add(c)
+    db.session.commit()
+    audit(current_user.username, "complaint_add", f"{c.reference} {name} [{category}]", client_ip())
+    return jsonify(reference=c.reference, entity=name, status=status), 201
+
+
 # ---------------------------------------------------------------------- video
 @bp.post("/analysis")
 @login_required

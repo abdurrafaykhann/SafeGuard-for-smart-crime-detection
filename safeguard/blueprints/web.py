@@ -1,46 +1,35 @@
 """Public pages: landing, civilian fraud lookup, legal/ethics, health probe."""
 from __future__ import annotations
 
-import json
-import re
-from functools import lru_cache
-from pathlib import Path
-
-from flask import Blueprint, jsonify, render_template, request
+from flask import Blueprint, jsonify, redirect, render_template, request, url_for
 
 from ..extensions import db, limiter
+from ..services import complaints
 
 bp = Blueprint("web", __name__)
 
-_DOMAIN = re.compile(r"^(?:https?://)?(?:www\.)?([a-z0-9.-]+\.[a-z]{2,})(?:[/:?#].*)?$")
-
-
-@lru_cache(maxsize=1)
-def _agencies() -> dict[str, str]:
-    path = Path(__file__).resolve().parent.parent / "data" / "fraud_agencies.json"
-    return json.loads(path.read_text(encoding="utf-8"))
-
 
 @bp.get("/")
+@limiter.limit("60 per minute")
 def index():
-    return render_template("index.html")
+    """Home page. No login: anyone can look up a business, website or agency name here."""
+    q = (request.args.get("q") or "").strip()
+    return render_template("index.html", q=q, result=complaints.lookup(q) if q else None)
 
 
 @bp.route("/check", methods=["GET", "POST"])
 @limiter.limit("30 per minute")
 def check():
-    """Civilian tool: is this domain on the known-fraud list?"""
-    result = None
-    if request.method == "POST":
-        raw = (request.form.get("domain") or "").strip().lower()[:253]
-        m = _DOMAIN.match(raw)
-        if not m:
-            result = {"query": raw, "valid": False}
-        else:
-            domain = m.group(1)
-            category = _agencies().get(domain)
-            result = {"query": domain, "valid": True, "flagged": category is not None, "category": category}
-    return render_template("check.html", result=result)
+    """Kept for old links: the checker now lives on the home page."""
+    q = request.values.get("q") or request.values.get("domain") or ""
+    return redirect(url_for("web.index", q=q.strip()[:200]) + "#check" if q.strip() else url_for("web.index") + "#check", 303)
+
+
+@bp.get("/api/public/check")
+@limiter.limit("30 per minute")
+def check_json():
+    """Same lookup as JSON, for the home page's instant result."""
+    return jsonify(complaints.lookup(request.args.get("q", "")))
 
 
 @bp.get("/privacy")
