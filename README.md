@@ -154,6 +154,15 @@ PyTorch violence model (heuristic cues only), the weapon model, and the face-pho
 public figures; do not publish them). The free tier forgets its database on restart. Review the repo for secrets before
 making it public: `.env`, `instance/` and model weights are git-ignored and excluded from the image by `.dockerignore`.
 
+### Corrupted-frame guard
+
+A glitching webcam once sent frames that were mostly digital noise, and the weapon model "found" a rifle in them (7 weapon
+alerts and 1 sustained-incident alert out of 104 saved snapshots). `services/framecheck.py` now skips any frame whose
+Laplacian variance (a noise measure, taken at 640 px wide) exceeds 3,000 before any model runs, shows "Bad video frame
+(ignored)", and logs it. Calibration on those 104 snapshots: normal alert frames scored at most 331, the corrupted ones
+9,947 to 67,520, and the new check flags exactly those 8 and no others. Limit of the evidence: that is one camera's
+failure mode; an unusually grainy night-time feed could in principle trip it, in which case raise `NOISE_LIMIT`.
+
 ### Evidence clips
 
 Every alert now carries a short video: the 5 s before it and 5 s after (`SAFEGUARD_EVIDENCE_BEFORE` /

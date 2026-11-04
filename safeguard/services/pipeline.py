@@ -18,6 +18,7 @@ from .camera import CameraStream
 from .events import bus
 from .recorder import ClipRecorder
 from .faces import FaceEngine
+from .framecheck import is_corrupt
 from .violence import ViolenceDetector, WeaponBackend, YoloBackend
 
 log = logging.getLogger(__name__)
@@ -46,6 +47,7 @@ class CameraPipeline:
         self._episode_start: float | None = None
         self._episode_escalated = False
         self._last_alert: dict[str, float] = {}
+        self.bad_frames = 0  # corrupted frames skipped (see framecheck.py)
         self.recorder = ClipRecorder(app, cfg["EVIDENCE_BEFORE"], cfg["EVIDENCE_AFTER"], cfg["ANALYSIS_FPS"])
 
     # ---- lifecycle
@@ -182,6 +184,13 @@ class CameraPipeline:
             self.state["connected"], self.state["fps"] = self.stream.connected, round(self.stream.fps, 1)
             if frame is None:
                 time.sleep(0.2)
+                continue
+            if is_corrupt(frame):  # glitched camera/stream: show it, but never let a model "find" things in noise
+                self.bad_frames += 1
+                self.state["label"] = "Bad video frame (ignored)"
+                self._publish_jpeg(frame)
+                if self.bad_frames == 1 or self.bad_frames % 100 == 0:
+                    log.warning("camera %s sent a corrupted frame (%d so far); skipped", self.camera.id, self.bad_frames)
                 continue
             overlay = frame.copy()
             try:

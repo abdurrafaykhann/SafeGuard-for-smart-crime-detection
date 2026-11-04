@@ -2,6 +2,7 @@
 import threading
 import time
 
+import cv2
 import numpy as np
 
 from safeguard.extensions import db
@@ -26,7 +27,10 @@ class FakeStream:
     def wait_for_frame(self, last_id, timeout=2.0):
         time.sleep(0.02)
         self._id += 1
-        return self._rng.integers(0, 255, (240, 320, 3), dtype=np.uint8), self._id
+        # chaotic frame-to-frame change (reads as violent motion) but smooth within a frame: pure per-pixel noise would be
+        # rejected as a corrupted frame by services/framecheck.py
+        coarse = self._rng.integers(0, 255, (12, 16, 3), dtype=np.uint8)
+        return cv2.resize(coarse, (320, 240), interpolation=cv2.INTER_LINEAR), self._id
 
 
 class StubModel:
