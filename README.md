@@ -231,7 +231,7 @@ a complaint is an allegation, and uses a web-address match when one is given.
 | **Low light hurts guns more than knives.** | Simulated low light (darker, noisier): the 2 gun clips went from 2/2 weapon alerts to 0/2; the 2 knife clips stayed 2/2. |
 | **Real night footage still false-alarms.** | 4 real night clips with no weapons: 1 raised a weapon alert ("pistol" 67%) and 1 a violence alert. |
 | Calm street footage triggers violence alerts. | 5 of 6 calm stock street clips; cropping the same clip changed whether it triggered. |
-| Close-up knives are missed. | About 9% recall on my own webcam. |
+| Close-up knives are missed. | About 9% recall on my own webcam. A CPU fine-tune on a knife-focused subset (gun/knife classes, 1.5 h) did not fix it: 9% knife recall at 0.25 confidence with 10% false alarms (baseline 18%), and 7% vs 6% at 0.40 (`docs/weapon_webcam_eval.json`). Not adopted. |
 | A glitching webcam produced a "rifle". | Fixed with the corrupted-frame guard. |
 | The old face threshold matched strangers. | 20% of strangers at 1,000 people enrolled; default raised to 0.50. |
 | It does not scale on a laptop. | About 1 analysed frame per second per camera with 3 cameras. |

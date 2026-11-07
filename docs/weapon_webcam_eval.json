@@ -76,5 +76,31 @@
       "any_weapon_recall": 0.0,
       "false_alarm_rate": 0.0
     }
+  ],
+  "best.onnx": [
+    {
+      "conf": 0.25,
+      "knife_recall": 0.09,
+      "any_weapon_recall": 0.119,
+      "false_alarm_rate": 0.102
+    },
+    {
+      "conf": 0.4,
+      "knife_recall": 0.075,
+      "any_weapon_recall": 0.09,
+      "false_alarm_rate": 0.011
+    },
+    {
+      "conf": 0.5,
+      "knife_recall": 0.015,
+      "any_weapon_recall": 0.03,
+      "false_alarm_rate": 0.011
+    },
+    {
+      "conf": 0.6,
+      "knife_recall": 0.0,
+      "any_weapon_recall": 0.0,
+      "false_alarm_rate": 0.011
+    }
   ]
 }
