@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 700" width="1240" height="700" font-family="Segoe UI, Inter, Arial, sans-serif">
+<title>SafeGuard architecture</title><desc>Cameras and uploads feed a capture thread and an analysis pipeline (violence, weapons, faces); alerts, evidence clips, database, live console, notifications and the public fraud check.</desc>
+<rect width="1240" height="700" fill="#0b1220"/>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#7f93b5"/></marker></defs>
+<text x="24" y="38" fill="#e8eef7" font-size="24" font-weight="800">SafeGuard: how a frame becomes a decision</text>
+<text x="24" y="72" fill="#46e1ff" font-size="12" font-weight="700" letter-spacing="1.5">SOURCES</text>
+<rect x="24" y="84" width="250" height="80" rx="12" fill="#121c30" stroke="#46e1ff" stroke-width="1.5"/>
+<text x="38" y="110" fill="#e8eef7" font-size="16" font-weight="700">Cameras</text>
+<text x="38" y="133" fill="#9fb0c6" font-size="13">RTSP / HTTP / webcam</text>
+<text x="38" y="152" fill="#9fb0c6" font-size="13">one capture thread each</text>
+<rect x="24" y="176" width="250" height="76" rx="12" fill="#121c30" stroke="#2a3a58" stroke-width="1.5"/>
+<text x="38" y="202" fill="#e8eef7" font-size="16" font-weight="700">Uploaded video</text>
+<text x="38" y="225" fill="#9fb0c6" font-size="13">analysed offline, then deleted</text>
+<text x="24" y="270" fill="#46e1ff" font-size="12" font-weight="700" letter-spacing="1.5">ANALYSIS (one pipeline per camera, 8 fps)</text>
+<rect x="320" y="84" width="250" height="168" rx="12" fill="#121c30" stroke="#ffb454" stroke-width="1.5"/>
+<text x="334" y="110" fill="#e8eef7" font-size="16" font-weight="700">Frame guard</text>
+<text x="334" y="133" fill="#9fb0c6" font-size="13">corrupted/noisy frames skipped</text>
+<text x="334" y="152" fill="#9fb0c6" font-size="13">scene-wide motion gate</text>
+<text x="334" y="171" fill="#9fb0c6" font-size="13">(holds alerts during camera shake)</text>
+<rect x="610" y="84" width="270" height="80" rx="12" fill="#121c30" stroke="#8b7bff" stroke-width="1.5"/>
+<text x="624" y="110" fill="#e8eef7" font-size="16" font-weight="700">Violence</text>
+<text x="624" y="133" fill="#9fb0c6" font-size="13">YOLO cues + clip classifier</text>
+<text x="624" y="152" fill="#9fb0c6" font-size="13">5 s window, 2 consecutive scores</text>
+<rect x="610" y="172" width="270" height="80" rx="12" fill="#121c30" stroke="#8b7bff" stroke-width="1.5"/>
+<text x="624" y="198" fill="#e8eef7" font-size="16" font-weight="700">Weapons</text>
+<text x="624" y="221" fill="#9fb0c6" font-size="13">ONNX detector, every 2nd frame</text>
+<text x="624" y="240" fill="#9fb0c6" font-size="13">3 consecutive frames to alert</text>
+<rect x="920" y="84" width="296" height="80" rx="12" fill="#121c30" stroke="#8b7bff" stroke-width="1.5"/>
+<text x="934" y="110" fill="#e8eef7" font-size="16" font-weight="700">Faces</text>
+<text x="934" y="133" fill="#9fb0c6" font-size="13">YuNet detect + SFace embed</text>
+<text x="934" y="152" fill="#9fb0c6" font-size="13">match vs enrolled watchlist (0.50)</text>
+<rect x="920" y="172" width="296" height="80" rx="12" fill="#121c30" stroke="#8b7bff" stroke-width="1.5"/>
+<text x="934" y="198" fill="#e8eef7" font-size="16" font-weight="700">Case-file lookup</text>
+<text x="934" y="221" fill="#9fb0c6" font-size="13">best photo per person</text>
+<text x="934" y="240" fill="#9fb0c6" font-size="13">shows the record, never auto-acts</text>
+<path d="M274 124 L320 124" stroke="#7f93b5" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<path d="M274 214 L320 214" stroke="#7f93b5" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<path d="M570 124 L610 124" stroke="#7f93b5" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<path d="M570 212 L610 212" stroke="#7f93b5" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<path d="M880 124 L920 124" stroke="#7f93b5" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<text x="24" y="318" fill="#46e1ff" font-size="12" font-weight="700" letter-spacing="1.5">DECISION AND EVIDENCE</text>
+<path d="M745 252 L745 290 L169 290 L169 332" stroke="#7f93b5" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<text x="457" y="284" fill="#9fb0c6" font-size="11" text-anchor="middle">detections become alerts</text>
+<rect x="24" y="332" width="290" height="100" rx="12" fill="#121c30" stroke="#38e0a0" stroke-width="1.5"/>
+<text x="38" y="358" fill="#e8eef7" font-size="16" font-weight="700">Alert engine</text>
+<text x="38" y="381" fill="#9fb0c6" font-size="13">cooldowns, escalation to critical</text>
+<text x="38" y="400" fill="#9fb0c6" font-size="13">one alert per incident, not per frame</text>
+<rect x="344" y="332" width="290" height="100" rx="12" fill="#121c30" stroke="#38e0a0" stroke-width="1.5"/>
+<text x="358" y="358" fill="#e8eef7" font-size="16" font-weight="700">Evidence recorder</text>
+<text x="358" y="381" fill="#9fb0c6" font-size="13">rolling buffer: 5 s before + 5 s after</text>
+<text x="358" y="400" fill="#9fb0c6" font-size="13">WebM clip + snapshot + cue scores</text>
+<rect x="664" y="332" width="270" height="100" rx="12" fill="#121c30" stroke="#38e0a0" stroke-width="1.5"/>
+<text x="678" y="358" fill="#e8eef7" font-size="16" font-weight="700">Notifications</text>
+<text x="678" y="381" fill="#9fb0c6" font-size="13">live SSE to every open console</text>
+<text x="678" y="400" fill="#9fb0c6" font-size="13">webhook, Telegram, email</text>
+<rect x="964" y="332" width="252" height="100" rx="12" fill="#121c30" stroke="#ffb454" stroke-width="1.5"/>
+<text x="978" y="358" fill="#e8eef7" font-size="16" font-weight="700">Human in the loop</text>
+<text x="978" y="381" fill="#9fb0c6" font-size="13">operator reviews and acknowledges</text>
+<text x="978" y="400" fill="#9fb0c6" font-size="13">nothing happens automatically</text>
+<path d="M314 416 L344 416" stroke="#7f93b5" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<path d="M634 416 L664 416" stroke="#7f93b5" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<path d="M934 416 L964 416" stroke="#7f93b5" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<text x="24" y="470" fill="#46e1ff" font-size="12" font-weight="700" letter-spacing="1.5">STORAGE AND USERS</text>
+<rect x="24" y="482" width="360" height="120" rx="12" fill="#121c30" stroke="#2a3a58" stroke-width="1.5"/>
+<text x="38" y="508" fill="#e8eef7" font-size="16" font-weight="700">SQLite (SQLAlchemy)</text>
+<text x="38" y="531" fill="#9fb0c6" font-size="13">alerts + evidence paths, watchlist + case files,</text>
+<text x="38" y="550" fill="#9fb0c6" font-size="13">complaints, public reports, audit log,</text>
+<text x="38" y="569" fill="#9fb0c6" font-size="13">cameras, users (scrypt-hashed)</text>
+<rect x="424" y="482" width="360" height="120" rx="12" fill="#121c30" stroke="#2a3a58" stroke-width="1.5"/>
+<text x="438" y="508" fill="#e8eef7" font-size="16" font-weight="700">Operator console (login, roles)</text>
+<text x="438" y="531" fill="#9fb0c6" font-size="13">live wall, alerts + video, PDF evidence report,</text>
+<text x="438" y="550" fill="#9fb0c6" font-size="13">face search + case file, analytics,</text>
+<text x="438" y="569" fill="#9fb0c6" font-size="13">video analysis, complaints register</text>
+<rect x="824" y="482" width="392" height="120" rx="12" fill="#121c30" stroke="#46e1ff" stroke-width="1.5"/>
+<text x="838" y="508" fill="#e8eef7" font-size="16" font-weight="700">Public fraud check (no login)</text>
+<text x="838" y="531" fill="#9fb0c6" font-size="13">name / domain vs complaints register</text>
+<text x="838" y="550" fill="#9fb0c6" font-size="13">UNSAFE / be careful / no complaints found</text>
+<text x="838" y="569" fill="#9fb0c6" font-size="13">public tips wait for staff approval</text>
+<path d="M169 432 L169 482" stroke="#7f93b5" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<path d="M489 432 L549 482" stroke="#7f93b5" stroke-width="1.8" fill="none" marker-end="url(#a)"/>
+<path d="M824 542 L784 542" stroke="#7f93b5" stroke-width="1.8" fill="none" marker-end="url(#a)" stroke-dasharray="6 5"/>
+<text x="804.0" y="535.0" fill="#9fb0c6" font-size="11" text-anchor="middle">staff approve</text>
+<text x="24" y="636" fill="#9fb0c6" font-size="13">Security: CSRF, rate limits, CSP, audit log, retention purge, consent basis on every enrolment, ONNX-over-pickle model loading.</text>
+<text x="24" y="662" fill="#9fb0c6" font-size="13">Models: trained by me = clip-level violence classifier (RWF-2000). Integrated and measured = third-party YOLO violence detector, weapon detector, YuNet + SFace.</text>
+</svg>

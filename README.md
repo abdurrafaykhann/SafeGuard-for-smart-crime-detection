@@ -169,6 +169,107 @@ weapon model raised alerts on 7 of 9 gun/knife clips, but also on 5 of 8 sparrin
 sensitive to framing and to footage unlike their training data. The clips used in the video were picked from these trial results to
 show the software working; the measured accuracy figures are the validation numbers above, not these examples.
 
+## Architecture, deployment, performance and limits
+
+### Architecture
+
+![SafeGuard architecture: sources, frame guard, violence/weapon/face analysis, alert engine, evidence recorder, database, console and public fraud check](docs/architecture.svg)
+
+### Run it with one command (Docker)
+
+```bash
+SAFEGUARD_ADMIN_PASSWORD=choose-a-password docker compose up --build     # PowerShell: $env:SAFEGUARD_ADMIN_PASSWORD="..."; docker compose up --build
+```
+
+Then open http://localhost:5000. Tested on this machine: the image builds in about 4 minutes (794 MB), starts in seconds, uses about 280 MiB of
+RAM when idle, `/healthz` answers, the public fraud check works and `/console/` redirects to the login page. The image runs in
+heuristics-only mode (no PyTorch violence model, no weapon model; the open face models are downloaded during the build); mount a
+`models/` folder or extend the image to enable them. `SAFEGUARD_DEMO_SEED=true` fills the fraud check with fictional complaints.
+
+### Measured performance (and the hardware)
+
+`scripts/benchmark_pipeline.py` loops one clip as a fake IP camera and starts N camera pipelines with production settings (violence
+classifier + weapon detector, faces off). **Hardware: Intel Core i5-1235U laptop (10 cores / 12 threads), 7.7 GB RAM, Windows 11, CPU
+only** (an NVIDIA MX550 is present but unused). 40 s measured after a 25 s warm-up (`docs/benchmark_pipeline.json`):
+
+| Cameras | Frames analysed per second (total) | Per camera | Mean time per frame | CPU cores used |
+|---|---|---|---|---|
+| 1 | 5.0 | 5.0 | 190 ms | 1.9 |
+| 2 | 4.1 | 2.0 | 475 ms | 2.1 |
+| 3 | 2.9 | 1.0 | 1,015 ms | 1.8 |
+
+`ANALYSIS_FPS=8` is a ceiling, not what this laptop reaches. One camera gets about 5 analysed frames per second; each extra camera shares
+the same CPU, so with three cameras each one is analysed about once a second. The clip classifier was trained on about 4 samples per
+second, so expect weaker detection on busy multi-camera setups; scaling up needs a GPU, a smaller input size or analysing fewer
+frames per camera.
+
+### Fraud-check evaluation (precision, recall, class imbalance)
+
+The public fraud check is a name/domain matcher over a complaints register, not a learned model, so I tested it like a classifier
+(`scripts/evaluate_fraud_check.py`, `docs/evaluation_fraud_check.json`, fictional demo register of 32 entities):
+
+| Test | Queries | Result |
+|---|---|---|
+| Flagged business typed as people do (exact, lower/upper case, with or without Ltd/LLC, extra spaces, bare domain, full URL) | 415 | **100% UNSAFE** |
+| One-character typos (delete / substitute / swap) of flagged names | 42 | 100% "be careful", none silent, none UNSAFE |
+| Businesses whose complaints were all dismissed | 2 | 2 "be careful", 0 UNSAFE |
+| Random unrelated names and web addresses | 5,000 | 0 flagged (95% upper bound about 0.06%) |
+| Flagged word glued to a different business ("Zenith Plumbing") | 30 | 0 flagged |
+
+Class imbalance: almost every real lookup is for something that is *not* on the register, so accuracy would be misleading. I report
+the false-flag rate on 5,000 negatives and the precision you would get if only 1%, 10% or 50% of lookups were flagged businesses
+(100% in all three on this data). Caveat: this tests my matching rules on data I generated, so the 100% says the rules do what I
+wrote, not that real fraud is caught. The real risk is name collisions: a different legitimate business with an identical name
+will be flagged UNSAFE, because a name alone cannot tell them apart. The page therefore shows the case reference and details, says
+a complaint is an allegation, and uses a web-address match when one is given.
+
+### Challenges and failures I found (the honest list)
+
+| Finding | Evidence |
+|---|---|
+| **Phones are read as pistols.** | 4 of 7 stock phone-in-hand clips raised a weapon alert, with "pistol" at up to 79% confidence (`docs/evaluation_challenge_clips.json`). |
+| **Low light hurts guns more than knives.** | Simulated low light (darker, noisier): the 2 gun clips went from 2/2 weapon alerts to 0/2; the 2 knife clips stayed 2/2. |
+| **Real night footage still false-alarms.** | 4 real night clips with no weapons: 1 raised a weapon alert ("pistol" 67%) and 1 a violence alert. |
+| Calm street footage triggers violence alerts. | 5 of 6 calm stock street clips; cropping the same clip changed whether it triggered. |
+| Close-up knives are missed. | About 9% recall on my own webcam. |
+| A glitching webcam produced a "rifle". | Fixed with the corrupted-frame guard. |
+| The old face threshold matched strangers. | 20% of strangers at 1,000 people enrolled; default raised to 0.50. |
+| It does not scale on a laptop. | About 1 analysed frame per second per camera with 3 cameras. |
+| Camera-shake protection is unproven. | The scene-wide-motion gate cost 2 real fights on validation and removed no false alarms. |
+
+### Responsible use
+
+* **Consent and authority.** Nobody can be enrolled without a recorded legal or consent basis and an explicit confirmation by an
+  administrator; only tight face crops are stored.
+* **Access.** Operators see the console; only administrators enrol or remove people or file complaints. Public visitors only get the
+  fraud check and cannot see any watchlist data.
+* **Audit.** Every face search, enrolment, complaint change, report export and acknowledgement is logged with who and when.
+* **Human review.** Nothing happens automatically on a match or an alert; every result is a lead to verify, and the evidence PDF says so.
+* **Retention.** Alerts, snapshots and clips are deleted automatically after the retention period.
+* **Demo data.** The demo uses fictional records and blurred faces; no real person is shown with an invented record.
+
+**Bias and robustness testing** (`scripts/evaluate_face_groups.py`, `docs/evaluation_face_groups.json`). On Labeled Faces in the Wild
+with 1,000 people enrolled (one photo each) at the default 0.50 threshold. The group labels are estimated by a classifier, not
+self-reported, and several groups are small, so this is a screening test, not proof of fairness:
+
+| Group (estimated) | Enrolled people correctly recognised | Strangers wrongly matched (95% CI) | Stranger queries |
+|---|---|---|---|
+| All | 93.6% | 0.30% (0.23-0.39%) | 19,180 |
+| Male | 95.1% | 0.20% (0.14-0.29%) | 15,225 |
+| **Female** | **88.0%** | **0.68% (0.47-0.99%)** | 3,955 |
+| White-appearing | 94.0% | 0.29% (0.21-0.39%) | 14,722 |
+| Asian-appearing | 94.7% | 0.40% (0.17-0.92%) | 1,264 |
+| **Black-appearing** | 92.7% | **1.29% (0.66-2.53%)** | 618 |
+| Child (small sample) | 82.8% | 0.12% (0.02-0.67%) | 845 |
+
+Women were recognised less often and wrongly matched about three times as often as men, and the group estimated as Black-appearing
+had the highest false-match rate (wide interval). In the stranger queries about 79% were estimated male and 77% white-appearing, so error rates for
+smaller groups are less certain. I did **not** add group-specific thresholds (that would rely on estimated demographics); the
+mitigations are the higher default threshold, mandatory human review, and measuring these rates on the population a deployment
+would actually see before using it. Image quality also matters (query photos, 1,000 enrolled, 0.50 threshold): recognition was
+93.2% on clean photos, 89.9% when darkened, **69.5% when blurred and 67.1% at 48-pixel resolution** (blurred and tiny faces are
+mostly rejected, not mismatched: strangers matched stayed at or below 0.3%).
+
 ### Third-party models and credits
 
 | Model | Where it comes from | Licence | In this repo? |

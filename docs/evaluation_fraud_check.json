@@ -1,0 +1,44 @@
+{
+  "register": {
+    "entities": 32,
+    "flagged_named": 15,
+    "legacy_domains": 15,
+    "dismissed_only": 2
+  },
+  "positives": {
+    "queries": 415,
+    "unsafe": 1.0,
+    "caution": 0.0,
+    "missed_no_record": 0,
+    "examples_not_unsafe": []
+  },
+  "typos": {
+    "queries": 42,
+    "caution": 1.0,
+    "unsafe": 0.0,
+    "silent_no_record": 0.0
+  },
+  "dismissed_only": {
+    "businesses": 2,
+    "caution": 2,
+    "unsafe": 0
+  },
+  "negatives": {
+    "queries": 5000,
+    "unsafe_false_alarms": 0,
+    "caution_false_alarms": 0,
+    "false_unsafe_rate": 0.0,
+    "false_flag_rate_any": 0.0
+  },
+  "hard_negatives": {
+    "queries": 30,
+    "unsafe": 0,
+    "caution": 0,
+    "examples_flagged": []
+  },
+  "precision_at_prevalence": {
+    "1%": 1.0,
+    "10%": 1.0,
+    "50%": 1.0
+  }
+}

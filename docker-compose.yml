@@ -1,0 +1,16 @@
+# One command:  SAFEGUARD_ADMIN_PASSWORD=choose-a-password docker compose up --build
+# (PowerShell:  $env:SAFEGUARD_ADMIN_PASSWORD="choose-a-password"; docker compose up --build)
+# Then open http://localhost:5000 . The database lives in the named volume, so it survives restarts.
+services:
+  safeguard:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      SAFEGUARD_ADMIN_PASSWORD: ${SAFEGUARD_ADMIN_PASSWORD:?set SAFEGUARD_ADMIN_PASSWORD to choose the admin password}
+      SAFEGUARD_DEMO_SEED: ${SAFEGUARD_DEMO_SEED:-false}   # true = fill the public fraud check with fictional demo complaints
+    volumes:
+      - safeguard-data:/app/instance
+    restart: unless-stopped
+volumes:
+  safeguard-data:

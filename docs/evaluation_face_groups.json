@@ -1,0 +1,337 @@
+{
+  "note": "Group labels are estimated by a classifier (LFW attributes), not self-reported. Screening test only.",
+  "gallery_people": 1000,
+  "labelled_faces": 9102,
+  "groups": {
+    "0.45": {
+      "age:adult": {
+        "enrolled_queries": 15430,
+        "recognised": 0.9609,
+        "stranger_queries": 13444,
+        "stranger_false_match": 0.02886,
+        "stranger_ci95": [
+          0.02616,
+          0.03183
+        ]
+      },
+      "age:child": {
+        "enrolled_queries": 947,
+        "recognised": 0.905,
+        "stranger_queries": 845,
+        "stranger_false_match": 0.0213,
+        "stranger_ci95": [
+          0.01352,
+          0.03342
+        ]
+      },
+      "age:senior": {
+        "enrolled_queries": 4973,
+        "recognised": 0.9759,
+        "stranger_queries": 4891,
+        "stranger_false_match": 0.0137,
+        "stranger_ci95": [
+          0.0108,
+          0.01736
+        ]
+      },
+      "all": {
+        "enrolled_queries": 21350,
+        "recognised": 0.9619,
+        "stranger_queries": 19180,
+        "stranger_false_match": 0.02466,
+        "stranger_ci95": [
+          0.02256,
+          0.02695
+        ]
+      },
+      "appearance:asian": {
+        "enrolled_queries": 1554,
+        "recognised": 0.9665,
+        "stranger_queries": 1264,
+        "stranger_false_match": 0.01741,
+        "stranger_ci95": [
+          0.01152,
+          0.02621
+        ]
+      },
+      "appearance:black": {
+        "enrolled_queries": 682,
+        "recognised": 0.9795,
+        "stranger_queries": 618,
+        "stranger_false_match": 0.05663,
+        "stranger_ci95": [
+          0.041,
+          0.07775
+        ]
+      },
+      "appearance:indian": {
+        "enrolled_queries": 280,
+        "recognised": 0.9429,
+        "stranger_queries": 269,
+        "stranger_false_match": 0.01115,
+        "stranger_ci95": [
+          0.0038,
+          0.03227
+        ]
+      },
+      "appearance:unclear": {
+        "enrolled_queries": 2828,
+        "recognised": 0.9487,
+        "stranger_queries": 2307,
+        "stranger_false_match": 0.02471,
+        "stranger_ci95": [
+          0.01912,
+          0.03188
+        ]
+      },
+      "appearance:white": {
+        "enrolled_queries": 16006,
+        "recognised": 0.9634,
+        "stranger_queries": 14722,
+        "stranger_false_match": 0.02418,
+        "stranger_ci95": [
+          0.02182,
+          0.02679
+        ]
+      },
+      "gender:female": {
+        "enrolled_queries": 4483,
+        "recognised": 0.9266,
+        "stranger_queries": 3955,
+        "stranger_false_match": 0.02807,
+        "stranger_ci95": [
+          0.02336,
+          0.03369
+        ]
+      },
+      "gender:male": {
+        "enrolled_queries": 16867,
+        "recognised": 0.9713,
+        "stranger_queries": 15225,
+        "stranger_false_match": 0.02378,
+        "stranger_ci95": [
+          0.02147,
+          0.02632
+        ]
+      }
+    },
+    "0.5": {
+      "age:adult": {
+        "enrolled_queries": 15430,
+        "recognised": 0.9342,
+        "stranger_queries": 13444,
+        "stranger_false_match": 0.00394,
+        "stranger_ci95": [
+          0.00302,
+          0.00515
+        ]
+      },
+      "age:child": {
+        "enrolled_queries": 947,
+        "recognised": 0.8279,
+        "stranger_queries": 845,
+        "stranger_false_match": 0.00118,
+        "stranger_ci95": [
+          0.00021,
+          0.00667
+        ]
+      },
+      "age:senior": {
+        "enrolled_queries": 4973,
+        "recognised": 0.9616,
+        "stranger_queries": 4891,
+        "stranger_false_match": 0.00082,
+        "stranger_ci95": [
+          0.00032,
+          0.0021
+        ]
+      },
+      "all": {
+        "enrolled_queries": 21350,
+        "recognised": 0.9359,
+        "stranger_queries": 19180,
+        "stranger_false_match": 0.00302,
+        "stranger_ci95": [
+          0.00234,
+          0.00391
+        ]
+      },
+      "appearance:asian": {
+        "enrolled_queries": 1554,
+        "recognised": 0.9472,
+        "stranger_queries": 1264,
+        "stranger_false_match": 0.00396,
+        "stranger_ci95": [
+          0.00169,
+          0.00923
+        ]
+      },
+      "appearance:black": {
+        "enrolled_queries": 682,
+        "recognised": 0.9267,
+        "stranger_queries": 618,
+        "stranger_false_match": 0.01294,
+        "stranger_ci95": [
+          0.00657,
+          0.02533
+        ]
+      },
+      "appearance:indian": {
+        "enrolled_queries": 280,
+        "recognised": 0.9286,
+        "stranger_queries": 269,
+        "stranger_false_match": 0.0,
+        "stranger_ci95": [
+          0,
+          0.01408
+        ]
+      },
+      "appearance:unclear": {
+        "enrolled_queries": 2828,
+        "recognised": 0.912,
+        "stranger_queries": 2307,
+        "stranger_false_match": 0.0013,
+        "stranger_ci95": [
+          0.00044,
+          0.00382
+        ]
+      },
+      "appearance:white": {
+        "enrolled_queries": 16006,
+        "recognised": 0.9395,
+        "stranger_queries": 14722,
+        "stranger_false_match": 0.00285,
+        "stranger_ci95": [
+          0.00211,
+          0.00385
+        ]
+      },
+      "gender:female": {
+        "enrolled_queries": 4483,
+        "recognised": 0.8804,
+        "stranger_queries": 3955,
+        "stranger_false_match": 0.00683,
+        "stranger_ci95": [
+          0.0047,
+          0.00991
+        ]
+      },
+      "gender:male": {
+        "enrolled_queries": 16867,
+        "recognised": 0.9506,
+        "stranger_queries": 15225,
+        "stranger_false_match": 0.00204,
+        "stranger_ci95": [
+          0.00143,
+          0.00289
+        ]
+      }
+    }
+  },
+  "robustness": {
+    "clean": {
+      "faces_found": 2500,
+      "faces_total": 2500,
+      "results": {
+        "0.45": {
+          "enrolled_queries": 3348,
+          "recognised": 0.9645,
+          "stranger_queries": 3319,
+          "stranger_false_match": 0.02139,
+          "stranger_ci95": [
+            0.01699,
+            0.0269
+          ]
+        },
+        "0.5": {
+          "enrolled_queries": 3348,
+          "recognised": 0.9322,
+          "stranger_queries": 3319,
+          "stranger_false_match": 0.00271,
+          "stranger_ci95": [
+            0.00143,
+            0.00515
+          ]
+        }
+      }
+    },
+    "dark (x0.35)": {
+      "faces_found": 2500,
+      "faces_total": 2500,
+      "results": {
+        "0.45": {
+          "enrolled_queries": 3348,
+          "recognised": 0.9504,
+          "stranger_queries": 3319,
+          "stranger_false_match": 0.0238,
+          "stranger_ci95": [
+            0.01914,
+            0.02957
+          ]
+        },
+        "0.5": {
+          "enrolled_queries": 3348,
+          "recognised": 0.8987,
+          "stranger_queries": 3319,
+          "stranger_false_match": 0.00301,
+          "stranger_ci95": [
+            0.00164,
+            0.00554
+          ]
+        }
+      }
+    },
+    "blur (sigma 3)": {
+      "faces_found": 2500,
+      "faces_total": 2500,
+      "results": {
+        "0.45": {
+          "enrolled_queries": 3348,
+          "recognised": 0.8324,
+          "stranger_queries": 3319,
+          "stranger_false_match": 0.01296,
+          "stranger_ci95": [
+            0.00963,
+            0.0174
+          ]
+        },
+        "0.5": {
+          "enrolled_queries": 3348,
+          "recognised": 0.695,
+          "stranger_queries": 3319,
+          "stranger_false_match": 0.0006,
+          "stranger_ci95": [
+            0.00017,
+            0.00219
+          ]
+        }
+      }
+    },
+    "low-res (48 px)": {
+      "faces_found": 2500,
+      "faces_total": 2500,
+      "results": {
+        "0.45": {
+          "enrolled_queries": 3348,
+          "recognised": 0.8079,
+          "stranger_queries": 3319,
+          "stranger_false_match": 0.01356,
+          "stranger_ci95": [
+            0.01015,
+            0.01809
+          ]
+        },
+        "0.5": {
+          "enrolled_queries": 3348,
+          "recognised": 0.6714,
+          "stranger_queries": 3319,
+          "stranger_false_match": 0.0003,
+          "stranger_ci95": [
+            5e-05,
+            0.0017
+          ]
+        }
+      }
+    }
+  }
+}

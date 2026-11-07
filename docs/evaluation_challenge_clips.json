@@ -1,0 +1,259 @@
+{
+  "summary": {
+    "dark_gun": {
+      "clips": 2,
+      "violence_alerts": 0,
+      "weapon_alerts": 0
+    },
+    "dark_knife": {
+      "clips": 2,
+      "violence_alerts": 0,
+      "weapon_alerts": 2
+    },
+    "night": {
+      "clips": 4,
+      "violence_alerts": 1,
+      "weapon_alerts": 1
+    },
+    "phone": {
+      "clips": 7,
+      "violence_alerts": 0,
+      "weapon_alerts": 4
+    }
+  },
+  "clips": [
+    {
+      "category": "dark_gun",
+      "file": "dark_gun/5243197.mp4",
+      "seconds": 9.6,
+      "frames": 80,
+      "violence_alert": false,
+      "first_violence_s": null,
+      "violent_frames": 0,
+      "peak_clip_prob": 0.488,
+      "weapon_alert": false,
+      "first_weapon_s": null,
+      "peak_weapon_conf": 0.802,
+      "weapon_classes": {
+        "pistol": 0.802
+      }
+    },
+    {
+      "category": "dark_gun",
+      "file": "dark_gun/6092110.mp4",
+      "seconds": 8.9,
+      "frames": 75,
+      "violence_alert": false,
+      "first_violence_s": null,
+      "violent_frames": 0,
+      "peak_clip_prob": 0.478,
+      "weapon_alert": false,
+      "first_weapon_s": null,
+      "peak_weapon_conf": 0.0,
+      "weapon_classes": {}
+    },
+    {
+      "category": "dark_knife",
+      "file": "dark_knife/30166089.mp4",
+      "seconds": 3.8,
+      "frames": 33,
+      "violence_alert": false,
+      "first_violence_s": null,
+      "violent_frames": 0,
+      "peak_clip_prob": 0.321,
+      "weapon_alert": true,
+      "first_weapon_s": 1.6,
+      "peak_weapon_conf": 0.649,
+      "weapon_classes": {
+        "knife": 0.649
+      }
+    },
+    {
+      "category": "dark_knife",
+      "file": "dark_knife/5735079.mp4",
+      "seconds": 24.6,
+      "frames": 197,
+      "violence_alert": false,
+      "first_violence_s": null,
+      "violent_frames": 0,
+      "peak_clip_prob": 0.312,
+      "weapon_alert": true,
+      "first_weapon_s": 1.5,
+      "peak_weapon_conf": 0.822,
+      "weapon_classes": {
+        "knife": 0.822
+      }
+    },
+    {
+      "category": "night",
+      "file": "night/10225518.mp4",
+      "seconds": 6.9,
+      "frames": 52,
+      "violence_alert": false,
+      "first_violence_s": null,
+      "violent_frames": 0,
+      "peak_clip_prob": 0.395,
+      "weapon_alert": false,
+      "first_weapon_s": null,
+      "peak_weapon_conf": 0.0,
+      "weapon_classes": {}
+    },
+    {
+      "category": "night",
+      "file": "night/18138660.mp4",
+      "seconds": 9.7,
+      "frames": 73,
+      "violence_alert": false,
+      "first_violence_s": null,
+      "violent_frames": 0,
+      "peak_clip_prob": 0.255,
+      "weapon_alert": false,
+      "first_weapon_s": null,
+      "peak_weapon_conf": 0.0,
+      "weapon_classes": {}
+    },
+    {
+      "category": "night",
+      "file": "night/39810912.mp4",
+      "seconds": 16.0,
+      "frames": 134,
+      "violence_alert": false,
+      "first_violence_s": null,
+      "violent_frames": 0,
+      "peak_clip_prob": 0.372,
+      "weapon_alert": false,
+      "first_weapon_s": null,
+      "peak_weapon_conf": 0.571,
+      "weapon_classes": {
+        "rifle": 0.571
+      }
+    },
+    {
+      "category": "night",
+      "file": "night/4122942.mp4",
+      "seconds": 28.4,
+      "frames": 227,
+      "violence_alert": true,
+      "first_violence_s": 3.0,
+      "violent_frames": 187,
+      "peak_clip_prob": 0.843,
+      "weapon_alert": true,
+      "first_weapon_s": 9.8,
+      "peak_weapon_conf": 0.671,
+      "weapon_classes": {
+        "pistol": 0.671
+      }
+    },
+    {
+      "category": "phone",
+      "file": "phone/10374912.mp4",
+      "seconds": 7.6,
+      "frames": 61,
+      "violence_alert": false,
+      "first_violence_s": null,
+      "violent_frames": 0,
+      "peak_clip_prob": 0.251,
+      "weapon_alert": true,
+      "first_weapon_s": 0.2,
+      "peak_weapon_conf": 0.794,
+      "weapon_classes": {
+        "pistol": 0.794
+      }
+    },
+    {
+      "category": "phone",
+      "file": "phone/6306262.mp4",
+      "seconds": 10.9,
+      "frames": 91,
+      "violence_alert": false,
+      "first_violence_s": null,
+      "violent_frames": 0,
+      "peak_clip_prob": 0.281,
+      "weapon_alert": true,
+      "first_weapon_s": 1.9,
+      "peak_weapon_conf": 0.712,
+      "weapon_classes": {
+        "pistol": 0.712
+      }
+    },
+    {
+      "category": "phone",
+      "file": "phone/6612144.mp4",
+      "seconds": 11.6,
+      "frames": 97,
+      "violence_alert": false,
+      "first_violence_s": null,
+      "violent_frames": 0,
+      "peak_clip_prob": 0.266,
+      "weapon_alert": true,
+      "first_weapon_s": 0.7,
+      "peak_weapon_conf": 0.79,
+      "weapon_classes": {
+        "pistol": 0.79
+      }
+    },
+    {
+      "category": "phone",
+      "file": "phone/6612147.mp4",
+      "seconds": 12.6,
+      "frames": 106,
+      "violence_alert": false,
+      "first_violence_s": null,
+      "violent_frames": 0,
+      "peak_clip_prob": 0.209,
+      "weapon_alert": false,
+      "first_weapon_s": null,
+      "peak_weapon_conf": 0.547,
+      "weapon_classes": {
+        "pistol": 0.547
+      }
+    },
+    {
+      "category": "phone",
+      "file": "phone/6612214.mp4",
+      "seconds": 17.1,
+      "frames": 143,
+      "violence_alert": false,
+      "first_violence_s": null,
+      "violent_frames": 0,
+      "peak_clip_prob": 0.164,
+      "weapon_alert": false,
+      "first_weapon_s": null,
+      "peak_weapon_conf": 0.534,
+      "weapon_classes": {
+        "pistol": 0.534
+      }
+    },
+    {
+      "category": "phone",
+      "file": "phone/7567647.mp4",
+      "seconds": 13.5,
+      "frames": 113,
+      "violence_alert": false,
+      "first_violence_s": null,
+      "violent_frames": 0,
+      "peak_clip_prob": 0.344,
+      "weapon_alert": true,
+      "first_weapon_s": 1.2,
+      "peak_weapon_conf": 0.738,
+      "weapon_classes": {
+        "pistol": 0.738,
+        "knife": 0.523
+      }
+    },
+    {
+      "category": "phone",
+      "file": "phone/7963131.mp4",
+      "seconds": 10.0,
+      "frames": 75,
+      "violence_alert": false,
+      "first_violence_s": null,
+      "violent_frames": 0,
+      "peak_clip_prob": 0.438,
+      "weapon_alert": false,
+      "first_weapon_s": null,
+      "peak_weapon_conf": 0.0,
+      "weapon_classes": {}
+    }
+  ]
+}

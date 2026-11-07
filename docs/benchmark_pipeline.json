@@ -1,0 +1,42 @@
+{
+  "hardware": {
+    "threads": 12,
+    "ram_gb": 7.7,
+    "cpu": "12th Gen Intel(R) Core(TM) i5-1235U",
+    "cores": 10,
+    "gpu": "NVIDIA GeForce MX550; Intel(R) UHD Graphics",
+    "os": "Windows-11-10.0.26200-SP0",
+    "python": "3.13.5",
+    "note": "CPU inference only; the models are not run on the GPU"
+  },
+  "analysis_fps_setting": 8.0,
+  "weapon_model": true,
+  "violence_model": true,
+  "clip_classifier": true,
+  "results": [
+    {
+      "cameras": 1,
+      "analysed_fps_total": 5.0,
+      "analysed_fps_per_camera": 5.0,
+      "mean_ms_per_frame": 190.1,
+      "cpu_cores_used": 1.88,
+      "seconds": 40
+    },
+    {
+      "cameras": 2,
+      "analysed_fps_total": 4.05,
+      "analysed_fps_per_camera": 2.02,
+      "mean_ms_per_frame": 475.2,
+      "cpu_cores_used": 2.13,
+      "seconds": 40
+    },
+    {
+      "cameras": 3,
+      "analysed_fps_total": 2.9,
+      "analysed_fps_per_camera": 0.97,
+      "mean_ms_per_frame": 1015.4,
+      "cpu_cores_used": 1.75,
+      "seconds": 40
+    }
+  ]
+}
