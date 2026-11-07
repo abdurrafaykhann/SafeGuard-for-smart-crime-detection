@@ -503,6 +503,16 @@ def assemble() -> None:
     lead = -0.4  # measured: captions appear ~0.4 s (video clock) before the script clock says so; video time = script time + lead
     cuts = sorted((a + lead, b + lead) for a, b in ev.get("cuts", []))
     total = ev["total"] + lead
+    ack = next((e for e in ev["events"] if e["key"] == "ack"), None)
+    card = make_pdf_card() if ack else None
+    card_at = None
+    if ack and card:
+        ack_end = ack["t"] + ack["dur"]
+        nxt = min((a_ for a_, b_ in ev.get("cuts", []) if a_ > ack_end), default=None)
+        card_at = ack_end + 1.2
+        if nxt is not None and nxt - ack_end > 10:  # the failed download wait: drop everything after the card
+            cuts.append((ack_end + 7.4 + lead, nxt - 1.0 + lead))
+            cuts.sort()
 
     def shifted(t: float) -> float:
         t += lead
@@ -515,7 +525,12 @@ def assemble() -> None:
         cur = b
     keep.append((cur, total + 5))
     vfilters = [f"[0:v]trim=start={a:.3f}:end={b:.3f},setpts=PTS-STARTPTS[v{i}]" for i, (a, b) in enumerate(keep)]
-    vfilters.append("".join(f"[v{i}]" for i in range(len(keep))) + f"concat=n={len(keep)}:v=1:a=0[vout]")
+    if card_at is not None:
+        t1 = shifted(card_at)
+        vfilters.append("".join(f"[v{i}]" for i in range(len(keep))) + f"concat=n={len(keep)}:v=1:a=0[vcat]")
+        vfilters.append(f"[vcat][{len(ev['events']) + 1}:v]overlay=0:0:enable='between(t,{t1:.2f},{t1 + 6:.2f})'[vout]")
+    else:
+        vfilters.append("".join(f"[v{i}]" for i in range(len(keep))) + f"concat=n={len(keep)}:v=1:a=0[vout]")
 
     inputs, afilters, labels = [], [], []
     for i, e in enumerate(ev["events"]):
@@ -525,6 +540,8 @@ def assemble() -> None:
         labels.append(f"[a{i}]")
     afilters.append("".join(labels) + f"amix=inputs={len(labels)}:normalize=0,alimiter=limit=0.95[aout]")
     mp4 = out / "safeguard-demo.mp4"
+    if card_at is not None:
+        inputs += ["-loop", "1", "-i", str(card)]
     subprocess.run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-i", str(src), *inputs, "-filter_complex", ";".join(vfilters + afilters),
                     "-map", "[vout]", "-map", "[aout]", "-c:v", "libx264", "-preset", "slow", "-crf", "19", "-pix_fmt", "yuv420p", "-r", "30",
                     "-c:a", "aac", "-b:a", "160k", "-shortest", "-movflags", "+faststart", str(mp4)], check=True)
@@ -559,9 +576,74 @@ def assemble() -> None:
     print("wrote", mp4)
 
 
+def make_pdf_card() -> Path | None:
+    """The live recording did not capture the PDF download, so show a real report the app produced earlier (same code, an earlier alert)."""
+    src = BUILD / "report.png"
+    if not src.exists():
+        return None
+    from PIL import Image, ImageDraw, ImageFont
+    W_, H_ = 1280, 720
+    card = Image.new("RGB", (W_, H_), (6, 10, 18))
+    d = ImageDraw.Draw(card)
+    try:
+        f1, f2 = ImageFont.truetype(r"C:\Windows\Fonts\segoeuib.ttf", 30), ImageFont.truetype(r"C:\Windows\Fonts\segoeui.ttf", 18)
+    except OSError:
+        f1 = f2 = ImageFont.load_default()
+    d.text((W_ // 2, 34), "One click: the evidence report (PDF)", font=f1, fill=(232, 238, 247), anchor="mt")
+    page = Image.open(src).convert("RGB")
+    h = 556
+    page = page.resize((int(page.width * h / page.height), h), Image.LANCZOS)
+    card.paste(page, ((W_ - page.width) // 2, 86))
+    d.text((W_ // 2, 698), "Sample report from the same app (earlier alert): snapshot, SHA-256, cue scores, who acknowledged it", font=f2, fill=(159, 176, 198), anchor="mb")
+    out = BUILD / "pdf_card.png"
+    card.save(out)
+    return out
+
+
+SHORT_CUT = [  # (event, seconds of picture to keep after its narration ends)
+    ("hook", 0.4), ("hook_reveal", 0.5), ("intro", 0.3), ("alert", 0.4), ("ack", 6.5), ("weapon", 1.5),
+    ("faces", 1.2), ("quiz_fraud", 0.2), ("fraud_reveal", 0.5), ("outro", 0.6)]
+
+
+def assemble_short() -> None:
+    """A ~90 second highlights cut made from the same recording: quiz hook, alert + evidence, weapon, face search, fraud check."""
+    ev = json.loads((BUILD / "events.json").read_text(encoding="utf-8"))
+    src = sorted((BUILD / "raw").glob("*.webm"))[-1]
+    out = ROOT / "docs" / "demo" / "safeguard-demo-90s.mp4"
+    lead = -0.4
+    by_key = {e["key"]: e for e in ev["events"]}
+    segs, t_out = [], 0.0
+    for key, extra in SHORT_CUT:
+        e = by_key[key]
+        a0 = max(e["t"] + lead - 0.3, 0.0)
+        b0 = e["t"] + lead + e["dur"] + extra
+        segs.append({"key": key, "a": a0, "b": b0, "out": t_out + 0.3})
+        t_out += b0 - a0
+    vf = [f"[0:v]trim=start={g['a']:.3f}:end={g['b']:.3f},setpts=PTS-STARTPTS[v{i}]" for i, g in enumerate(segs)]
+    vf.append("".join(f"[v{i}]" for i in range(len(segs))) + f"concat=n={len(segs)}:v=1:a=0[vout]")
+    inputs, af, labels = [], [], []
+    for i, g in enumerate(segs):
+        inputs += ["-i", str(BUILD / "audio" / f"{g['key']}.wav")]
+        ms = int(g["out"] * 1000)
+        af.append(f"[{i + 1}:a]adelay={ms}|{ms}[a{i}]")
+        labels.append(f"[a{i}]")
+    af.append("".join(labels) + f"amix=inputs={len(labels)}:normalize=0,alimiter=limit=0.95[aout]")
+    card = make_pdf_card()
+    if card:
+        ack_seg = next(g for g in segs if g["key"] == "ack")
+        t1 = ack_seg["out"] + by_key["ack"]["dur"] + 0.8
+        vf[-1] = vf[-1].replace("[vout]", "[vcat]")
+        vf.append(f"[vcat][{len(segs) + 1}:v]overlay=0:0:enable='between(t,{t1:.2f},{t1 + 5:.2f})'[vout]")
+        inputs += ["-loop", "1", "-i", str(card)]
+    subprocess.run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-i", str(src), *inputs, "-filter_complex", ";".join(vf + af),
+                    "-map", "[vout]", "-map", "[aout]", "-c:v", "libx264", "-preset", "slow", "-crf", "19", "-pix_fmt", "yuv420p", "-r", "30",
+                    "-c:a", "aac", "-b:a", "160k", "-shortest", "-movflags", "+faststart", str(out)], check=True)
+    print("wrote", out, f"({t_out:.0f}s)")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--phase", default="all", choices=["all", "prepare", "record", "assemble"])
+    ap.add_argument("--phase", default="all", choices=["all", "prepare", "record", "assemble", "short"])
     a = ap.parse_args()
     if a.phase in ("all", "prepare"):
         prepare()
@@ -569,6 +651,8 @@ def main() -> None:
         record(a)
     if a.phase in ("all", "assemble"):
         assemble()
+    if a.phase in ("all", "short"):
+        assemble_short()
 
 
 if __name__ == "__main__":
