@@ -24,3 +24,4 @@ docs/demo/*.mp4
 
 # Third-party violence model by Musawer1214 (no licence declared): not redistributed, see README
 models/Yolo_nano_weights.pt
+
