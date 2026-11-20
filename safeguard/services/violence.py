@@ -142,6 +142,8 @@ class WeaponBackend:
         self.model = None
         self.error: str | None = None
         self.ids: dict[int, str] = {}
+        self._weights = weights_path
+        self._ort = None  # lazily built ONNX Runtime session for models whose boxes Ultralytics decodes wrongly
         if weights_path is None or not Path(weights_path).exists():
             self.error = "disabled or no weapon weights installed (set SAFEGUARD_WEAPON_ENABLED=true)"
             return
@@ -165,10 +167,56 @@ class WeaponBackend:
         res = self.model(frame, verbose=False, imgsz=640, conf=min_conf)[0]
         _cap_threads(self.threads)
         out = []
+        degenerate = False
         for cls, conf, box in zip(res.boxes.cls.tolist(), res.boxes.conf.tolist(), res.boxes.xyxy.tolist()):
             if int(cls) in self.ids:
+                if box[2] - box[0] < 2 or box[3] - box[1] < 2:
+                    degenerate = True
                 out.append((self.ids[int(cls)], float(conf), tuple(int(v) for v in box)))
+        if degenerate and str(self._weights).lower().endswith(".onnx"):
+            fixed = self._infer_normalised_onnx(frame, min_conf)
+            if fixed is not None:
+                return fixed
         return out
+
+    def _infer_normalised_onnx(self, frame: np.ndarray, min_conf: float):
+        """The community weapon ONNX exports box centres/sizes as fractions of the 640 input, but Ultralytics reads them as
+        pixels, so every box collapses to zero size (class and confidence are fine). Decode them here: letterbox to 640, run,
+        scale back, NMS. Returns None when this model does not behave that way."""
+        try:
+            import cv2
+            if self._ort is None:
+                import onnxruntime as ort
+                self._ort = ort.InferenceSession(str(self._weights), providers=["CPUExecutionProvider"])
+            h, w = frame.shape[:2]
+            sc = 640 / max(h, w)
+            nh, nw = int(round(h * sc)), int(round(w * sc))
+            top, left = (640 - nh) // 2, (640 - nw) // 2
+            canvas = np.full((640, 640, 3), 114, np.uint8)
+            canvas[top:top + nh, left:left + nw] = cv2.resize(frame, (nw, nh), interpolation=cv2.INTER_LINEAR)
+            x = canvas[:, :, ::-1].transpose(2, 0, 1)[None].astype(np.float32) / 255.0
+            raw = self._ort.run(None, {self._ort.get_inputs()[0].name: x})[0][0]  # (4 + classes, 8400)
+            a = raw.T
+            scores = a[:, 4:]
+            cls = scores.argmax(1)
+            conf = scores.max(1)
+            keep = np.array([c in self.ids for c in cls]) & (conf >= min_conf)
+            if not keep.any():
+                return []
+            a, cls, conf = a[keep], cls[keep], conf[keep]
+            if float(a[:, :4].max()) > 2.0:  # already pixel-scale: Ultralytics was right
+                return None
+            cx, cy, bw, bh = (a[:, 0] * 640, a[:, 1] * 640, a[:, 2] * 640, a[:, 3] * 640)
+            boxes = np.stack([cx - bw / 2, cy - bh / 2, bw, bh], 1)
+            idxs = cv2.dnn.NMSBoxes(boxes.tolist(), conf.tolist(), float(min_conf), 0.7)
+            out = []
+            for i in np.array(idxs).reshape(-1):
+                x1 = int(max((boxes[i, 0] - left) / sc, 0)); y1 = int(max((boxes[i, 1] - top) / sc, 0))
+                x2 = int(min((boxes[i, 0] + boxes[i, 2] - left) / sc, w)); y2 = int(min((boxes[i, 1] + boxes[i, 3] - top) / sc, h))
+                out.append((self.ids[int(cls[i])], float(conf[i]), (x1, y1, x2, y2)))
+            return out
+        except Exception:
+            return None
 
 
 class ViolenceDetector:

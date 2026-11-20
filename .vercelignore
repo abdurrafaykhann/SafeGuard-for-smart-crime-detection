@@ -1,0 +1,12 @@
+.venv
+instance
+models
+docs
+scripts
+tests
+notebooks
+*.md
+Dockerfile
+docker-compose.yml
+render.yaml
+requirements-*.txt

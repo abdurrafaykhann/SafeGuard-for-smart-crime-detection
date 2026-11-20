@@ -59,6 +59,11 @@ def privacy():
     return render_template("legal.html", page="privacy")
 
 
+@bp.get("/demo")
+def demo():
+    return render_template("demo.html")
+
+
 @bp.get("/terms")
 def terms():
     return render_template("legal.html", page="terms")

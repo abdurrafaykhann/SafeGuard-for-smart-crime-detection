@@ -154,6 +154,16 @@ PyTorch violence model (heuristic cues only), the weapon model, and the face-pho
 public figures; do not publish them). The free tier forgets its database on restart. Review the repo for secrets before
 making it public: `.env`, `instance/` and model weights are git-ignored and excluded from the image by `.dockerignore`.
 
+### Website demo (`/demo`) and product video
+
+The public site has an interactive replay at `/demo`: five licence-free stock clips play with the **recorded output of the real detectors**
+(risk score, people, weapon boxes, alerts), made by `scripts/demo_video/make_replay.py`. Nothing is computed in the visitor's browser, so
+it runs on any host, including serverless. The clips were selected because the system works on them; it is a showcase, not a benchmark
+(see the evaluation sections for the failures). A 2-minute narrated product tour of the site, `scripts/demo_video/make_saas_video.py`,
+is embedded on the same page. Building it exposed a real bug: the community weapon ONNX writes box coordinates as fractions of the image,
+which Ultralytics reads as pixels, so every weapon box had zero size (alerts were unaffected, boxes were never drawn). `WeaponBackend`
+now decodes those boxes itself.
+
 ### Demo video (`docs/demo/`)
 
 A 4-minute narrated walkthrough with two interactive quiz moments, recorded from the live app by `scripts/demo_video/make_demo.py`

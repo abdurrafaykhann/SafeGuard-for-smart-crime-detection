@@ -1,0 +1,31 @@
+WEBVTT
+
+00:00:01.867 --> 00:00:09.731
+SafeGuard. A real-time AI surveillance console that flags incidents, and leaves every decision to a human.
+
+00:00:10.631 --> 00:00:21.529
+It watches multiple camera feeds, scores risk with a trained classifier, and looks for weapons with a dedicated detector. Let's watch it work on real footage.
+
+00:00:26.818 --> 00:00:35.381
+First, a sparring session. The risk score climbs, and SafeGuard raises a violence alert within three seconds.
+
+00:00:36.288 --> 00:00:43.262
+Next, a knife. The weapon detector confirms it, boxes it, and raises a critical alert.
+
+00:00:44.488 --> 00:00:52.156
+A handgun in a car park. The weapon alert fires first, then a violence alert as the scene escalates.
+
+00:00:55.177 --> 00:01:00.046
+A rifle. Detected, boxed and tracked as it moves.
+
+00:01:03.390 --> 00:01:10.083
+And ordinary activity stays quiet. No weapon, no violence, no alert.
+
+00:01:12.858 --> 00:01:23.891
+SafeGuard also includes a public fraud check. Type a business name, and if complaints are on record, it is flagged unsafe. No sign-in needed.
+
+00:01:26.586 --> 00:01:35.864
+It is built for responsible use: documented consent for every enrolled face, a full audit trail, and a human decision on every alert.
+
+00:01:36.575 --> 00:01:51.857
+This replays the system's recorded output on selected stock clips. Measured results, including the failures, are in the project report. SafeGuard. Eyes on every frame, judgement stays human.

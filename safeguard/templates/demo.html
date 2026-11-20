@@ -1,0 +1,76 @@
+{% extends '_public.html' %}
+{% block title %}Live demo{% endblock %}
+{% block description %}Watch SafeGuard analyse real footage: violence and weapon detection, risk score and incident feed, replayed from the system's recorded output.{% endblock %}
+{% block content %}
+<main class="container demo">
+  <header class="demo-head">
+    <span class="eyebrow">Interactive demo · recorded model output</span>
+    <h1>See SafeGuard <span class="grad">analyse real footage.</span></h1>
+    <p class="lead">Pick a camera. The video plays with exactly what the system detected, frame by frame: the risk score, the people and weapons it found, and the alerts it raised.</p>
+  </header>
+
+  <section class="demo-stage" aria-label="Demo player">
+    <div class="demo-main panel">
+      <div class="demo-video" id="stage">
+        <video id="vid" muted playsinline preload="auto" aria-label="Camera footage"></video>
+        <canvas id="ov" aria-hidden="true"></canvas>
+        <div class="demo-hud demo-hud-top"><span class="rec"><i></i>REPLAY</span><span id="camname">CAM-01</span><span id="clock" class="mono">00:00</span></div>
+        <div class="demo-banner" id="banner" hidden></div>
+        <button class="demo-big" id="bigplay" type="button" aria-label="Play"><svg class="icon"><use href="#i-play"/></svg></button>
+      </div>
+      <div class="demo-controls">
+        <button class="btn btn-sm" id="pp" type="button"><svg class="icon"><use href="#i-play"/></svg><span>Play</span></button>
+        <button class="btn btn-sm" id="tour" type="button">Play all cameras</button>
+        <div class="demo-scrub" id="scrub" role="slider" aria-label="Seek" tabindex="0"><i id="scrubfill"></i><b id="scrubhead"></b></div>
+        <span class="hint mono" id="blurb"></span>
+      </div>
+      <div class="demo-tiles" id="tiles" role="tablist" aria-label="Cameras"></div>
+    </div>
+
+    <aside class="demo-side">
+      <div class="panel demo-card">
+        <div class="demo-card-head"><h3>Risk score</h3><span class="chip" id="state"><span class="dot"></span><span>clear</span></span></div>
+        <svg id="chart" viewBox="0 0 320 110" preserveAspectRatio="none" aria-hidden="true"><line id="thr" x1="0" x2="320"/><path id="area"/><path id="line"/><line id="head" y1="0" y2="110"/></svg>
+        <div class="demo-kpis">
+          <div><span class="label">Risk now</span><b id="k-risk">0.00</b></div>
+          <div><span class="label">People</span><b id="k-people">0</b></div>
+          <div><span class="label">Weapon</span><b id="k-weapon">none</b></div>
+        </div>
+      </div>
+      <div class="panel demo-card demo-feed">
+        <div class="demo-card-head"><h3>Incident feed</h3><span class="hint" id="feedcount">0 alerts</span></div>
+        <ul id="feed"><li class="empty-feed">Alerts appear here as they are raised.</li></ul>
+      </div>
+      <div class="panel demo-card demo-sys">
+        <h3>Running underneath</h3>
+        <ul>
+          <li><svg class="icon"><use href="#i-check"/></svg>Trained clip classifier for violence</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>Weapon detector (knife, pistol, rifle)</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>Person tracking and scene-motion guard</li>
+          <li><svg class="icon"><use href="#i-check"/></svg>Every alert waits for a human decision</li>
+        </ul>
+      </div>
+    </aside>
+  </section>
+
+  <section class="demo-film panel" aria-label="Product video">
+    <div class="demo-film-copy">
+      <span class="eyebrow">Product tour</span>
+      <h2>Prefer to watch? Here is the two-minute tour.</h2>
+      <p>A narrated walkthrough of everything above, plus the public fraud check and the responsible-use design.</p>
+    </div>
+    <video controls preload="metadata" poster="{{ url_for('static', filename='demo/product-demo-poster.jpg') }}" playsinline>
+      <source src="{{ url_for('static', filename='demo/safeguard-product-demo.mp4') }}" type="video/mp4">
+      <track kind="captions" src="{{ url_for('static', filename='demo/safeguard-product-demo.vtt') }}" srclang="en" label="English" default>
+    </video>
+  </section>
+
+  <section class="demo-notes panel panel-pad">
+    <h3>What you are looking at</h3>
+    <p>This is a <strong>recording of the real detectors</strong> (the same ones a live camera uses, at 8 frames per second) run over five short, licence-free stock clips. Nothing is computed in your browser. We chose clips that show the system working; it is not perfect. On other footage it can miss close-up knives, mistake a phone for a pistol, or raise false alarms in low light. The measured results, including the failures, are in the project's evaluation report.</p>
+    <p class="hint">A weapon box appears once the detector has confirmed a sighting across several frames (the rule that raises an alert) and is then tracked. Footage: Pexels (free licence). Want the real thing live? <a href="{{ url_for('web.check') }}">Try the public fraud check</a> or ask for a walkthrough.</p>
+  </section>
+</main>
+{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='css/demo.css') }}">{% endblock %}
+{% block scripts %}<script defer src="{{ url_for('static', filename='js/demo.js') }}"></script>{% endblock %}
