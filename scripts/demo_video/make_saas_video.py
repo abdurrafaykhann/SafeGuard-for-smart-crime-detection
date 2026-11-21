@@ -3,7 +3,7 @@
     python scripts/demo_video/make_saas_video.py
 
 Starts the app on a throw-away database (demo data only, no heavy models needed: the replay is pre-recorded detector output),
-drives system Chrome with Playwright at 1920x1080, adds captions/title cards, narrates with the offline Windows voice and
+drives system Chrome with Playwright at 1280x720, adds captions/title cards, narrates with the offline Windows voice and
 assembles an H.264 MP4 with ffmpeg. Output: safeguard/static/demo/safeguard-product-demo.mp4 (+ .vtt captions).
 Everything on screen is real: the replayed detections are the recorded output of the real detectors on stock clips."""
 from __future__ import annotations
@@ -24,7 +24,7 @@ from narration import synth  # noqa: E402
 
 PORT = 5072
 BASE = f"http://127.0.0.1:{PORT}"
-W, H = 1920, 1080
+W, H = 1280, 720  # native recording size: Playwright does not rescale the page, so the viewport must equal the video size
 OUT = ROOT / "safeguard" / "static" / "demo"
 BUILD = Path(tempfile.gettempdir()) / "sg_saas_build"
 FFMPEG = "ffmpeg"
@@ -112,7 +112,7 @@ def main() -> int:
         from playwright.sync_api import sync_playwright
         with sync_playwright() as p:
             b = p.chromium.launch(channel="chrome", headless=True, args=["--autoplay-policy=no-user-gesture-required", "--hide-scrollbars"])
-            ctx = b.new_context(viewport={"width": 1280, "height": 720}, device_scale_factor=1.5, record_video_dir=str(BUILD / "raw"), record_video_size={"width": W, "height": H}, bypass_csp=True)
+            ctx = b.new_context(viewport={"width": 1280, "height": 720}, record_video_dir=str(BUILD / "raw"), record_video_size={"width": 1280, "height": 720}, bypass_csp=True)
             ctx.add_init_script(OVERLAY)
             page = ctx.new_page()
             t0 = time.time()
