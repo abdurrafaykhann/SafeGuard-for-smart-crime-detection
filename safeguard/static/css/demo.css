@@ -53,3 +53,4 @@
 .demo-film h2 { font-size: clamp(1.5rem, 2.6vw, 2.1rem); margin: 14px 0 10px; letter-spacing: -.03em; } .demo-film p { margin: 0; }
 .demo-film video { width: 100%; border-radius: 14px; background: #000; box-shadow: 0 0 0 1px rgba(255, 255, 255, .12), 0 30px 70px -24px #000; aspect-ratio: 16 / 9; }
 @media (max-width: 900px) { .demo-film { grid-template-columns: 1fr; } }
+.demo-film video { object-fit: cover; }

@@ -132,3 +132,8 @@ th { color: #6d7a91; }
 .hud-lens-in span { font-size: 12.5px; color: var(--muted); line-height: 1.4; }
 @media (max-width: 1100px) { .hud-lens { right: 12px; bottom: -18px; } }
 .hud svg { border-radius: inherit; } .hud-scan { left: 2%; right: 2%; }
+
+/* mobile hero: the two-column rule above must not beat the single-column rule of the base stylesheet */
+@media (max-width: 1100px) { .hero { grid-template-columns: 1fr; gap: 40px; } .hero h1 { font-size: clamp(2.3rem, 9vw, 3.4rem); } }
+@media (max-width: 820px) { .hero { padding: 36px 0 48px; } .hud { margin-bottom: 26px; } .hud-lens { width: min(230px, 70%); right: 10px; bottom: -22px; } .section { padding-top: 84px; } .cta-band { padding: 44px 20px; } }
+@media (max-width: 820px) { .hud-lens { bottom: -58px; width: min(210px, 62%); } .hud { margin-bottom: 52px; } }
