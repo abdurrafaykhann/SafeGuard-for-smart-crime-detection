@@ -27,3 +27,6 @@ models/Yolo_nano_weights.pt
 
 .vercel
 .env*
+
+# generated post screenshots
+docs/linkedin/screens/
